@@ -1099,6 +1099,8 @@ INT8 parse_function_2_tag34(struct tag_head *tag, t_function_2 *function2)
 
 INT8 parse_swing_info(struct tag_head *tag, t_swing_info *si)
 {
+	int i;
+	
     if (NULL == tag)
     {
         return IR_DECODE_FAILED;
@@ -1135,8 +1137,16 @@ INT8 parse_swing_info(struct tag_head *tag, t_swing_info *si)
      * length greater than 1 indicates both auto-swing and some swing angles are supported
      */
     // count how many swing types are there
-    si->type = SWING_TYPE_NORMAL;
-    si->mode_count = (UINT8) ((tag->len + 1) >> 1);
+     si->type = SWING_TYPE_NORMAL;
+    //si->mode_count = (UINT8) ((tag->len + 1) >> 1);
+	si->mode_count = 1;
+	for (i = 0; i < tag->len; i++) 
+	{
+		if (tag->p_data[i] == ',') 
+		{
+			si->mode_count++;
+		}
+	}
 
     return IR_DECODE_SUCCEEDED;
 }
