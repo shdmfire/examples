@@ -22,7 +22,7 @@ Revision log:
 struct ir_bin_buffer binary_file;
 struct ir_bin_buffer *p_ir_buffer = &binary_file;
 
-const char* release = "0.2.1";
+const char* release = "0.2.2";
 
 #if defined USE_DYNAMIC_TAG
 struct tag_head *tags;
@@ -305,14 +305,10 @@ static UINT16 ir_ac_control(t_remote_ac_status ac_status, UINT16 *user_data, UIN
             function_code = AC_FUNCTION_MODE;
             break;
         case 2:
-            function_code = AC_FUNCTION_TEMPERATURE_UP;
-            break;
-        case 3:
-            function_code = AC_FUNCTION_TEMPERATURE_DOWN;
-            break;
         case 7:
             function_code = AC_FUNCTION_TEMPERATURE_UP;
             break;
+        case 3:
         case 8:
             function_code = AC_FUNCTION_TEMPERATURE_DOWN;
             break;
@@ -321,6 +317,9 @@ static UINT16 ir_ac_control(t_remote_ac_status ac_status, UINT16 *user_data, UIN
             break;
         case 10:
             function_code = AC_FUNCTION_WIND_SWING;
+            break;
+        case 11:
+            function_code = AC_FUNCTION_WIND_FIX;
             break;
     }
 

@@ -51,11 +51,12 @@ extern "C"
 #define KEY_TV_SETTINGS              13
 
 #define KEY_AC_POWER                 0
-#define KEY_AC_TEMP_PLUS             1
-#define KEY_AC_TEMP_MINUS            2
-#define KEY_AC_MODE_SWITCH           8
+#define KEY_AC_MODE_SWITCH           1
+#define KEY_AC_TEMP_PLUS             2
+#define KEY_AC_TEMP_MINUS            3
 #define KEY_AC_WIND_SPEED            9
-#define KEY_AC_WIND_DIRECTION        10
+#define KEY_AC_WIND_SWING            10
+#define KEY_AC_WIND_FIX              11
 
 #define KEY_STB_POWER                0
 #define KEY_STB_MUTE                 1

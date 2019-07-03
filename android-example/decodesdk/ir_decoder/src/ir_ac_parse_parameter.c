@@ -1136,7 +1136,14 @@ INT8 parse_swing_info(struct tag_head *tag, t_swing_info *si)
      */
     // count how many swing types are there
     si->type = SWING_TYPE_NORMAL;
-    si->mode_count = (UINT8) ((tag->len + 1) >> 1);
+    si->mode_count = 1;
+    for (i = 0; i < tag->len; i++) 
+    {
+        if (tag->p_data[i] == ',') 
+        {
+            si->mode_count++;
+        }
+    }
 
     return IR_DECODE_SUCCEEDED;
 }

@@ -22,7 +22,7 @@ Revision log:
 struct ir_bin_buffer binary_file;
 struct ir_bin_buffer *p_ir_buffer = &binary_file;
 
-const char* release = "0.2.1";
+const char* release = "0.2.2";
 
 #if defined USE_DYNAMIC_TAG
 struct tag_head *tags;
@@ -55,12 +55,19 @@ lp_apply_ac_parameter apply_table[AC_APPLY_MAX] =
 };
 
 // static functions declarations
+#if !defined NO_FS
 static INT8 ir_ac_file_open(const char *file_name);
+#endif
+
 static INT8 ir_ac_binary_open(UINT8 *binary, UINT16 binary_length);
 static UINT16 ir_ac_control(t_remote_ac_status ac_status, UINT16 *user_data, UINT8 function_code,
                                 BOOL change_wind_direction);
 static INT8 ir_ac_binary_close();
+
+#if !defined NO_FS
 static INT8 ir_tv_file_open(const char *file_name);
+#endif
+
 static INT8 ir_tv_binary_open(UINT8 *binary, UINT16 binary_length);
 static INT8 ir_tv_binary_parse(UINT8 ir_hex_encode);
 static UINT16 ir_tv_control(UINT8 key, UINT16 *l_user_data);
@@ -218,9 +225,9 @@ void ir_lib_free_inner_buffer();
 // static function definitions
 
 //////// AC Begin ////////
+#if !defined NO_FS
 static INT8 ir_ac_file_open(const char *file_name)
 {
-#if !defined NO_FS
     size_t ret = 0;
 #if !defined WIN32
     FILE *stream = fopen(file_name, "rb");
@@ -264,9 +271,9 @@ static INT8 ir_ac_file_open(const char *file_name)
         binary_length = 0;
         return IR_DECODE_FAILED;
     }
-#endif
     return IR_DECODE_SUCCEEDED;
 }
+#endif
 
 static INT8 ir_ac_binary_open(UINT8 *binary, UINT16 binary_length)
 {
@@ -298,14 +305,10 @@ static UINT16 ir_ac_control(t_remote_ac_status ac_status, UINT16 *user_data, UIN
             function_code = AC_FUNCTION_MODE;
             break;
         case 2:
-            function_code = AC_FUNCTION_TEMPERATURE_UP;
-            break;
-        case 3:
-            function_code = AC_FUNCTION_TEMPERATURE_DOWN;
-            break;
         case 7:
             function_code = AC_FUNCTION_TEMPERATURE_UP;
             break;
+        case 3:
         case 8:
             function_code = AC_FUNCTION_TEMPERATURE_DOWN;
             break;
@@ -314,6 +317,9 @@ static UINT16 ir_ac_control(t_remote_ac_status ac_status, UINT16 *user_data, UIN
             break;
         case 10:
             function_code = AC_FUNCTION_WIND_SWING;
+            break;
+        case 11:
+            function_code = AC_FUNCTION_WIND_FIX;
             break;
     }
 
@@ -585,9 +591,9 @@ INT8 get_supported_wind_direction(UINT8 *supported_wind_direction)
 //////// AC End ////////
 
 //////// TV Begin ////////
+#if !defined NO_FS
 static INT8 ir_tv_file_open(const char *file_name)
 {
-#if !defined NO_FS
     size_t ret = 0;
 
 #if !defined WIN32
@@ -632,9 +638,9 @@ static INT8 ir_tv_file_open(const char *file_name)
         binary_length = 0;
         return IR_DECODE_FAILED;
     }
-#endif
     return IR_DECODE_SUCCEEDED;
 }
+#endif
 
 static INT8 ir_tv_binary_open(UINT8 *binary, UINT16 binary_length)
 {

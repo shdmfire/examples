@@ -4,7 +4,7 @@ include $(CLEAR_VARS)
 
 LOCAL_CFLAGS    := -DBOARD_ANDROID
 LOCAL_MODULE    := libirdecode
-LOCAL_SRC_FILES := ./jni/ir_decode_jni.c \
+LOCAL_SRC_FILES := ./jni/src/ir_decode_jni.c \
                    ./src/ir_decode.c \
                    ./src/ir_tv_control.c \
                    ./src/ir_ac_apply.c \
