@@ -7,8 +7,8 @@ android {
         applicationId "net.irext.ircontrol"
         minSdkVersion 19
         targetSdkVersion 27
-        versionCode 4
-        versionName '0.2.0'
+        versionCode 6
+        versionName '0.2.2'
     }
     buildTypes {
         release {
