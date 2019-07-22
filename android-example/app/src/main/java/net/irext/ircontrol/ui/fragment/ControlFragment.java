@@ -137,16 +137,6 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
 
             /* decode SDK - load binary file */
             int ret = mIRDecode.openFile(category, mCurrentRemoteControl.getSubCategory(), binFileName);
-            File binFile = new File(binFileName);
-            byte []binaries = new byte[(int)binFile.length()];
-            try {
-                if (null != binFile) {
-                    FileInputStream fin = new FileInputStream(binFile);
-                    fin.read(binaries);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
             Log.d(TAG, "binary opened : " + ret);
         }
     }
