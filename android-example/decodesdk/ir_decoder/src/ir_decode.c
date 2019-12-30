@@ -22,7 +22,7 @@ Revision log:
 struct ir_bin_buffer binary_file;
 struct ir_bin_buffer *p_ir_buffer = &binary_file;
 
-const char* release = "0.2.2";
+const char* release = "0.2.4";
 
 #if defined USE_DYNAMIC_TAG
 struct tag_head *tags;
@@ -296,6 +296,7 @@ static UINT16 ir_ac_control(t_remote_ac_status ac_status, UINT16 *user_data, UIN
 
     UINT8 function_code = 0;
 
+    ir_printf("key code = %d\n", key_code);
     switch(key_code)
     {
         case 0:
@@ -580,6 +581,9 @@ INT8 get_supported_wind_direction(UINT8 *supported_wind_direction)
     if (NULL != context)
     {
         *supported_wind_direction = (UINT8) (context->si.mode_count - 1);
+        if (*supported_wind_direction < 0) {
+            *supported_wind_direction = 0;
+        }
         return IR_DECODE_SUCCEEDED;
     }
     else
