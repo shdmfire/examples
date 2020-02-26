@@ -1,7 +1,6 @@
-#include "stdafx.h"
-#include "DecodeTestWin.h"
 #include "ir_decoder\include\ir_decode.h"
 
+#include<iostream>
 using namespace std;
 
 #ifdef _DEBUG
@@ -11,8 +10,6 @@ using namespace std;
 // global variable definition
 long binary_length = 0;
 UINT8 *binary_content = NULL;
-
-CWinApp theApp;
 
 t_remote_ac_status ac_status;
 UINT16 user_data[USER_DATA_SIZE] = { 0 };
@@ -204,52 +201,34 @@ int main(int argc, char *argv[])
 {
 	int nRetCode = 0;
 
-	HMODULE hModule = ::GetModuleHandle(nullptr);
+	char function = '0';
+	UINT8 irda_hex_encode = 0;
 
-	if (hModule != nullptr)
+	if (4 != argc)
 	{
-		if (!AfxWinInit(hModule, nullptr, ::GetCommandLine(), 0))
-		{
-			wprintf(L"error: MFC failed to initialize\n");
-			nRetCode = 1;
-		}
-		else
-		{
-			char function = '0';
-			UINT8 irda_hex_encode = 0;
-
-			if (4 != argc)
-			{
-				ir_printf("number of args error !\n");
-				return -1;
-			}
-
-			function = argv[1][0];
-			irda_hex_encode = (UINT8)(argv[3][0] - '0');
-			ir_printf("decode functionality = %c\n", function);
-
-			switch (function)
-			{
-			case '0':
-				ir_printf("decode binary file as AC\n");
-				decode_as_ac(argv[2]);
-				break;
-
-			case '1':
-				ir_printf("decode binary file as TV : %d\n", irda_hex_encode);
-				decode_as_tv(argv[2], irda_hex_encode);
-				break;
-
-			default:
-				ir_printf("decode functionality error !\n");
-				break;
-			}
-		}
+		ir_printf("number of args error !\n");
+		return -1;
 	}
-	else
+
+	function = argv[1][0];
+	irda_hex_encode = (UINT8)(argv[3][0] - '0');
+	ir_printf("decode functionality = %c\n", function);
+
+	switch (function)
 	{
-		wprintf(L"error: GetModuleHandle failed\n");
-		nRetCode = 1;
+	case '0':
+		ir_printf("decode binary file as AC\n");
+		decode_as_ac(argv[2]);
+		break;
+
+	case '1':
+		ir_printf("decode binary file as TV : %d\n", irda_hex_encode);
+		decode_as_tv(argv[2], irda_hex_encode);
+		break;
+
+	default:
+		ir_printf("decode functionality error !\n");
+		break;
 	}
 
 	system("pause");

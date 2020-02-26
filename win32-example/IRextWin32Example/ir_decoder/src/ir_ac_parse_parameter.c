@@ -1137,6 +1137,7 @@ INT8 parse_swing_info(struct tag_head *tag, t_swing_info *si)
     // count how many swing types are there
     si->type = SWING_TYPE_NORMAL;
     si->mode_count = 1;
+    int i = 0;
     for (i = 0; i < tag->len; i++) 
     {
         if (tag->p_data[i] == ',') 
