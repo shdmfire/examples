@@ -9,8 +9,11 @@ Revision log:
 * 2016-10-01: created by strawmanbobi
 **************************************************************************************/
 
-#ifndef PARSE_IR_DEFS_H
-#define PARSE_IR_DEFS_H
+#ifndef _IR_DEFS_H
+#define _IR_DEFS_H
+
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
+#pragma ide diagnostic ignored "OCUnusedMacroInspection"
 
 #ifdef __cplusplus
 extern "C"
@@ -70,4 +73,4 @@ void noprint(const char *fmt, ...);
 #ifdef __cplusplus
 }
 #endif
-#endif //PARSE_IR_DEFS_H
+#endif //_IR_DEFS_H

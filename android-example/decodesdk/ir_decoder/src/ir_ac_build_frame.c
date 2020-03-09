@@ -9,10 +9,13 @@ Revision log:
 * 2016-10-01: created by strawmanbobi
 **************************************************************************************/
 
-#include "../include/ir_ac_build_frame.h"
-#include "../include/ir_decode.h"
+#pragma ide diagnostic ignored "hicpp-signed-bitwise"
+#pragma ide diagnostic ignored "readability-redundant-declaration"
 
-extern t_ac_protocol *context;
+#include "include/ir_ac_build_frame.h"
+#include "include/ir_decode.h"
+
+extern t_ac_protocol* context;
 
 
 //return bit number per byte,default value is 8
@@ -41,9 +44,10 @@ UINT8 bits_per_byte(UINT8 index)
 
 UINT16 add_delaycode(UINT8 index)
 {
-    UINT8 i = 0, j = 0;
+    UINT16 i = 0;
+    UINT16 j = 0;
     UINT8 size = 0;
-    UINT8 tail_delaycode = 0;
+    UINT8 tail_delay_code = 0;
     UINT16 tail_pos = 0;
 
     if (context->dc_cnt != 0)
@@ -61,7 +65,7 @@ UINT16 add_delaycode(UINT8 index)
             }
             else if (context->dc[i].pos == -1)
             {
-                tail_delaycode = 1;
+                tail_delay_code = 1;
                 tail_pos = i;
             }
         }
@@ -74,7 +78,7 @@ UINT16 add_delaycode(UINT8 index)
 
     if (context->dc_cnt != 0)
     {
-        if ((index == (ir_hex_len - 1)) && (tail_delaycode == 1))
+        if ((index == (ir_hex_len - 1)) && (tail_delay_code == 1))
         {
             for (i = 0; i < context->dc[tail_pos].time_cnt; i++)
             {
@@ -89,10 +93,10 @@ UINT16 add_delaycode(UINT8 index)
 UINT16 create_ir_frame()
 {
     UINT16 i = 0, j = 0;
-    UINT8 bitnum = 0;
-    UINT8 *irdata = ir_hex_code;
-    UINT8 mask = 1;
-    UINT16 framelen = 0;
+    UINT8 bit_num = 0;
+    UINT8 *ir_data = ir_hex_code;
+    UINT8 mask = 0;
+    UINT16 frame_length = 0;
 
     context->code_cnt = 0;
 
@@ -101,27 +105,24 @@ UINT16 create_ir_frame()
     {
         context->time[context->code_cnt++] = context->boot_code.data[i];
     }
-    //code_cnt += context->boot_code.len;
 
     for (i = 0; i < ir_hex_len; i++)
     {
-        bitnum = bits_per_byte((UINT8) i);
-        for (j = 0; j < bitnum; j++)
+        bit_num = bits_per_byte((UINT8) i);
+        for (j = 0; j < bit_num; j++)
         {
             if (context->endian == 0)
-                mask = (UINT8) ((1 << (bitnum - 1)) >> j);
+                mask = (UINT8) ((1 << (bit_num - 1)) >> j);
             else
                 mask = (UINT8) (1 << j);
 
-            if (irdata[i] & mask)
+            if (ir_data[i] & mask)
             {
-                //ir_printf("%d,%d,", context->one.low, context->one.high);
                 context->time[context->code_cnt++] = context->one.low;
                 context->time[context->code_cnt++] = context->one.high;
             }
             else
             {
-                //ir_printf("%d,%d,", context->zero.low, context->zero.high);
                 context->time[context->code_cnt++] = context->zero.low;
                 context->time[context->code_cnt++] = context->zero.high;
             }
@@ -129,11 +130,11 @@ UINT16 create_ir_frame()
         add_delaycode((UINT8) i);
     }
 
-    framelen = context->code_cnt;
+    frame_length = context->code_cnt;
 
     for (i = 0; i < (context->repeat_times - 1); i++)
     {
-        for (j = 0; j < framelen; j++)
+        for (j = 0; j < frame_length; j++)
         {
             context->time[context->code_cnt++] = context->time[j];
         }

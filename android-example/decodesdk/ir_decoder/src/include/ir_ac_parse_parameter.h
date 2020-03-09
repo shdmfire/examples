@@ -9,8 +9,8 @@ Revision log:
 * 2016-10-12: created by strawmanbobi
 **************************************************************************************/
 
-#ifndef _IRDA_PARSE_AC_PARAMETER_H_
-#define _IRDA_PARSE_AC_PARAMETER_H_
+#ifndef _IR_PARSE_AC_PARAMETER_H_
+#define _IR_PARSE_AC_PARAMETER_H_
 
 #ifdef __cplusplus
 extern "C"
@@ -55,4 +55,4 @@ extern INT8 parse_solo_code(struct tag_head *tag, t_solo_code *sc);
 }
 #endif
 
-#endif // _IRDA_PARSE_AC_PARAMETER_H_
+#endif // _IR_PARSE_AC_PARAMETER_H_

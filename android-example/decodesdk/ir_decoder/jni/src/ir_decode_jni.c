@@ -12,12 +12,19 @@ Revision log:
 #include <stdio.h>
 
 #include "ir_decode_jni.h"
-#include "../../include/ir_defs.h"
-#include "../../include/ir_decode.h"
+#include "../../src/include/ir_defs.h"
+#include "../../src/include/ir_decode.h"
 
 // global variable definition
 extern size_t binary_length;
 extern UINT8 *binary_content;
+
+JNIEXPORT const jstring JNICALL Java_net_irext_decode_sdk_IRDecode_irGetVersion
+        (JNIEnv *env, jobject this_obj)
+{
+    char *version = (char*) get_lib_version();
+    return (*env)->NewStringUTF(env, version);
+}
 
 JNIEXPORT jint JNICALL Java_net_irext_decode_sdk_IRDecode_irOpen
           (JNIEnv *env, jobject this_obj, jint category_id, jint sub_cate, jstring file_name)

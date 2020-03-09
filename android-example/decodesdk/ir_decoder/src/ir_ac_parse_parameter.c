@@ -13,8 +13,16 @@ Revision log:
 #include <stdio.h>
 #include <string.h>
 
-#include "../include/ir_utils.h"
-#include "../include/ir_ac_parse_parameter.h"
+#include "include/ir_utils.h"
+#include "include/ir_ac_parse_parameter.h"
+
+static INT8 parse_checksum_byte_typed(const UINT8 *csdata, t_tag_checksum_data *checksum, UINT16 len);
+
+static INT8 parse_checksum_half_byte_typed(const UINT8 *csdata, t_tag_checksum_data *checksum, UINT16 len);
+
+static INT8 parse_checksum_spec_half_byte_typed(const UINT8 *csdata, t_tag_checksum_data *checksum, UINT16 len);
+
+static INT8 parse_checksum_malloc(struct tag_head *tag, t_checksum *checksum);
 
 
 INT8 parse_comp_data_type_1(UINT8 *data, UINT16 *trav_offset, t_tag_comp *comp)
@@ -86,7 +94,7 @@ INT8 parse_common_ac_parameter(t_tag_head *tag, t_tag_comp *comp_data, UINT8 wit
         return IR_DECODE_FAILED;
     }
 
-    hex_len = tag->len >> 1;
+    hex_len = tag->len >> (UINT16) 1;
     hex_data = (UINT8 *) ir_malloc(hex_len);
     if (NULL == hex_data)
     {
@@ -164,7 +172,7 @@ INT8 parse_power_1(struct tag_head *tag, t_power_1 *power1)
         return IR_DECODE_FAILED;
     }
 
-    hex_len = tag->len >> 1;
+    hex_len = tag->len >> (UINT16) 1;
     hex_data = (UINT8 *) ir_malloc(hex_len);
 
     if (NULL == hex_data)
@@ -177,7 +185,7 @@ INT8 parse_power_1(struct tag_head *tag, t_power_1 *power1)
     // parse hex data to power1 data structure
     power1->len = (UINT8) hex_len;
 
-    for (seg_index = AC_POWER_ON; seg_index < AC_POWER_MAX; seg_index++)
+    for (seg_index = AC_POWER_ON; seg_index < (UINT16) AC_POWER_MAX; seg_index++)
     {
         if (IR_DECODE_FAILED == parse_comp_data_type_1(hex_data, &trav_offset, &power1->comp_data[seg_index]))
         {
@@ -210,7 +218,7 @@ INT8 parse_temp_1(struct tag_head *tag, t_temp_1 *temp1)
         return IR_DECODE_FAILED;
     }
 
-    hex_len = tag->len >> 1;
+    hex_len = tag->len >> (UINT16) 1;
     hex_data = (UINT8 *) ir_malloc(hex_len);
 
     if (NULL == hex_data)
@@ -228,7 +236,7 @@ INT8 parse_temp_1(struct tag_head *tag, t_temp_1 *temp1)
         temp1->len = (UINT8) hex_len;
         UINT8 seg_len = hex_data[0];
 
-        for (seg_index = AC_TEMP_16; seg_index < AC_TEMP_MAX; seg_index++)
+        for (seg_index = AC_TEMP_16; seg_index < (UINT16) AC_TEMP_MAX; seg_index++)
         {
             // 020210 indicates set the 02nd byte to [default] +10, +11, +12, +...
             temp1->comp_data[seg_index].seg_len = seg_len;
@@ -253,7 +261,7 @@ INT8 parse_temp_1(struct tag_head *tag, t_temp_1 *temp1)
         // static temperature tag
         temp1->len = (UINT8) hex_len;
         temp1->type = TEMP_TYPE_STATIC;
-        for (seg_index = AC_TEMP_16; seg_index < AC_TEMP_MAX; seg_index++)
+        for (seg_index = AC_TEMP_16; seg_index < (UINT16) AC_TEMP_MAX; seg_index++)
         {
             if (IR_DECODE_FAILED == parse_comp_data_type_1(hex_data, &trav_offset, &temp1->comp_data[seg_index]))
             {
@@ -284,7 +292,7 @@ INT8 parse_mode_1(struct tag_head *tag, t_mode_1 *mode1)
         return IR_DECODE_FAILED;
     }
 
-    hex_len = tag->len >> 1;
+    hex_len = tag->len >> (UINT16) 1;
     hex_data = (UINT8 *) ir_malloc(hex_len);
 
     if (NULL == hex_data)
@@ -297,7 +305,7 @@ INT8 parse_mode_1(struct tag_head *tag, t_mode_1 *mode1)
     // parse hex data to mode1 data structure
     mode1->len = (UINT8) hex_len;
 
-    for (seg_index = AC_MODE_COOL; seg_index < AC_MODE_MAX; seg_index++)
+    for (seg_index = AC_MODE_COOL; seg_index < (UINT16) AC_MODE_MAX; seg_index++)
     {
         if (IR_DECODE_FAILED == parse_comp_data_type_1(hex_data, &trav_offset, &mode1->comp_data[seg_index]))
         {
@@ -328,7 +336,7 @@ INT8 parse_speed_1(struct tag_head *tag, t_speed_1 *speed1)
         return IR_DECODE_FAILED;
     }
 
-    hex_len = tag->len >> 1;
+    hex_len = tag->len >> (UINT16) 1;
     hex_data = (UINT8 *) ir_malloc(hex_len);
 
     if (NULL == hex_data)
@@ -341,7 +349,7 @@ INT8 parse_speed_1(struct tag_head *tag, t_speed_1 *speed1)
     // parse hex data to speed1 data structure
     speed1->len = (UINT8) hex_len;
 
-    for (seg_index = AC_WS_AUTO; seg_index < AC_WS_MAX; seg_index++)
+    for (seg_index = AC_WS_AUTO; seg_index < (UINT16) AC_WS_MAX; seg_index++)
     {
         if (IR_DECODE_FAILED == parse_comp_data_type_1(hex_data, &trav_offset, &speed1->comp_data[seg_index]))
         {
@@ -372,7 +380,7 @@ INT8 parse_swing_1(struct tag_head *tag, t_swing_1 *swing1, UINT16 swing_count)
         return IR_DECODE_FAILED;
     }
 
-    hex_len = tag->len >> 1;
+    hex_len = tag->len >> (UINT16) 1;
     hex_data = (UINT8 *) ir_malloc(hex_len);
 
     if (NULL == hex_data)
@@ -407,95 +415,6 @@ INT8 parse_swing_1(struct tag_head *tag, t_swing_1 *swing1, UINT16 swing_count)
     }
 
     ir_free(hex_data);
-
-    return IR_DECODE_SUCCEEDED;
-}
-
-INT8 parse_checksum_byte_typed(UINT8 *csdata, t_tag_checksum_data *checksum, UINT16 len)
-{
-    checksum->start_byte_pos = csdata[2];
-    checksum->end_byte_pos = csdata[3];
-    checksum->checksum_byte_pos = csdata[4];
-
-    if (len > 5)
-    {
-        checksum->checksum_plus = csdata[5];
-    }
-    else
-    {
-        checksum->checksum_plus = 0;
-    }
-    checksum->spec_pos = NULL;
-
-    return IR_DECODE_SUCCEEDED;
-}
-
-INT8 parse_checksum_half_byte_typed(UINT8 *csdata, t_tag_checksum_data *checksum, UINT16 len)
-{
-    checksum->start_byte_pos = csdata[2];
-    checksum->end_byte_pos = csdata[3];
-    checksum->checksum_byte_pos = csdata[4];
-
-    if (len > 5)
-    {
-        checksum->checksum_plus = csdata[5];
-    }
-    else
-    {
-        checksum->checksum_plus = 0;
-    }
-    checksum->spec_pos = NULL;
-    return IR_DECODE_SUCCEEDED;
-}
-
-INT8 parse_checksum_spec_half_byte_typed(UINT8 *csdata, t_tag_checksum_data *checksum, UINT16 len)
-{
-    /*
-     * note:
-     * for the type of specified half byte checksum algorithm,
-     * the checksum byte positions are in unit of HALF BYTE, rather than in unit of BYTE
-     * as well as the specified half byte positions (spec_pos).
-     * Thus the specified half byte checksum only affects 4 bits of a position
-     * of half byte specified by check_sum_byte_pos property.
-     */
-    UINT16 spec_pos_size = (UINT16) (len - 4);
-
-    checksum->checksum_byte_pos = csdata[2];
-    checksum->checksum_plus = csdata[3];
-    checksum->start_byte_pos = 0;
-    checksum->end_byte_pos = 0;
-    checksum->spec_pos = (UINT8 *) ir_malloc(spec_pos_size);
-    if (NULL == checksum->spec_pos)
-    {
-        return IR_DECODE_FAILED;
-    }
-    ir_memcpy(checksum->spec_pos, &csdata[4], spec_pos_size);
-
-    return IR_DECODE_SUCCEEDED;
-}
-
-INT8 parse_checksum_malloc(struct tag_head *tag, t_checksum *checksum)
-{
-    UINT8 i = 0;
-    UINT8 cnt = 0;
-
-    for (i = 0; i < tag->len; i++)
-    {
-        if (tag->p_data[i] == '|')
-        {
-            cnt++;
-        }
-    }
-
-    checksum->len = (UINT8) ((tag->len - cnt) >> 1);
-    checksum->count = (UINT16) (cnt + 1);
-    checksum->checksum_data = (t_tag_checksum_data *) ir_malloc(sizeof(t_tag_checksum_data) * checksum->count);
-
-    if (NULL == checksum->checksum_data)
-    {
-        return IR_DECODE_FAILED;
-    }
-    ir_memset(checksum->checksum_data, 0x00, sizeof(t_tag_checksum_data) * checksum->count);
 
     return IR_DECODE_SUCCEEDED;
 }
@@ -591,13 +510,13 @@ INT8 parse_checksum(struct tag_head *tag, t_checksum *checksum)
         return IR_DECODE_FAILED;
     }
 
-    for (i = 0; i < tag->len; i++)
+    for (i = 0; i < (UINT8) tag->len; i++)
     {
         if (tag->p_data[i] == '|')
         {
             if (IR_DECODE_FAILED == parse_checksum_data(tag->p_data + preindex,
                                                         checksum->checksum_data + num,
-                                                        (UINT8) (i - preindex) >> 1))
+                                                        (UINT8) (i - preindex) >> (UINT8) 1))
             {
                 return IR_DECODE_FAILED;
             }
@@ -608,7 +527,7 @@ INT8 parse_checksum(struct tag_head *tag, t_checksum *checksum)
 
     if (IR_DECODE_FAILED == parse_checksum_data(tag->p_data + preindex,
                                                 checksum->checksum_data + num,
-                                                (UINT8) (i - preindex) >> 1))
+                                                (UINT8) (i - preindex) >> (UINT8) 1))
     {
         return IR_DECODE_FAILED;
     }
@@ -700,7 +619,7 @@ INT8 parse_function_1_tag29(struct tag_head *tag, t_function_1 *function1)
         return IR_DECODE_FAILED;
     }
 
-    hex_len = tag->len >> 1;
+    hex_len = tag->len >> (UINT16) 1;
     hex_data = (UINT8 *) ir_malloc(hex_len);
 
     if (NULL == hex_data)
@@ -714,12 +633,11 @@ INT8 parse_function_1_tag29(struct tag_head *tag, t_function_1 *function1)
     function1->len = (UINT8) hex_len;
 
     // seg_index in TAG only refers to functional count
-    for (seg_index = AC_FUNCTION_POWER; seg_index < AC_FUNCTION_MAX; seg_index++)
+    for (seg_index = AC_FUNCTION_POWER; seg_index < (UINT16) AC_FUNCTION_MAX; seg_index++)
     {
-        INT8 fid = parse_function_1(hex_data, &trav_offset, &function1->comp_data[0]);
-
         /** WARNING: for strict mode only **/
         /**
+        INT8 fid = parse_function_1(hex_data, &trav_offset, &function1->comp_data[0]);
         if (fid > AC_FUNCTION_MAX - 1)
         {
             irda_free(hex_data);
@@ -728,6 +646,7 @@ INT8 parse_function_1_tag29(struct tag_head *tag, t_function_1 *function1)
         }
         **/
 
+        parse_function_1(hex_data, &trav_offset, &function1->comp_data[0]);
         if (trav_offset >= hex_len)
         {
             break;
@@ -757,7 +676,7 @@ INT8 parse_temp_2(struct tag_head *tag, t_temp_2 *temp2)
         return IR_DECODE_FAILED;
     }
 
-    hex_len = tag->len >> 1;
+    hex_len = tag->len >> (UINT16) 1;
     hex_data = (UINT8 *) ir_malloc(hex_len);
 
     if (NULL == hex_data)
@@ -775,7 +694,7 @@ INT8 parse_temp_2(struct tag_head *tag, t_temp_2 *temp2)
         temp2->len = (UINT8) hex_len;
         UINT8 seg_len = hex_data[0];
 
-        for (seg_index = AC_TEMP_16; seg_index < AC_TEMP_MAX; seg_index++)
+        for (seg_index = AC_TEMP_16; seg_index < (UINT16) AC_TEMP_MAX; seg_index++)
         {
             // 020210 indicates set the 02nd byte to [default] +10, +11, +12, +...
             temp2->comp_data[seg_index].seg_len = seg_len;
@@ -800,7 +719,7 @@ INT8 parse_temp_2(struct tag_head *tag, t_temp_2 *temp2)
         // static temperature tag
         temp2->len = (UINT8) hex_len;
         temp2->type = TEMP_TYPE_STATIC;
-        for (seg_index = AC_TEMP_16; seg_index < AC_TEMP_MAX; seg_index++)
+        for (seg_index = AC_TEMP_16; seg_index < (UINT16) AC_TEMP_MAX; seg_index++)
         {
             if (IR_DECODE_FAILED == parse_comp_data_type_2(hex_data, &trav_offset, &temp2->comp_data[seg_index]))
             {
@@ -836,7 +755,7 @@ INT8 parse_mode_2(struct tag_head *tag, t_mode_2 *mode2)
         return IR_DECODE_FAILED;
     }
 
-    hex_len = tag->len >> 1;
+    hex_len = tag->len >> (UINT16) 1;
     hex_data = (UINT8 *) ir_malloc(hex_len);
 
     if (NULL == hex_data)
@@ -849,7 +768,7 @@ INT8 parse_mode_2(struct tag_head *tag, t_mode_2 *mode2)
     // parse hex data to mode1 data structure
     mode2->len = (UINT8) hex_len;
 
-    for (seg_index = AC_MODE_COOL; seg_index < AC_MODE_MAX; seg_index++)
+    for (seg_index = AC_MODE_COOL; seg_index < (UINT16) AC_MODE_MAX; seg_index++)
     {
         if (IR_DECODE_FAILED == parse_comp_data_type_2(hex_data, &trav_offset, &mode2->comp_data[seg_index]))
         {
@@ -885,7 +804,7 @@ INT8 parse_speed_2(struct tag_head *tag, t_speed_2 *speed2)
         return IR_DECODE_FAILED;
     }
 
-    hex_len = tag->len >> 1;
+    hex_len = tag->len >> (UINT16) 1;
     hex_data = (UINT8 *) ir_malloc(hex_len);
 
     if (NULL == hex_data)
@@ -898,7 +817,7 @@ INT8 parse_speed_2(struct tag_head *tag, t_speed_2 *speed2)
     // parse hex data to speed1 data structure
     speed2->len = (UINT8) hex_len;
 
-    for (seg_index = AC_WS_AUTO; seg_index < AC_WS_MAX; seg_index++)
+    for (seg_index = AC_WS_AUTO; seg_index < (UINT16) AC_WS_MAX; seg_index++)
     {
         if (IR_DECODE_FAILED == parse_comp_data_type_2(hex_data, &trav_offset, &speed2->comp_data[seg_index]))
         {
@@ -934,7 +853,7 @@ INT8 parse_swing_2(struct tag_head *tag, t_swing_2 *swing2, UINT16 swing_count)
         return IR_DECODE_FAILED;
     }
 
-    hex_len = tag->len >> 1;
+    hex_len = tag->len >> (UINT16) 1;
     hex_data = (UINT8 *) ir_malloc(hex_len);
 
     if (NULL == hex_data)
@@ -1058,7 +977,7 @@ INT8 parse_function_2_tag34(struct tag_head *tag, t_function_2 *function2)
         return IR_DECODE_FAILED;
     }
 
-    hex_len = tag->len >> 1;
+    hex_len = tag->len >> (UINT16) 1;
     hex_data = (UINT8 *) ir_malloc(hex_len);
 
     if (NULL == hex_data)
@@ -1072,12 +991,11 @@ INT8 parse_function_2_tag34(struct tag_head *tag, t_function_2 *function2)
     function2->len = (UINT8) hex_len;
 
     // seg_index in TAG only refers to functional count
-    for (seg_index = AC_FUNCTION_POWER; seg_index < AC_FUNCTION_MAX; seg_index++)
+    for (seg_index = AC_FUNCTION_POWER; seg_index < (UINT16) AC_FUNCTION_MAX; seg_index++)
     {
-        INT8 fid = parse_function_2(hex_data, &trav_offset, &function2->comp_data[0]);
-
         /** WARNING: for strict mode only **/
         /**
+        INT8 fid = parse_function_2(hex_data, &trav_offset, &function2->comp_data[0]);
         if (fid > AC_FUNCTION_MAX - 1)
         {
             irda_free(hex_data);
@@ -1086,6 +1004,7 @@ INT8 parse_function_2_tag34(struct tag_head *tag, t_function_2 *function2)
         }
         **/
 
+        parse_function_2(hex_data, &trav_offset, &function2->comp_data[0]);
         if (trav_offset >= hex_len)
         {
             break;
@@ -1164,7 +1083,7 @@ INT8 parse_solo_code(struct tag_head *tag, t_solo_code *sc)
         return IR_DECODE_FAILED;
     }
 
-    hex_len = tag->len >> 1;
+    hex_len = tag->len >> (UINT16) 1;
 
     if (hex_len > AC_FUNCTION_MAX)
     {
@@ -1186,11 +1105,100 @@ INT8 parse_solo_code(struct tag_head *tag, t_solo_code *sc)
 
     // per each function takes just 1 byte of length
     sc->solo_func_count = hex_data[0];
-    for (i = 1; i < hex_len; i++)
+    for (i = 1; i < (UINT8) hex_len; i++)
     {
         sc->solo_function_codes[i - 1] = hex_data[i];
     }
 
     ir_free(hex_data);
+    return IR_DECODE_SUCCEEDED;
+}
+
+static INT8 parse_checksum_byte_typed(const UINT8 *csdata, t_tag_checksum_data *checksum, UINT16 len)
+{
+    checksum->start_byte_pos = csdata[2];
+    checksum->end_byte_pos = csdata[3];
+    checksum->checksum_byte_pos = csdata[4];
+
+    if (len > 5)
+    {
+        checksum->checksum_plus = csdata[5];
+    }
+    else
+    {
+        checksum->checksum_plus = 0;
+    }
+    checksum->spec_pos = NULL;
+
+    return IR_DECODE_SUCCEEDED;
+}
+
+static INT8 parse_checksum_half_byte_typed(const UINT8 *csdata, t_tag_checksum_data *checksum, UINT16 len)
+{
+    checksum->start_byte_pos = csdata[2];
+    checksum->end_byte_pos = csdata[3];
+    checksum->checksum_byte_pos = csdata[4];
+
+    if (len > 5)
+    {
+        checksum->checksum_plus = csdata[5];
+    }
+    else
+    {
+        checksum->checksum_plus = 0;
+    }
+    checksum->spec_pos = NULL;
+    return IR_DECODE_SUCCEEDED;
+}
+
+static INT8 parse_checksum_spec_half_byte_typed(const UINT8 *csdata, t_tag_checksum_data *checksum, UINT16 len)
+{
+    /*
+     * note:
+     * for the type of specified half byte checksum algorithm,
+     * the checksum byte positions are in unit of HALF BYTE, rather than in unit of BYTE
+     * as well as the specified half byte positions (spec_pos).
+     * Thus the specified half byte checksum only affects 4 bits of a position
+     * of half byte specified by check_sum_byte_pos property.
+     */
+    UINT16 spec_pos_size = (UINT16) (len - 4);
+
+    checksum->checksum_byte_pos = csdata[2];
+    checksum->checksum_plus = csdata[3];
+    checksum->start_byte_pos = 0;
+    checksum->end_byte_pos = 0;
+    checksum->spec_pos = (UINT8 *) ir_malloc(spec_pos_size);
+    if (NULL == checksum->spec_pos)
+    {
+        return IR_DECODE_FAILED;
+    }
+    ir_memcpy(checksum->spec_pos, &csdata[4], spec_pos_size);
+
+    return IR_DECODE_SUCCEEDED;
+}
+
+static INT8 parse_checksum_malloc(struct tag_head *tag, t_checksum *checksum)
+{
+    UINT8 i = 0;
+    UINT8 cnt = 0;
+
+    for (i = 0; i < (UINT8) tag->len; i++)
+    {
+        if (tag->p_data[i] == '|')
+        {
+            cnt++;
+        }
+    }
+
+    checksum->len = (UINT8) ((UINT8) (tag->len - cnt) >> (UINT8) 1);
+    checksum->count = (UINT16) (cnt + 1);
+    checksum->checksum_data = (t_tag_checksum_data *) ir_malloc(sizeof(t_tag_checksum_data) * checksum->count);
+
+    if (NULL == checksum->checksum_data)
+    {
+        return IR_DECODE_FAILED;
+    }
+    ir_memset(checksum->checksum_data, 0x00, sizeof(t_tag_checksum_data) * checksum->count);
+
     return IR_DECODE_SUCCEEDED;
 }

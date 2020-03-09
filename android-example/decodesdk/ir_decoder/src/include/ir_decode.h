@@ -9,8 +9,11 @@ Revision log:
 * 2016-10-01: created by strawmanbobi
 **************************************************************************************/
 
-#ifndef _IRDA_DECODE_H_
-#define _IRDA_DECODE_H_
+#ifndef _IR_DECODE_H_
+#define _IR_DECODE_H_
+
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
+#pragma ide diagnostic ignored "OCUnusedMacroInspection"
 
 #ifdef __cplusplus
 extern "C"
@@ -25,14 +28,8 @@ extern "C"
 #define IR_DECODE_FAILED             (-1)
 #define IR_DECODE_SUCCEEDED          (0)
 
-#define IR_CATEGORY_AC               1
-#define IR_CATEGORY_TV               2
-
 #define IR_TYPE_STATUS               0
 #define IR_TYPE_COMMANDS             1
-
-#define SUB_CATEGORY_QUATERNARY      0
-#define SUB_CATEGORY_HEXADECIMAL     1
 
 // remote control key definition
 #define KEY_TV_POWER                 0
@@ -196,8 +193,49 @@ extern "C"
 #define KEY_DYSON_SLEEP              12
 #define KEY_DYSON_COOL               13
 
+#define STANDARD_KEY_COUNT           14
+#define CHANNEL_KEY_COUNT            10
 
-// exported functions
+typedef enum
+{
+    REMOTE_CATEGORY_NONE = 0,
+    REMOTE_CATEGORY_AC = 1,
+    REMOTE_CATEGORY_TV = 2,
+    REMOTE_CATEGORY_STB = 3,
+    REMOTE_CATEGORY_NETBOX = 4,
+    REMOTE_CATEGORY_IPTV = 5,
+    REMOTE_CATEGORY_DVD = 6,
+    REMOTE_CATEGORY_FAN = 7,
+    REMOTE_CATEGORY_PROJECTOR = 8,
+    REMOTE_CATEGORY_STEREO = 9,
+    REMOTE_CATEGORY_LIGHT = 10,
+    REMOTE_CATEGORY_BSTB = 11,
+    REMOTE_CATEGORY_CLEANING_ROBOT = 12,
+    REMOTE_CATEGORY_AREMOTE_CLEANER = 13,
+    REMOTE_CATEGORY_NEXT,
+    REMOTE_CATEGORY_MAX = 64,
+} t_remote_category;
+
+typedef enum
+{
+    SUB_CATEGORY_QUATERNARY = 0,
+    SUB_CATEGORY_HEXADECIMAL = 1,
+    SUB_CATEGORY_NEXT = 2,
+    SUB_CATEGORY_MAX = 7,
+} t_remote_sub_category;
+
+/**
+ * function     get_lib_version
+ *
+ * description: get version of library
+ *
+ * parameters:  N/A
+ *
+ * returns:     the string contains library version
+ *
+ */
+extern const char* get_lib_version();
+
 /**
  * function     ir_file_open
  *
@@ -220,11 +258,11 @@ extern INT8 ir_file_open(const UINT8 category, const UINT8 sub_category, const c
  * parameters:  category (in) - category ID get from indexing API
  *              sub_category (in) - subcategory ID get from indexing API
  *              binary (in) - pointer to binary buffer
- *              binary_length (in) - binary buffer size
+ *              bin_length (in) - binary buffer size
  *
  * returns:     IR_DECODE_SUCCEEDED / IR_DECODE_FAILED
  */
-extern INT8 ir_binary_open(const UINT8 category, const UINT8 sub_category, UINT8* binary, UINT16 binary_length);
+extern INT8 ir_binary_open(const UINT8 category, const UINT8 sub_category, UINT8* binary, UINT16 bin_length);
 
 /**
  * function     ir_decode
@@ -318,7 +356,7 @@ extern void ir_lib_free_inner_buffer();
 
 // this function is preferred being called by JNI only
 UINT16 ir_decode_combo(const UINT8 category, const UINT8 sub_category,
-                       UINT8* binary, UINT16 binary_length,
+                       UINT8* binary, UINT16 bin_length,
                        UINT8 key_code, UINT16* user_data,
                        t_remote_ac_status* ac_status, BOOL change_wind_direction);
 
@@ -326,4 +364,4 @@ UINT16 ir_decode_combo(const UINT8 category, const UINT8 sub_category,
 }
 #endif
 
-#endif // _IRDA_DECODE_H_
+#endif // _IR_DECODE_H_

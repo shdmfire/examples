@@ -3,6 +3,9 @@ package net.irext.decode.sdk;
 import net.irext.decode.sdk.bean.ACStatus;
 import net.irext.decode.sdk.bean.TemperatureRange;
 import net.irext.decode.sdk.utils.Constants;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.servlet.ServletContext;
 
 /**
  * Filename:       IRDecode.java
@@ -18,11 +21,12 @@ public class IRDecode {
 
     private static final String TAG = IRDecode.class.getSimpleName();
 
-    static {
-        System.loadLibrary("irdecode");
-    }
+    @Autowired
+    private static ServletContext context;
 
     private static Object mSync = new Object();
+
+    private native String irGetVersion();
 
     private native int irOpen(int category, int subCate, String fileName);
 
@@ -49,6 +53,16 @@ public class IRDecode {
             mInstance = new IRDecode();
         }
         return mInstance;
+    }
+
+    private IRDecode() {
+        String libPath = "/data/irext/libirda_decoder.so";
+        System.out.println("loading decode library " + libPath);
+        System.load(libPath);
+    }
+
+    public String getVersion() {
+        return irGetVersion();
     }
 
     public int openFile(int category, int subCate, String fileName) {

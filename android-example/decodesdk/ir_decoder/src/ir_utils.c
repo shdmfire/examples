@@ -9,7 +9,7 @@ Revision log:
 * 2016-10-01: created by strawmanbobi
 **************************************************************************************/
 
-#include "../include/ir_utils.h"
+#include "include/ir_utils.h"
 
 UINT8 char_to_hex(char chr)
 {
@@ -25,7 +25,7 @@ UINT8 char_to_hex(char chr)
 
 UINT8 chars_to_hex(const UINT8 *p)
 {
-    return (char_to_hex(*p) << 4) + char_to_hex(*(p + 1));
+    return ((UINT8) char_to_hex(*p) << (UINT8) 4) + char_to_hex(*(p + 1));
 }
 
 void string_to_hex_common(UINT8 *p, UINT8 *hex_data, UINT16 len)
@@ -77,8 +77,8 @@ void hex_byte_to_double_char(char *dest, UINT8 length, UINT8 src)
     {
         return;
     }
-    hi_num = (UINT8) ((src >> 4) & 0x0F);
-    lo_num = (UINT8) (src & 0x0F);
+    hi_num = (UINT8) ((UINT8) (src >> (UINT8) 4) & (UINT8) 0x0F);
+    lo_num = (UINT8) (src & (UINT8) 0x0F);
 
     dest[0] = hex_half_byte_to_single_char(1, hi_num);
     dest[1] = hex_half_byte_to_single_char(1, lo_num);

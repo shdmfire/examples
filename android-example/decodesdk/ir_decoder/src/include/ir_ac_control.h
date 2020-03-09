@@ -8,8 +8,10 @@ Description:    This file provides methods for AC IR control
 Revision log:
 * 2016-10-12: created by strawmanbobi
 **************************************************************************************/
-#ifndef IRDA_DECODER_IR_AC_CONTROL_H
-#define IRDA_DECODER_IR_AC_CONTROL_H
+#ifndef _IR_DECODER_IR_AC_CONTROL_H
+#define _IR_DECODER_IR_AC_CONTROL_H
+
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 
 #ifdef __cplusplus
 extern "C"
@@ -436,4 +438,4 @@ extern BOOL is_solo_function(UINT8 function_code);
 }
 #endif
 
-#endif //IRDA_DECODER_IR_AC_CONTROL_H
+#endif // _IR_DECODER_IR_AC_CONTROL_H

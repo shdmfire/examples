@@ -9,14 +9,16 @@ Revision log:
 * 2016-11-05: created by strawmanbobi
 **************************************************************************************/
 
+#pragma ide diagnostic ignored "OCUnusedMacroInspection"
+
 #include <ctype.h>
 #include <libgen.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-#include "../include/ir_defs.h"
-#include "../include/ir_decode.h"
+#include "include/ir_defs.h"
+#include "include/ir_decode.h"
 
 #define INPUT_MAX 3
 
@@ -82,7 +84,7 @@ static INT8 decode_as_ac(char *file_name)
     ac_status.ac_wind_dir = AC_SWING_ON;
     ac_status.ac_wind_speed = AC_WS_AUTO;
 
-    if (IR_DECODE_FAILED == ir_file_open(IR_CATEGORY_AC, 0, file_name))
+    if (IR_DECODE_FAILED == ir_file_open(REMOTE_CATEGORY_AC, 0, file_name))
     {
         ir_close();
         return IR_DECODE_FAILED;
@@ -166,7 +168,7 @@ static INT8 decode_as_ac(char *file_name)
                     break;
 
                 case 1:
-                    ++ac_status.ac_mode;;
+                    ++ac_status.ac_mode;
                     ac_status.ac_mode = ac_status.ac_mode % AC_MODE_MAX;
                     need_control = TRUE;
                     break;
@@ -232,7 +234,8 @@ static INT8 decode_as_tv(char *file_name, UINT8 ir_hex_encode)
     int key_code = 0;
     int first_time = 1;
 
-    if (IR_DECODE_FAILED == ir_file_open(IR_CATEGORY_TV, ir_hex_encode, file_name))
+    // here remote category TV represents for command typed IR code
+    if (IR_DECODE_FAILED == ir_file_open(REMOTE_CATEGORY_TV, ir_hex_encode, file_name))
     {
         ir_close();
         return IR_DECODE_FAILED;

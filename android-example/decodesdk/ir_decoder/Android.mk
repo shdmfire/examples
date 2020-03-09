@@ -12,8 +12,8 @@ LOCAL_SRC_FILES := ./jni/src/ir_decode_jni.c \
                    ./src/ir_ac_parse_parameter.c \
                    ./src/ir_ac_parse_forbidden_info.c \
                    ./src/ir_ac_parse_frame_info.c \
-				   ./src/ir_ac_binary_parse.c \
-				   ./src/ir_ac_control.c \
+                   ./src/ir_ac_binary_parse.c \
+                   ./src/ir_ac_control.c \
                    ./src/ir_utils.c \
 
 LOCAL_LDLIBS += -L$(SYSROOT)/usr/lib -llog

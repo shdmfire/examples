@@ -8,10 +8,11 @@ Description:    This file provides methods for AC IR applying functionalities
 Revision log:
 * 2016-10-12: created by strawmanbobi
 **************************************************************************************/
+#pragma ide diagnostic ignored "bugprone-branch-clone"
+#pragma ide diagnostic ignored "hicpp-signed-bitwise"
 
-#include "../include/ir_utils.h"
-#include "../include/ir_ac_apply.h"
-
+#include "include/ir_utils.h"
+#include "include/ir_ac_apply.h"
 
 static INT8 apply_ac_power(struct ac_protocol *protocol, UINT8 power_status);
 
@@ -570,7 +571,7 @@ INT8 apply_function(struct ac_protocol *protocol, UINT8 function)
 
 INT8 apply_checksum(struct ac_protocol *protocol)
 {
-    UINT8 i = 0;
+    UINT16 i = 0;
 
     if (0 == protocol->checksum.len)
     {
@@ -615,12 +616,14 @@ INT8 apply_checksum(struct ac_protocol *protocol)
 
 INT8 apply_power(t_remote_ac_status ac_status, UINT8 function_code)
 {
+    (void) function_code;
     apply_ac_power(context, ac_status.ac_power);
     return IR_DECODE_SUCCEEDED;
 }
 
 INT8 apply_mode(t_remote_ac_status ac_status, UINT8 function_code)
 {
+    (void) function_code;
     if (IR_DECODE_FAILED == apply_ac_mode(context, ac_status.ac_mode))
     {
         // do not implement this mechanism since mode, temperature, wind
@@ -686,6 +689,7 @@ INT8 apply_wind_speed(t_remote_ac_status ac_status, UINT8 function_code)
 
 INT8 apply_swing(t_remote_ac_status ac_status, UINT8 function_code)
 {
+    (void) ac_status;
     if (function_code == AC_FUNCTION_WIND_FIX)
     {
         // adjust fixed wind direction according to current status
@@ -715,11 +719,13 @@ INT8 apply_swing(t_remote_ac_status ac_status, UINT8 function_code)
 
     if (IR_DECODE_FAILED == apply_ac_swing(context, context->swing_status))
     {
-        if (function_code == AC_FUNCTION_WIND_SWING && FALSE == has_function(context, AC_FUNCTION_WIND_SWING))
+        if (function_code == AC_FUNCTION_WIND_SWING &&
+            FALSE == has_function(context, AC_FUNCTION_WIND_SWING))
         {
             return IR_DECODE_FAILED;
         }
-        else if (function_code == AC_FUNCTION_WIND_FIX && FALSE == has_function(context, AC_FUNCTION_WIND_FIX))
+        else if (function_code == AC_FUNCTION_WIND_FIX &&
+                 FALSE == has_function(context, AC_FUNCTION_WIND_FIX))
         {
             return IR_DECODE_FAILED;
         }

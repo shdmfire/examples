@@ -13,13 +13,13 @@ Revision log:
 #include <stdio.h>
 #include <string.h>
 
-#include "../include/ir_ac_control.h"
-#include "../include/ir_ac_binary_parse.h"
-#include "../include/ir_decode.h"
-#include "../include/ir_ac_parse_parameter.h"
-#include "../include/ir_ac_parse_forbidden_info.h"
-#include "../include/ir_ac_parse_frame_info.h"
-#include "../include/ir_utils.h"
+#include "include/ir_ac_control.h"
+#include "include/ir_ac_binary_parse.h"
+#include "include/ir_decode.h"
+#include "include/ir_ac_parse_parameter.h"
+#include "include/ir_ac_parse_forbidden_info.h"
+#include "include/ir_ac_parse_frame_info.h"
+#include "include/ir_utils.h"
 
 
 #if defined USE_DYNAMIC_TAG
@@ -42,7 +42,7 @@ static INT8 ir_context_init()
 
 INT8 ir_ac_lib_parse()
 {
-    UINT8 i = 0;
+    UINT i = 0;
     // suggest not to call init function here for de-couple purpose
     ir_context_init();
 
@@ -110,7 +110,7 @@ INT8 ir_ac_lib_parse()
             if (tags[i].tag == TAG_AC_SWING_1)
             {
                 context->swing1.count = context->si.mode_count;
-                context->swing1.len = (UINT8) tags[i].len >> 1;
+                context->swing1.len = (UINT8) tags[i].len >> (UINT8) 1;
                 swing_space_size = sizeof(t_tag_comp) * context->si.mode_count;
                 context->swing1.comp_data = (t_tag_comp *) ir_malloc(swing_space_size);
                 if (NULL == context->swing1.comp_data)
@@ -130,7 +130,7 @@ INT8 ir_ac_lib_parse()
             else if (tags[i].tag == TAG_AC_SWING_2)
             {
                 context->swing2.count = context->si.mode_count;
-                context->swing2.len = (UINT8) tags[i].len >> 1;
+                context->swing2.len = (UINT8) tags[i].len >> (UINT8) 1;
                 swing_space_size = sizeof(t_tag_comp) * context->si.mode_count;
                 context->swing2.comp_data = (t_tag_comp *) ir_malloc(swing_space_size);
                 if (NULL == context->swing2.comp_data)
@@ -150,7 +150,7 @@ INT8 ir_ac_lib_parse()
 
         if (tags[i].tag == TAG_AC_DEFAULT_CODE) // default code TAG
         {
-            context->default_code.data = (UINT8 *) ir_malloc(((size_t) tags[i].len - 2) >> 1);
+            context->default_code.data = (UINT8 *) ir_malloc(((size_t) tags[i].len - 2) >> (UINT8) 1);
             if (NULL == context->default_code.data)
             {
                 return IR_DECODE_FAILED;
@@ -162,7 +162,7 @@ INT8 ir_ac_lib_parse()
         }
         else if (tags[i].tag == TAG_AC_POWER_1) // power tag
         {
-            context->power1.len = (UINT8) tags[i].len >> 1;
+            context->power1.len = (UINT8) tags[i].len >> (UINT8) 1;
             if (IR_DECODE_FAILED == parse_common_ac_parameter(&tags[i],
                                                               context->power1.comp_data,
                                                               AC_POWER_MAX,
@@ -180,7 +180,7 @@ INT8 ir_ac_lib_parse()
         }
         else if (tags[i].tag == TAG_AC_MODE_1) // mode tag
         {
-            context->mode1.len = (UINT8) tags[i].len >> 1;
+            context->mode1.len = (UINT8) tags[i].len >> (UINT8) 1;
             if (IR_DECODE_FAILED == parse_common_ac_parameter(&tags[i],
                                                               context->mode1.comp_data,
                                                               AC_MODE_MAX,
@@ -191,7 +191,7 @@ INT8 ir_ac_lib_parse()
         }
         else if (tags[i].tag == TAG_AC_SPEED_1) // wind speed tag
         {
-            context->speed1.len = (UINT8) tags[i].len >> 1;
+            context->speed1.len = (UINT8) tags[i].len >> (UINT8) 1;
             if (IR_DECODE_FAILED == parse_common_ac_parameter(&tags[i],
                                                               context->speed1.comp_data,
                                                               AC_WS_MAX,
@@ -209,7 +209,7 @@ INT8 ir_ac_lib_parse()
         }
         else if (tags[i].tag == TAG_AC_MODE_2)
         {
-            context->mode2.len = (UINT8) tags[i].len >> 1;
+            context->mode2.len = (UINT8) tags[i].len >> (UINT8) 1;
             if (IR_DECODE_FAILED ==
                 parse_common_ac_parameter(&tags[i],
                                           context->mode2.comp_data, AC_MODE_MAX, AC_PARAMETER_TYPE_1))
@@ -219,7 +219,7 @@ INT8 ir_ac_lib_parse()
         }
         else if (tags[i].tag == TAG_AC_SPEED_2)
         {
-            context->speed2.len = (UINT8) tags[i].len >> 1;
+            context->speed2.len = (UINT8) tags[i].len >> (UINT8) 1;
             if (IR_DECODE_FAILED ==
                 parse_common_ac_parameter(&tags[i],
                                           context->speed2.comp_data, AC_WS_MAX, AC_PARAMETER_TYPE_1))
@@ -392,7 +392,7 @@ INT8 ir_ac_lib_parse()
         {
             if (is_in(context->sc.solo_function_codes, i, context->sc.solo_func_count))
             {
-                context->solo_function_mark |= (1 << (i - 1));
+                context->solo_function_mark |= (UINT8) ((UINT8) 1 << (i - 1));
             }
         }
     }
@@ -428,7 +428,7 @@ INT8 free_ac_context()
         context->default_code.len = 0;
     }
 
-    for (i = 0; i < AC_POWER_MAX; i++)
+    for (i = 0; i < (UINT16) AC_POWER_MAX; i++)
     {
         if (context->power1.comp_data[i].segment != NULL)
         {
@@ -438,7 +438,7 @@ INT8 free_ac_context()
         }
     }
 
-    for (i = 0; i < AC_TEMP_MAX; i++)
+    for (i = 0; i < (UINT16) AC_TEMP_MAX; i++)
     {
         if (context->temp1.comp_data[i].segment != NULL)
         {
@@ -454,7 +454,7 @@ INT8 free_ac_context()
         }
     }
 
-    for (i = 0; i < AC_MODE_MAX; i++)
+    for (i = 0; i < (UINT16) AC_MODE_MAX; i++)
     {
         if (context->mode1.comp_data[i].segment != NULL)
         {
@@ -469,7 +469,7 @@ INT8 free_ac_context()
             context->mode2.comp_data[i].seg_len = 0;
         }
     }
-    for (i = 0; i < AC_WS_MAX; i++)
+    for (i = 0; i < (UINT16) AC_WS_MAX; i++)
     {
         if (context->speed1.comp_data[i].segment != NULL)
         {
@@ -503,7 +503,7 @@ INT8 free_ac_context()
         }
     }
 
-    for (i = 0; i < AC_FUNCTION_MAX - 1; i++)
+    for (i = 0; i < (UINT16) AC_FUNCTION_MAX - 1; i++)
     {
         if (context->function1.comp_data[i].segment != NULL)
         {
@@ -550,7 +550,10 @@ INT8 free_ac_context()
     return IR_DECODE_SUCCEEDED;
 }
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "hicpp-signed-bitwise"
 BOOL is_solo_function(UINT8 function_code)
 {
     return (((context->solo_function_mark >> (function_code - 1)) & 0x01) == 0x01) ? TRUE : FALSE;
 }
+#pragma clang diagnostic pop

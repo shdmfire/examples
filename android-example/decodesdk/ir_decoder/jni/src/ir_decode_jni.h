@@ -59,6 +59,7 @@ extern "C" {
 #define net_irext_decode_sdk_IRDecode_START_STICKY 1L
 #undef net_irext_decode_sdk_IRDecode_START_STICKY_COMPATIBILITY
 #define net_irext_decode_sdk_IRDecode_START_STICKY_COMPATIBILITY 0L
+
 /*
  * Class:     net_irext_decode_sdk_IRDecode
  * Method:    irOpen

@@ -9,8 +9,10 @@ Revision log:
 * 2016-10-12: created by strawmanbobi
 **************************************************************************************/
 
-#ifndef _IRDA_APPLY_H_
-#define _IRDA_APPLY_H_
+#ifndef _IR_APPLY_H_
+#define _IR_APPLY_H_
+
+#pragma ide diagnostic ignored "OCUnusedMacroInspection"
 
 #ifdef __cplusplus
 extern "C"
@@ -40,4 +42,4 @@ INT8 apply_checksum(struct ac_protocol *protocol);
 }
 #endif
 
-#endif //_IRDA_APPLY_H_
+#endif // _IR_APPLY_H_

@@ -9,12 +9,14 @@ Revision log:
 * 2016-10-05: created by strawmanbobi
 **************************************************************************************/
 
+#pragma ide diagnostic ignored "readability-redundant-declaration"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "../include/ir_decode.h"
-#include "../include/ir_ac_parse_forbidden_info.h"
+#include "include/ir_decode.h"
+#include "include/ir_ac_parse_forbidden_info.h"
 
 
 extern t_ac_protocol *context;
@@ -24,6 +26,7 @@ INT8 parse_nmode_data_speed(char *pdata, t_ac_n_mode seq)
 {
     char buf[16] = { 0 };
     char *p = pdata;
+    char *ptr = NULL;
     UINT16 pos = 0;
     UINT16 cnt = 0, index = 0;
 
@@ -36,7 +39,7 @@ INT8 parse_nmode_data_speed(char *pdata, t_ac_n_mode seq)
         ir_memcpy(buf, pdata + pos, index - pos);
         pos = (UINT16) (index + 1);
         index = pos;
-        context->n_mode[seq].speed[cnt++] = (UINT8) atoi(buf);
+        context->n_mode[seq].speed[cnt++] = (UINT8) strtol(buf, &ptr, 10);
         context->n_mode[seq].speed_cnt = (UINT8) cnt;
         ir_memset(buf, 0, 16);
     }
@@ -49,6 +52,7 @@ INT8 parse_nmode_data_temp(char *pdata, t_ac_n_mode seq)
 
     char buf[16] = { 0 };
     char *p = pdata;
+    char *ptr = NULL;
     UINT16 pos = 0;
     UINT16 cnt = 0, index = 0;
 
@@ -61,7 +65,7 @@ INT8 parse_nmode_data_temp(char *pdata, t_ac_n_mode seq)
         ir_memcpy(buf, pdata + pos, index - pos);
         pos = (UINT16) (index + 1);
         index = pos;
-        context->n_mode[seq].temp[cnt++] = (UINT8) (atoi(buf) - 16);
+        context->n_mode[seq].temp[cnt++] = (UINT8) (strtol(buf, &ptr, 10) - 16);
         context->n_mode[seq].temp_cnt = (UINT8) cnt;
         ir_memset(buf, 0, 16);
     }
@@ -86,7 +90,7 @@ INT8 parse_nmode_pos(char *buf, t_ac_n_mode index)
         return IR_DECODE_SUCCEEDED;
     }
 
-    for (i = 0; i < ir_strlen(buf); i++)
+    for (i = 0; i < (UINT16) ir_strlen(buf); i++)
     {
         if (buf[i] == '&')
         {

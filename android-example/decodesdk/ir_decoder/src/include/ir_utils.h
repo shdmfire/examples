@@ -9,8 +9,10 @@ Revision log:
 * 2016-10-01: created by strawmanbobi
 **************************************************************************************/
 
-#ifndef _IRDA_UTILS_H_
-#define _IRDA_UTILS_H_
+#ifndef _IR_UTILS_H_
+#define _IR_UTILS_H_
+
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 
 #ifdef __cplusplus
 extern "C"
@@ -33,4 +35,4 @@ extern void hex_byte_to_double_char(char *dest, UINT8 length, UINT8 src);
 #ifdef __cplusplus
 }
 #endif
-#endif // _IRDA_UTILS_H_
+#endif // _IR_UTILS_H_
