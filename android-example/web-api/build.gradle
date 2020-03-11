@@ -3,10 +3,10 @@ apply plugin: 'com.android.library'
 android {
     signingConfigs {
     }
-    compileSdkVersion 27
+    compileSdkVersion 28
     defaultConfig {
         minSdkVersion 19
-        targetSdkVersion 27
+        targetSdkVersion 28
         versionCode 1
         versionName "0.1.2"
     }
@@ -22,7 +22,7 @@ android {
 }
 
 dependencies {
-    compile files('libs/gson-2.8.0.jar')
-    compile files('libs/okhttp-3.7.0.jar')
-    compile files('libs/okio-1.12.0.jar')
+    api files('libs/gson-2.8.0.jar')
+    api files('libs/okhttp-3.7.0.jar')
+    api files('libs/okio-1.12.0.jar')
 }

@@ -18,6 +18,10 @@ public class IRDecode {
 
     private static final String TAG = IRDecode.class.getSimpleName();
 
+    static {
+        System.loadLibrary("irdecode");
+    }
+
     private static Object mSync = new Object();
 
     private native String irGetVersion();
@@ -47,12 +51,6 @@ public class IRDecode {
             mInstance = new IRDecode();
         }
         return mInstance;
-    }
-
-    private IRDecode() {
-        String libPath = "/data/irext/libirda_decoder.so";
-        System.out.println("loading decode library " + libPath);
-        System.load(libPath);
     }
 
     public String getVersion() {
