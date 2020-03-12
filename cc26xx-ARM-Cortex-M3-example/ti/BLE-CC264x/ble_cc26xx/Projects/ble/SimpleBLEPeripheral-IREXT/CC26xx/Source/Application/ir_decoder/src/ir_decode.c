@@ -31,8 +31,10 @@ struct tag_head tags[TAG_COUNT_FOR_PROTOCOL];
 #endif
 
 static UINT8 byte_array[PROTOCOL_SIZE] = { 0 };
-// static size_t binary_length = 0;
-// static UINT8 *binary_content = NULL;
+#if !defined NO_FS
+static size_t binary_length = 0;
+static UINT8 *binary_content = NULL;
+#endif
 
 static t_remote_category remote_category = REMOTE_CATEGORY_NONE;
 static UINT8 ir_binary_type = IR_TYPE_STATUS;
