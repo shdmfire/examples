@@ -9,8 +9,8 @@ Revision log:
 * 2017-01-03: created by strawmanbobi
 **************************************************************************************/
 
-#ifndef IRDA_DECODER_IR_AC_BINARY_PARSE_H
-#define IRDA_DECODER_IR_AC_BINARY_PARSE_H
+#ifndef _IR_DECODER_IR_AC_BINARY_PARSE_H
+#define _IR_DECODER_IR_AC_BINARY_PARSE_H
 
 #ifdef __cplusplus
 extern "C"
@@ -32,4 +32,4 @@ extern INT8 binary_parse_data();
 #endif
 
 
-#endif //IRDA_DECODER_IR_AC_BINARY_PARSE_H
+#endif // _IR_DECODER_IR_AC_BINARY_PARSE_H

@@ -176,7 +176,7 @@ static void IRext_processState()
         if (IR_TYPE_TV == dccb.ir_type)
         {
             if (IR_DECODE_SUCCEEDED ==
-                ir_binary_open(IR_CATEGORY_TV, 1, dccb.source_code, dccb.source_code_length))
+                ir_binary_open(REMOTE_CATEGORY_TV, 1, dccb.source_code, dccb.source_code_length))
             {
                 LCD_WRITE_STRING("IR OPENED", LCD_PAGE7);
                 HalLedSet(HAL_LED_1, HAL_LED_MODE_ON);
@@ -190,7 +190,7 @@ static void IRext_processState()
         else if (IR_TYPE_AC == dccb.ir_type)
         {
             if (IR_DECODE_SUCCEEDED ==
-                ir_binary_open(IR_CATEGORY_AC, 1, dccb.source_code, dccb.source_code_length))
+                ir_binary_open(REMOTE_CATEGORY_AC, 1, dccb.source_code, dccb.source_code_length))
             {
                 LCD_WRITE_STRING("IR OPENED", LCD_PAGE7);
                 HalLedSet(HAL_LED_1, HAL_LED_MODE_ON);

@@ -35,7 +35,7 @@ extern "C"
 
 /* IREXT - begin */
 
-#include "./ir_decoder/include/ir_decode.h"
+#include "./ir_decoder/src/include/ir_decode.h"
 
 // UART associated definitions
 #define HEADER_SR  0x30
