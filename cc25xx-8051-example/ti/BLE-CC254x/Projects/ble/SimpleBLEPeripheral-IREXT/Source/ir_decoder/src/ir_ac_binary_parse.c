@@ -9,8 +9,8 @@ Revision log:
 * 2017-01-03: created by strawmanbobi
 **************************************************************************************/
 
-#include "../include/ir_ac_binary_parse.h"
-#include "../include/ir_decode.h"
+#include "include/ir_ac_binary_parse.h"
+#include "include/ir_decode.h"
 
 UINT16 tag_head_offset = 0;
 
@@ -45,7 +45,7 @@ INT8 binary_parse_offset()
         return IR_DECODE_FAILED;
     }
 
-    tag_head_offset = (UINT16) ((tag_count << 1) + 1);
+    tag_head_offset = (UINT16) ((tag_count << (UINT16) 1) + 1);
 
 #if defined USE_DYNAMIC_TAG
     tags = (t_tag_head *) ir_malloc(tag_count * sizeof(t_tag_head));
