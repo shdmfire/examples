@@ -168,13 +168,13 @@ public class Constants {
     }
 
     public enum ACFunction {
-        FUNCTION_SWITCH_POWER(1),
-        FUNCTION_CHANGE_MODE(2),
-        FUNCTION_TEMPERATURE_UP(3),
-        FUNCTION_TEMPERATURE_DOWN(4),
-        FUNCTION_SWITCH_WIND_SPEED(5),
-        FUNCTION_SWITCH_WIND_DIR(6),
-        FUNCTION_SWITCH_SWING(7);
+        FUNCTION_SWITCH_POWER(0),
+        FUNCTION_CHANGE_MODE(1),
+        FUNCTION_TEMPERATURE_UP(2),
+        FUNCTION_TEMPERATURE_DOWN(3),
+        FUNCTION_SWITCH_WIND_SPEED(9),
+        FUNCTION_SWITCH_SWING(10),
+        FUNCTION_SWITCH_WIND_DIR(11);
 
         private final int function;
 
