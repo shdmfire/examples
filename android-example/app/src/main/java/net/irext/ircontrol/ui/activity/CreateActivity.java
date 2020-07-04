@@ -82,9 +82,8 @@ public class CreateActivity extends AppCompatActivity {
             super.onBackPressed();
             return;
         }
-        if(!mFragment.onBackPressed()) {
-            super.onBackPressed();
-        }
+        mFragment.onBackPressed();
+        super.onBackPressed();
     }
 
     private void switchPage(int next, Integer from) {
