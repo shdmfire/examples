@@ -31,6 +31,7 @@ import java.util.List;
  * Revision log:
  * 2017-04-04: created by strawmanbobi
  */
+@SuppressWarnings("unused")
 public class MainFragment extends Fragment {
 
     private static final String TAG = MainFragment.class.getSimpleName();
@@ -77,7 +78,7 @@ public class MainFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 RemoteControl remoteControl = (RemoteControl)mRemoteControlAdapter.getItem(position);
-                mParent.setmCurrentRemoteControl(remoteControl);
+                mParent.setCurrentRemoteControl(remoteControl);
                 MessageUtil.postMessage(mParent.mMsgHandler, MainActivity.CMD_GOTO_CONTROL);
             }
         });
@@ -126,17 +127,11 @@ public class MainFragment extends Fragment {
         @Override
         public void handleMessage(Message msg) {
             int cmd = msg.getData().getInt(MessageUtil.KEY_CMD);
-            Log.d(TAG, "handle message " + Integer.toString(cmd));
+            Log.d(TAG, "handle message " + cmd);
 
             MainFragment mainFragment = mMainFragment.get();
-            switch (cmd) {
-
-                case CMD_REFRESH_REMOTE_LIST:
-                    mainFragment.refreshRemoteList();
-                    break;
-
-                default:
-                    break;
+            if (cmd == CMD_REFRESH_REMOTE_LIST) {
+                mainFragment.refreshRemoteList();
             }
         }
     }

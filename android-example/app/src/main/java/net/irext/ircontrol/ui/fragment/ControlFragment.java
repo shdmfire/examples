@@ -23,8 +23,6 @@ import net.irext.ircontrol.ui.activity.ControlActivity;
 import net.irext.ircontrol.utils.FileUtils;
 import net.irext.ircontrol.utils.MessageUtil;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.lang.ref.WeakReference;
 
 /**
@@ -37,6 +35,7 @@ import java.lang.ref.WeakReference;
  * Revision log:
  * 2017-04-22: created by strawmanbobi
  */
+@SuppressWarnings("unused")
 public class ControlFragment extends Fragment implements View.OnClickListener {
 
     private static final String TAG = ControlFragment.class.getSimpleName();
@@ -110,6 +109,7 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
     public void onResume() {
         super.onResume();
 
+        assert getArguments() != null;
         mRemoteID  = getArguments().getLong(ControlActivity.KEY_REMOTE_ID, -1L);
         if (-1 == mRemoteID) {
             Log.d(TAG, "remote ID IS NULL");
@@ -278,14 +278,8 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
             int cmd = msg.getData().getInt(MessageUtil.KEY_CMD);
 
             ControlFragment controlFragment = mMainFragment.get();
-            switch (cmd) {
-
-                case CMD_GET_REMOTE_CONTROL:
-                    controlFragment.showRemote();
-                    break;
-
-                default:
-                    break;
+            if (cmd == CMD_GET_REMOTE_CONTROL) {
+                controlFragment.showRemote();
             }
         }
     }

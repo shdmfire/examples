@@ -22,6 +22,7 @@ import java.util.List;
  * Revision log:
  * 2017-04-07: created by strawmanbobi
  */
+@SuppressWarnings("unused")
 public class CategoryAdapter extends BaseAdapter {
 
     private List<Category> mCategories;

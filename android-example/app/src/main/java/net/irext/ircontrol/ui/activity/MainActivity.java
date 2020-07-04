@@ -7,11 +7,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.annotation.RequiresApi;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
@@ -33,18 +32,31 @@ import java.lang.ref.WeakReference;
  * Revision log:
  * 2017-04-04: created by strawmanbobi
  */
+@SuppressWarnings("unused")
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
     public static final int CMD_GOTO_CONTROL = 0;
 
-    private FragmentManager mFragmentManager;
-    private MainFragment mRemoteListFragment;
-
     private RemoteControl mCurrentRemoteControl;
 
     public MsgHandler mMsgHandler;
+
+    public RemoteControl getCurrentRemoteControl() {
+        return mCurrentRemoteControl;
+    }
+
+    public MainActivity() {
+    }
+
+    public void setCurrentRemoteControl(RemoteControl mCurrentRemoteControl) {
+        this.mCurrentRemoteControl = mCurrentRemoteControl;
+    }
+
+    public MainActivity(RemoteControl mCurrentRemoteControl) {
+        this.mCurrentRemoteControl = mCurrentRemoteControl;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,31 +68,23 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        mFragmentManager = this.getSupportFragmentManager();
-        mRemoteListFragment = (MainFragment) mFragmentManager.findFragmentById(R.id.fragment_remote);
+        FragmentManager mFragmentManager = this.getSupportFragmentManager();
+        MainFragment mRemoteListFragment = (MainFragment) mFragmentManager.findFragmentById(R.id.fragment_remote);
 
         if (null == mRemoteListFragment) {
             Log.e(TAG, "MainFragment is null");
         }
+        assert mRemoteListFragment != null;
         mRemoteListFragment.onResume();
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                Log.d(TAG, "BUTTON PRESSED");
-                return true;
+        if (item.getItemId() == android.R.id.home) {
+            Log.d(TAG, "BUTTON PRESSED");
+            return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    public RemoteControl getmCurrentRemoteControl() {
-        return mCurrentRemoteControl;
-    }
-
-    public void setmCurrentRemoteControl(RemoteControl mCurrentRemoteControl) {
-        this.mCurrentRemoteControl = mCurrentRemoteControl;
     }
 
     private void initView() {
@@ -98,41 +102,36 @@ public class MainActivity extends AppCompatActivity {
         isWriteStoragePermissionGranted();
     }
 
-    public  boolean isReadStoragePermissionGranted() {
+    public void isReadStoragePermissionGranted() {
         if (Build.VERSION.SDK_INT >= 23) {
             if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED) {
                 Log.v(TAG,"read permission is granted");
-                return true;
             } else {
 
                 Log.v(TAG,"read permission is revoked");
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 3);
-                return false;
             }
         }
         else { //permission is automatically granted on sdk<23 upon installation
             Log.v(TAG,"read permission is granted");
-            return true;
         }
     }
 
-    public  boolean isWriteStoragePermissionGranted() {
+    public void isWriteStoragePermissionGranted() {
         if (Build.VERSION.SDK_INT >= 23) {
             if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED) {
                 Log.v(TAG,"write permission is granted");
-                return true;
             } else {
 
                 Log.v(TAG,"write permission is revoked");
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 2);
-                return false;
             }
         }
-        else { //permission is automatically granted on sdk<23 upon installation
+        else {
+            // permission is automatically granted on sdk<23 upon installation
             Log.v(TAG,"write permission is granted");
-            return true;
         }
     }
 
@@ -160,25 +159,18 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void handleMessage(Message msg) {
             int cmd = msg.getData().getInt(MessageUtil.KEY_CMD);
-            Log.d(TAG, "handle message " + Integer.toString(cmd));
+            Log.d(TAG, "handle message " + cmd);
 
             MainActivity mainActivity = mMainActivity.get();
-            switch (cmd) {
-                case CMD_GOTO_CONTROL:
-                    mainActivity.gotoControl();
-                    break;
-
-                default:
-                    break;
+            if (cmd == CMD_GOTO_CONTROL) {
+                mainActivity.gotoControl();
             }
         }
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-
-        }
     }
 }

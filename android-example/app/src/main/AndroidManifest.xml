@@ -18,7 +18,7 @@
             android:theme="@android:style/Theme.Holo.Light.DarkActionBar">
 
         <activity
-                android:name=".ui.activity.MainActivity"
+                android:name="net.irext.ircontrol.ui.activity.MainActivity"
                 android:label="@string/title_activity_main"
                 android:theme="@style/AppTheme">
             <intent-filter>

@@ -22,6 +22,7 @@ import java.util.List;
  * Revision log:
  * 2017-04-15: created by strawmanbobi
  */
+@SuppressWarnings("unused")
 public class RemoteControlAdapter extends BaseAdapter {
 
     private List<RemoteControl> mRemoteControls;

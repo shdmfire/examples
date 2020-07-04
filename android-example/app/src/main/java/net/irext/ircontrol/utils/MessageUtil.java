@@ -14,6 +14,7 @@ import android.os.Message;
  * Revision log:
  * 2017-04-08: created by strawmanbobi
  */
+@SuppressWarnings("unused")
 public class MessageUtil {
 
     public static final String KEY_CMD = "CMD";

@@ -15,6 +15,7 @@ import java.io.*;
  * Revision log:
  * 2017-04-14: created by strawmanbobi
  */
+@SuppressWarnings("unused")
 public class FileUtils {
 
     private static final String TAG = FileUtils.class.getSimpleName();
@@ -121,7 +122,7 @@ public class FileUtils {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
             int count;
-            byte buffer[] = new byte[512];
+            byte[] buffer = new byte[512];
             while ((count = fis.read(buffer)) > 0) {
                 baos.write(buffer, 0, count);
             }
@@ -137,7 +138,7 @@ public class FileUtils {
     }
 
     private static void deleteAllFiles(File root) {
-        File files[] = root.listFiles();
+        File[] files = root.listFiles();
         if (files != null) {
             for (File f : files) {
                 if (f.isDirectory()) {

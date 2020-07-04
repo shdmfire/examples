@@ -1,5 +1,6 @@
 package net.irext.ircontrol.ui.widget;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.*;
@@ -31,6 +32,7 @@ import java.util.Date;
  * @author Erik Wallentinsen <dev+ptr@erikw.eu>
  * @version 1.3.0
  */
+@SuppressWarnings("unused")
 public class PullToRefreshListView extends ListView{
 
     private static final float PULL_RESISTANCE                 = 1.7f;
@@ -39,7 +41,7 @@ public class PullToRefreshListView extends ListView{
     private static final float BOUNCE_OVERSHOOT_TENSION        = 1.4f;
     private static final int   ROTATE_ARROW_ANIMATION_DURATION = 250;
 
-    private static enum State{
+    private enum State{
         PULL_TO_REFRESH,
         RELEASE_TO_REFRESH,
         REFRESHING
@@ -55,7 +57,7 @@ public class PullToRefreshListView extends ListView{
         /**
          * Method to be called when a refresh is requested
          */
-        public void onRefresh();
+        void onRefresh();
     }
 
     private static int measuredHeaderHeight;
@@ -68,6 +70,7 @@ public class PullToRefreshListView extends ListView{
     private String  releaseToRefreshText;
     private String  refreshingText;
     private String  lastUpdatedText;
+    @SuppressLint("SimpleDateFormat")
     private SimpleDateFormat lastUpdatedDateFormat = new SimpleDateFormat("dd/MM HH:mm");
 
     private float                   previousY;
@@ -88,7 +91,6 @@ public class PullToRefreshListView extends ListView{
     private OnRefreshListener       onRefreshListener;
 
     private float mScrollStartY;
-    private final int IDLE_DISTANCE = 5;
 
     public PullToRefreshListView(Context context){
         super(context);
@@ -136,7 +138,7 @@ public class PullToRefreshListView extends ListView{
      * Default is false. When lockScrollWhileRefreshing is set to true, the list
      * cannot scroll when in 'refreshing' mode. It's 'locked' on refreshing.
      *
-     * @param lockScrollWhileRefreshing
+     * @param lockScrollWhileRefreshing : lock scroll while refreshing
      */
     public void setLockScrollWhileRefreshing(boolean lockScrollWhileRefreshing){
         this.lockScrollWhileRefreshing = lockScrollWhileRefreshing;
@@ -146,7 +148,7 @@ public class PullToRefreshListView extends ListView{
      * Default is false. Show the last-updated date/time in the 'Pull ro Refresh'
      * header. See 'setLastUpdatedDateFormat' to set the date/time formatting.
      *
-     * @param showLastUpdatedText
+     * @param showLastUpdatedText : show last update text
      */
     public void setShowLastUpdatedText(boolean showLastUpdatedText){
         this.showLastUpdatedText = showLastUpdatedText;
@@ -158,7 +160,7 @@ public class PullToRefreshListView extends ListView{
      * date/time is shown. Meaningless if 'showLastUpdatedText == false (default)'.
      * See 'setShowLastUpdatedText'.
      *
-     * @param lastUpdatedDateFormat
+     * @param lastUpdatedDateFormat : last updated date format
      */
     public void setLastUpdatedDateFormat(SimpleDateFormat lastUpdatedDateFormat){
         this.lastUpdatedDateFormat = lastUpdatedDateFormat;
@@ -269,6 +271,7 @@ public class PullToRefreshListView extends ListView{
         header.setLayoutParams(mlp);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event){
         if(lockScrollWhileRefreshing
@@ -276,6 +279,7 @@ public class PullToRefreshListView extends ListView{
             return true;
         }
 
+        int IDLE_DISTANCE = 5;
         switch(event.getAction()){
             case MotionEvent.ACTION_DOWN:
                 if(getFirstVisiblePosition() == 0){
@@ -340,7 +344,7 @@ public class PullToRefreshListView extends ListView{
     private void bounceBackHeader(){
         int yTranslate = state == State.REFRESHING ?
                 header.getHeight() - headerContainer.getHeight() :
-                -headerContainer.getHeight() - headerContainer.getTop() + getPaddingTop();;
+                -headerContainer.getHeight() - headerContainer.getTop() + getPaddingTop();
 
         TranslateAnimation bounceAnimation = new TranslateAnimation(
                 TranslateAnimation.ABSOLUTE, 0,
@@ -491,13 +495,13 @@ public class PullToRefreshListView extends ListView{
             if(initialHeaderHeight > 0){
                 measuredHeaderHeight = initialHeaderHeight;
 
-                if(measuredHeaderHeight > 0 && state != State.REFRESHING){
+                if(state != State.REFRESHING){
                     setHeaderPadding(-measuredHeaderHeight);
                     requestLayout();
                 }
             }
 
-            getViewTreeObserver().removeGlobalOnLayoutListener(this);
+            getViewTreeObserver().removeOnGlobalLayoutListener(this);
         }
     }
 

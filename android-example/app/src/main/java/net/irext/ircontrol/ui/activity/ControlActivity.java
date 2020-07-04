@@ -18,9 +18,9 @@ import net.irext.ircontrol.ui.fragment.ControlFragment;
  * Revision log:
  * 2017-04-22: created by strawmanbobi
  */
+@SuppressWarnings("unused")
 public class ControlActivity extends AppCompatActivity {
 
-    @SuppressWarnings("unused")
     private static final String TAG = ControlActivity.class.getSimpleName();
 
     public static final String KEY_REMOTE_ID = "KEY_REMOTE_ID";
@@ -44,10 +44,9 @@ public class ControlActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                onBackPressed();
-                return true;
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }

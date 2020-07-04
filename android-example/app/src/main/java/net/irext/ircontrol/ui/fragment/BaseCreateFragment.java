@@ -1,6 +1,7 @@
 package net.irext.ircontrol.ui.fragment;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,6 +21,7 @@ import net.irext.ircontrol.utils.MessageUtil;
  * Revision log:
  * 2017-04-10: created by strawmanbobi
  */
+@SuppressWarnings("unused")
 public abstract class BaseCreateFragment extends Fragment {
 
     protected static final String TAG = BaseCreateFragment.class.getSimpleName();
@@ -28,20 +30,20 @@ public abstract class BaseCreateFragment extends Fragment {
     CreateActivity mParent;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mParent = (CreateActivity) getActivity();
         return null;
     }
 
-    public boolean onBackPressed() {
+    public void onBackPressed() {
         if (-1 != mFrom) {
             MessageUtil.postMessage(mParent.mMsgHandler, mFrom);
         }
-        return true;
     }
 
     void getFrom() {
+        assert getArguments() != null;
         int from = getArguments().getInt(CreateActivity.KEY_FROM);
         if (-1 == from) {
             Log.d(TAG, "FROM IS NULL");

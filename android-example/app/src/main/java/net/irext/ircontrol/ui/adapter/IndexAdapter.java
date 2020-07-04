@@ -1,5 +1,6 @@
 package net.irext.ircontrol.ui.adapter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +24,7 @@ import java.util.List;
  * Revision log:
  * 2017-04-07: created by strawmanbobi
  */
+@SuppressWarnings("unused")
 public class IndexAdapter extends BaseAdapter {
 
     private List<RemoteIndex> mIndexes;
@@ -52,6 +54,7 @@ public class IndexAdapter extends BaseAdapter {
         return position;
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
         ViewHolder holder;

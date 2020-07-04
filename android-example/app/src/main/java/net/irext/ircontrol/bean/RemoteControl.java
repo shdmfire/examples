@@ -19,6 +19,7 @@ import java.util.List;
  */
 
 @Table(name = "RemoteControl")
+@SuppressWarnings("unused")
 public class RemoteControl extends Model {
 
     @Column(name = "CategoryID")

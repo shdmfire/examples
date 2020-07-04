@@ -1,6 +1,7 @@
 package net.irext.ircontrol.utils;
 
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -16,6 +17,7 @@ import java.util.HashMap;
  * Revision log:
  * 2017-04-05: created by strawmanbobi
  */
+@SuppressWarnings("unused")
 public class SharedPreferenceUtil {
 
     private static final String TAG = SharedPreferenceUtil.class.getSimpleName();
@@ -23,13 +25,13 @@ public class SharedPreferenceUtil {
     private static final String _NAME = "irext";
     private static SharedPreferences mSharedPreferences;
     private static SharedPreferences.Editor mEditor;
+    @SuppressLint("StaticFieldLeak")
     private static SharedPreferenceUtil mSharedPreferenceUtils = null;
-    private Context mContext;
 
     public SharedPreferenceUtil(Context context) {
-        this.mContext = context;
     }
 
+    @SuppressLint("CommitPrefEdits")
     public static SharedPreferenceUtil getInstance(Context context) {
         if (null == mSharedPreferenceUtils) {
             mSharedPreferenceUtils = new SharedPreferenceUtil(context);

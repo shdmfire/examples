@@ -18,6 +18,7 @@ import net.irext.webapi.WebAPICallbacks.SignInCallback;
  * Revision log:
  * 2017-03-28: created by strawmanbobi
  */
+@SuppressWarnings("unused")
 public class IRApplication extends com.activeandroid.app.Application {
 
     private static final String TAG = IRApplication.class.getSimpleName();

@@ -10,6 +10,7 @@ package net.irext.ircontrol.utils;
  * Revision log:
  * 2017-04-03: created by strawmanbobi
  */
+@SuppressWarnings("unused")
 public class Constants {
 
     public static final String KEY_ADMIN_ID = "id";

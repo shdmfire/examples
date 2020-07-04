@@ -3,6 +3,7 @@ package net.irext.ircontrol.ui.fragment;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,6 +28,7 @@ import net.irext.webapi.model.StbOperator;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Filename:       CityFragment.java
@@ -38,6 +40,7 @@ import java.util.List;
  * Revision log:
  * 2017-04-07: created by strawmanbobi
  */
+@SuppressWarnings("unused")
 public class CityFragment extends BaseCreateFragment {
 
     private static final String TAG = CityFragment.class.getSimpleName();
@@ -201,12 +204,12 @@ public class CityFragment extends BaseCreateFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         getFrom();
         View view = inflater.inflate(R.layout.fragment_city, container, false);
-        mApp = (IRApplication) getActivity().getApplication();
+        mApp = (IRApplication) Objects.requireNonNull(getActivity()).getApplication();
 
         mMsgHandler = new MsgHandler(this);
 
@@ -249,16 +252,15 @@ public class CityFragment extends BaseCreateFragment {
     }
 
     @Override
-    public boolean onBackPressed() {
+    public void onBackPressed() {
         if (LEVEL_PROVINCE == mListLevel) {
-            return super.onBackPressed();
+            super.onBackPressed();
         } else if (LEVEL_CITY == mListLevel) {
             listProvinces();
         } else if (LEVEL_OPERATOR == mListLevel) {
             String prefix = mCurrentProvince.getCode().substring(0, 2);
             listCities(prefix);
         }
-        return true;
     }
 
     private static class MsgHandler extends Handler {
@@ -272,7 +274,7 @@ public class CityFragment extends BaseCreateFragment {
         @Override
         public void handleMessage(Message msg) {
             int cmd = msg.getData().getInt(MessageUtil.KEY_CMD);
-            Log.d(TAG, "handle message " + Integer.toString(cmd));
+            Log.d(TAG, "handle message " + cmd);
 
             CityFragment cityFragment = mCityFragment.get();
             switch (cmd) {

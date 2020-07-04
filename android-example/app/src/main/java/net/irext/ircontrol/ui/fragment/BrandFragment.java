@@ -3,6 +3,7 @@ package net.irext.ircontrol.ui.fragment;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +22,7 @@ import net.irext.webapi.model.Brand;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Filename:       BrandFragment.java
@@ -32,6 +34,7 @@ import java.util.List;
  * Revision log:
  * 2017-04-07: created by strawmanbobi
  */
+@SuppressWarnings("unused")
 public class BrandFragment extends BaseCreateFragment {
 
     private static final String TAG = BrandFragment.class.getSimpleName();
@@ -89,12 +92,12 @@ public class BrandFragment extends BaseCreateFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         getFrom();
         View view = inflater.inflate(R.layout.fragment_brand, container, false);
-        mApp = (IRApplication) getActivity().getApplication();
+        mApp = (IRApplication) Objects.requireNonNull(getActivity()).getApplication();
 
         mMsgHandler = new MsgHandler(this);
 
@@ -124,9 +127,8 @@ public class BrandFragment extends BaseCreateFragment {
     }
 
     @Override
-    public boolean onBackPressed() {
+    public void onBackPressed() {
         super.onBackPressed();
-        return true;
     }
 
     private static class MsgHandler extends Handler {
@@ -140,17 +142,11 @@ public class BrandFragment extends BaseCreateFragment {
         @Override
         public void handleMessage(Message msg) {
             int cmd = msg.getData().getInt(MessageUtil.KEY_CMD);
-            Log.d(TAG, "handle message " + Integer.toString(cmd));
+            Log.d(TAG, "handle message " + cmd);
 
             BrandFragment brandFragment = mBrandFragment.get();
-            switch (cmd) {
-
-                case CMD_REFRESH_BRAND_LIST:
-                    brandFragment.refreshBrands();
-                    break;
-
-                default:
-                    break;
+            if (cmd == CMD_REFRESH_BRAND_LIST) {
+                brandFragment.refreshBrands();
             }
         }
     }

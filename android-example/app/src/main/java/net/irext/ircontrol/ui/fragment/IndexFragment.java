@@ -3,6 +3,7 @@ package net.irext.ircontrol.ui.fragment;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,6 +31,7 @@ import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Filename:       IndexFragment.java
@@ -41,6 +43,7 @@ import java.util.List;
  * Revision log:
  * 2017-04-12: created by strawmanbobi
  */
+@SuppressWarnings("unused")
 public class IndexFragment extends BaseCreateFragment {
 
     private static final String TAG = IndexFragment.class.getSimpleName();
@@ -201,14 +204,14 @@ public class IndexFragment extends BaseCreateFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         getFrom();
         View view = inflater.inflate(R.layout.fragment_index, container, false);
 
         mMsgHandler = new MsgHandler(this);
-        mApp = (IRApplication) this.getActivity().getApplication();
+        mApp = (IRApplication) Objects.requireNonNull(this.getActivity()).getApplication();
 
         Category category = mParent.getCurrentCategory();
         Brand brand = mParent.getCurrentBrand();
@@ -252,8 +255,8 @@ public class IndexFragment extends BaseCreateFragment {
     }
 
     @Override
-    public boolean onBackPressed() {
-        return super.onBackPressed();
+    public void onBackPressed() {
+        super.onBackPressed();
     }
 
     private static class MsgHandler extends Handler {

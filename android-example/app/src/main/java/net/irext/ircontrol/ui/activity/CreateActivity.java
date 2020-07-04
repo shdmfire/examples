@@ -21,6 +21,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("unused")
 public class CreateActivity extends AppCompatActivity {
 
     private static final String TAG = CreateActivity.class.getSimpleName();
@@ -67,10 +68,9 @@ public class CreateActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                onBackPressed();
-                return true;
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -152,7 +152,7 @@ public class CreateActivity extends AppCompatActivity {
         @Override
         public void handleMessage(Message msg) {
             int cmd = msg.getData().getInt(MessageUtil.KEY_CMD);
-            Log.d(TAG, "handle message " + Integer.toString(cmd));
+            Log.d(TAG, "handle message " + cmd);
 
             CreateActivity createActivity = mCreateActivity.get();
             switch (cmd) {

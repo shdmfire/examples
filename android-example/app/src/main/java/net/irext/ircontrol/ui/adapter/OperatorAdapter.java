@@ -21,6 +21,7 @@ import java.util.List;
  * Revision log:
  * 2017-04-10: created by strawmanbobi
  */
+@SuppressWarnings("unused")
 public class OperatorAdapter extends BaseAdapter {
 
     private List<StbOperator> mOperators;
