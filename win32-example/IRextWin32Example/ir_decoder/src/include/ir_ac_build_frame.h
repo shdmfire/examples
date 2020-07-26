@@ -9,8 +9,8 @@ Revision log:
 * 2016-10-01: created by strawmanbobi
 **************************************************************************************/
 
-#ifndef _IRDA_IRFRAME_H_
-#define _IRDA_IRFRAME_H_
+#ifndef _IR_IRFRAME_H_
+#define _IR_IRFRAME_H_
 
 #ifdef __cplusplus
 extern "C"
@@ -25,4 +25,4 @@ extern UINT16 create_ir_frame();
 }
 #endif
 
-#endif // _IRDA_IRFRAME_H_
+#endif // _IR_IRFRAME_H_

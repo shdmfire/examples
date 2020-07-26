@@ -9,8 +9,13 @@ Revision log:
 * 2016-10-21: created by strawmanbobi
 **************************************************************************************/
 
-#ifndef _IRDA_LIB_H_
-#define _IRDA_LIB_H_
+#ifndef _IR_TV_CONTROL_H_
+#define _IR_TV_CONTROL_H_
+
+#if defined (BOARD_PC)
+#pragma ide diagnostic ignored "OCUnusedMacroInspection"
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
+#endif
 
 #ifdef __cplusplus
 extern "C"
@@ -211,5 +216,4 @@ extern UINT8 tv_lib_close();
 }
 #endif
 
-#endif /* _IRDA_LIB_H_ */
-
+#endif // _IR_TV_CONTROL_H_

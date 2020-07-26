@@ -9,8 +9,8 @@ Revision log:
 * 2016-10-11: created by strawmanbobi
 **************************************************************************************/
 
-#ifndef _IRDA_PARSE_FRAME_PARAMETER_H_
-#define _IRDA_PARSE_FRAME_PARAMETER_H_
+#ifndef _IR_PARSE_FRAME_PARAMETER_H_
+#define _IR_PARSE_FRAME_PARAMETER_H_
 
 #ifdef __cplusplus
 extern "C"
@@ -41,4 +41,4 @@ extern INT8 parse_bit_num(struct tag_head *tag);
 }
 #endif
 
-#endif // _IRDA_PARSE_FRAME_PARAMETER_H_
+#endif // _IR_PARSE_FRAME_PARAMETER_H_

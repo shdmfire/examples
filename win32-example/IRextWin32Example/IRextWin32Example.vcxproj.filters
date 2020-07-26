@@ -15,41 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ir_decoder\include\ir_ac_apply.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="ir_decoder\include\ir_ac_binary_parse.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="ir_decoder\include\ir_ac_build_frame.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="ir_decoder\include\ir_ac_control.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="ir_decoder\include\ir_ac_parse_forbidden_info.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="ir_decoder\include\ir_ac_parse_frame_info.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="ir_decoder\include\ir_ac_parse_parameter.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="ir_decoder\include\ir_decode.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="ir_decoder\include\ir_defs.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="ir_decoder\include\ir_tv_control.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="ir_decoder\include\ir_utils.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="ir_decoder\src\ir_ac_apply.c">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -83,5 +48,40 @@
     <ClCompile Include="DecodeTestWin.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ir_decoder\src\include\ir_ac_apply.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ir_decoder\src\include\ir_ac_binary_parse.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ir_decoder\src\include\ir_ac_build_frame.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ir_decoder\src\include\ir_ac_control.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ir_decoder\src\include\ir_ac_parse_forbidden_info.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ir_decoder\src\include\ir_ac_parse_frame_info.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ir_decoder\src\include\ir_ac_parse_parameter.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ir_decoder\src\include\ir_decode.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ir_decoder\src\include\ir_defs.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ir_decoder\src\include\ir_tv_control.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ir_decoder\src\include\ir_utils.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

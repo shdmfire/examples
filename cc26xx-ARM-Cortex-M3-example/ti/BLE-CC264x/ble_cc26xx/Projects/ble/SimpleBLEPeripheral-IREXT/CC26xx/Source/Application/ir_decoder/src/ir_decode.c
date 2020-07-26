@@ -182,7 +182,8 @@ INT8 ir_binary_open(const UINT8 category, const UINT8 sub_category, UINT8* binar
     }
     remote_category = (t_remote_category) category;
 
-    if (sub_category >= SUB_CATEGORY_NEXT)
+    if (sub_category < SUB_CATEGORY_QUATERNARY ||
+        sub_category >= SUB_CATEGORY_NEXT)
     {
         ir_printf("wrong remote sub category : %d\n", sub_category);
         return IR_DECODE_FAILED;
@@ -235,7 +236,7 @@ UINT16 ir_decode(UINT8 key_code, UINT16* user_data,
 {
     ir_printf("remote_category = %d, KEY_CODE_MAX = %d\n", remote_category, KEY_CODE_MAX[remote_category]);
 
-    if (key_code >= KEY_CODE_MAX[remote_category])
+    if (key_code < 0 || key_code >= KEY_CODE_MAX[remote_category])
     {
         ir_printf("key_code exceeded!\n");
         return 0;
@@ -469,19 +470,6 @@ static UINT16 ir_ac_control(t_remote_ac_status ac_status, UINT16* user_data, UIN
 
     time_length = create_ir_frame();
 
-#if (defined BOARD_PC)
-#if (defined BOARD_PC_JNI)
-    ir_printf("code count = %d\n", context->code_cnt);
-#else
-    int i = 0;
-    for (i = 0; i < context->code_cnt; i++)
-    {
-        ir_printf("%d,", context->time[i]);
-    }
-#endif
-    ir_printf("\n");
-#endif
-
     return time_length;
 }
 
@@ -635,6 +623,10 @@ INT8 get_supported_wind_direction(UINT8 *supported_wind_direction)
     if (NULL != context)
     {
         *supported_wind_direction = (UINT8) (context->si.mode_count - 1);
+        if (*supported_wind_direction < 0)
+        {
+            *supported_wind_direction = 0;
+        }
         return IR_DECODE_SUCCEEDED;
     }
     else
@@ -721,15 +713,6 @@ static UINT16 ir_tv_control(UINT8 key, UINT16 *l_user_data)
     memset(l_user_data, 0x00, USER_DATA_SIZE);
     ir_code_length = tv_binary_decode(key, l_user_data);
 
-#if defined BOARD_PC
-    // have some debug
-    ir_printf("length of IR code = %d\n", ir_code_length);
-    for (print_index = 0; print_index < ir_code_length; print_index++)
-    {
-        ir_printf("%d ", l_user_data[print_index]);
-    }
-#endif
-
     return ir_code_length;
 }
 
@@ -759,7 +742,7 @@ UINT16 ir_decode_combo(const UINT8 category, const UINT8 sub_category,
 
     remote_category = (t_remote_category) category;
 
-    if (key_code >= KEY_CODE_MAX[remote_category])
+    if (key_code < 0 || key_code >= KEY_CODE_MAX[remote_category])
     {
         ir_printf("key_code exceeded!\n");
         return 0;

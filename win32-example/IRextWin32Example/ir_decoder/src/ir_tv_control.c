@@ -9,11 +9,15 @@ Revision log:
 * 2016-10-21: created by strawmanbobi
 **************************************************************************************/
 
+#if defined (BOARD_PC)
+#pragma ide diagnostic ignored "hicpp-signed-bitwise"
+#endif
+
 #include <string.h>
 
-#include "../include/ir_defs.h"
-#include "../include/ir_decode.h"
-#include "../include/ir_tv_control.h"
+#include "include/ir_defs.h"
+#include "include/ir_decode.h"
+#include "include/ir_tv_control.h"
 
 
 struct buffer

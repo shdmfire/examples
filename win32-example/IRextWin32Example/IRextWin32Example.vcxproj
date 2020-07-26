@@ -147,19 +147,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="ir_decoder\include\ir_ac_apply.h" />
-    <ClInclude Include="ir_decoder\include\ir_ac_binary_parse.h" />
-    <ClInclude Include="ir_decoder\include\ir_ac_build_frame.h" />
-    <ClInclude Include="ir_decoder\include\ir_ac_control.h" />
-    <ClInclude Include="ir_decoder\include\ir_ac_parse_forbidden_info.h" />
-    <ClInclude Include="ir_decoder\include\ir_ac_parse_frame_info.h" />
-    <ClInclude Include="ir_decoder\include\ir_ac_parse_parameter.h" />
-    <ClInclude Include="ir_decoder\include\ir_decode.h" />
-    <ClInclude Include="ir_decoder\include\ir_defs.h" />
-    <ClInclude Include="ir_decoder\include\ir_tv_control.h" />
-    <ClInclude Include="ir_decoder\include\ir_utils.h" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="DecodeTestWin.cpp" />
     <ClCompile Include="ir_decoder\src\ir_ac_apply.c" />
     <ClCompile Include="ir_decoder\src\ir_ac_binary_parse.c" />
@@ -171,6 +158,19 @@
     <ClCompile Include="ir_decoder\src\ir_decode.c" />
     <ClCompile Include="ir_decoder\src\ir_tv_control.c" />
     <ClCompile Include="ir_decoder\src\ir_utils.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ir_decoder\src\include\ir_ac_apply.h" />
+    <ClInclude Include="ir_decoder\src\include\ir_ac_binary_parse.h" />
+    <ClInclude Include="ir_decoder\src\include\ir_ac_build_frame.h" />
+    <ClInclude Include="ir_decoder\src\include\ir_ac_control.h" />
+    <ClInclude Include="ir_decoder\src\include\ir_ac_parse_forbidden_info.h" />
+    <ClInclude Include="ir_decoder\src\include\ir_ac_parse_frame_info.h" />
+    <ClInclude Include="ir_decoder\src\include\ir_ac_parse_parameter.h" />
+    <ClInclude Include="ir_decoder\src\include\ir_decode.h" />
+    <ClInclude Include="ir_decoder\src\include\ir_defs.h" />
+    <ClInclude Include="ir_decoder\src\include\ir_tv_control.h" />
+    <ClInclude Include="ir_decoder\src\include\ir_utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -9,8 +9,8 @@ Revision log:
 * 2016-10-05: created by strawmanbobi
 **************************************************************************************/
 
-#ifndef _IRDA_PARSE_PARSE_H_
-#define _IRDA_PARSE_PARSE_H_
+#ifndef _IR_PARSE_PARSE_H_
+#define _IR_PARSE_PARSE_H_
 
 #ifdef __cplusplus
 extern "C"
@@ -25,5 +25,5 @@ extern INT8 parse_nmode(struct tag_head *tag, t_ac_n_mode index);
 }
 #endif
 
-#endif // _IRDA_PARSE_PARSE_H_
+#endif // _IR_PARSE_PARSE_H_
 

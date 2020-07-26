@@ -14,15 +14,15 @@ Revision log:
 
 #include <string.h>
 
-#include "../include/ir_decode.h"
-#include "../include/ir_utils.h"
-#include "../include/ir_ac_build_frame.h"
-#include "../include/ir_ac_apply.h"
+#include "include/ir_decode.h"
+#include "include/ir_utils.h"
+#include "include/ir_ac_build_frame.h"
+#include "include/ir_ac_apply.h"
 
 struct ir_bin_buffer binary_file;
 struct ir_bin_buffer *p_ir_buffer = &binary_file;
 
-const char* release = "0.2.2";
+static const char* version = "0.2.5";
 
 #if defined USE_DYNAMIC_TAG
 struct tag_head *tags;
@@ -30,20 +30,39 @@ struct tag_head *tags;
 struct tag_head tags[TAG_COUNT_FOR_PROTOCOL];
 #endif
 
+static UINT8 byte_array[PROTOCOL_SIZE] = { 0 };
+#if !defined NO_FS
+static size_t binary_length = 0;
+static UINT8 *binary_content = NULL;
+#endif
+
+static t_remote_category remote_category = REMOTE_CATEGORY_NONE;
+static UINT8 ir_binary_type = IR_TYPE_STATUS;
+static UINT8 ir_hexadecimal = SUB_CATEGORY_QUATERNARY;
+
+static int KEY_CODE_MAX[] =
+{
+    0,
+    STANDARD_KEY_COUNT,
+    STANDARD_KEY_COUNT + CHANNEL_KEY_COUNT,
+    STANDARD_KEY_COUNT + CHANNEL_KEY_COUNT,
+    STANDARD_KEY_COUNT,
+    STANDARD_KEY_COUNT + CHANNEL_KEY_COUNT,
+    STANDARD_KEY_COUNT,
+    STANDARD_KEY_COUNT,
+    STANDARD_KEY_COUNT,
+    STANDARD_KEY_COUNT,
+    STANDARD_KEY_COUNT,
+    STANDARD_KEY_COUNT + CHANNEL_KEY_COUNT,
+    STANDARD_KEY_COUNT,
+    STANDARD_KEY_COUNT,
+};
+
 UINT8 *ir_hex_code = NULL;
 UINT8 ir_hex_len = 0;
+t_ac_protocol *context = (t_ac_protocol *) byte_array;
 
-UINT8 byteArray[PROTOCOL_SIZE] = { 0 };
-
-size_t binary_length = 0;
-UINT8 *binary_content = NULL;
-
-UINT8 ir_binary_type = IR_TYPE_STATUS;
-UINT8 ir_hexadecimal = SUB_CATEGORY_QUATERNARY;
-
-t_ac_protocol *context = (t_ac_protocol *) byteArray;
-
-lp_apply_ac_parameter apply_table[AC_APPLY_MAX] =
+static lp_apply_ac_parameter apply_table[AC_APPLY_MAX] =
 {
     apply_power,
     apply_mode,
@@ -59,8 +78,8 @@ lp_apply_ac_parameter apply_table[AC_APPLY_MAX] =
 static INT8 ir_ac_file_open(const char *file_name);
 #endif
 
-static INT8 ir_ac_binary_open(UINT8 *binary, UINT16 binary_length);
-static UINT16 ir_ac_control(t_remote_ac_status ac_status, UINT16 *user_data, UINT8 function_code,
+static INT8 ir_ac_binary_open(UINT8 *binary, UINT16 bin_length);
+static UINT16 ir_ac_control(t_remote_ac_status ac_status, UINT16* user_data, UINT8 key_code,
                             BOOL change_wind_direction);
 static INT8 ir_ac_binary_close();
 
@@ -68,7 +87,7 @@ static INT8 ir_ac_binary_close();
 static INT8 ir_tv_file_open(const char *file_name);
 #endif
 
-static INT8 ir_tv_binary_open(UINT8 *binary, UINT16 binary_length);
+static INT8 ir_tv_binary_open(UINT8 *binary, UINT16 bin_length);
 static INT8 ir_tv_binary_parse(UINT8 ir_hex_encode);
 static UINT16 ir_tv_control(UINT8 key, UINT16 *l_user_data);
 static INT8 ir_tv_binary_close();
@@ -76,15 +95,35 @@ static INT8 ir_tv_binary_close();
 
 void noprint(const char *fmt, ...)
 {
-    return;
+    (void) fmt;
 }
 
 // pubic function definitions
+const char* get_lib_version()
+{
+    return version;
+}
+
 #if (!defined BOARD_51 && !defined BOARD_CC26XX)
 INT8 ir_file_open(const UINT8 category, const UINT8 sub_category, const char* file_name)
 {
-    INT8 ret = IR_DECODE_SUCCEEDED;
-    if (category == IR_CATEGORY_AC)
+    INT8 ret = 0;
+    if (category < REMOTE_CATEGORY_AC ||
+        category >= REMOTE_CATEGORY_NEXT)
+    {
+        ir_printf("wrong remote category : %d\n", category);
+        return IR_DECODE_FAILED;
+    }
+    remote_category = category;
+
+    if (sub_category < SUB_CATEGORY_QUATERNARY ||
+        sub_category >= SUB_CATEGORY_NEXT)
+    {
+        ir_printf("wrong remote sub category : %d\n", sub_category);
+        return IR_DECODE_FAILED;
+    }
+
+    if (category == REMOTE_CATEGORY_AC)
     {
         ir_binary_type = IR_TYPE_STATUS;
         ret = ir_ac_file_open(file_name);
@@ -131,14 +170,29 @@ INT8 ir_file_open(const UINT8 category, const UINT8 sub_category, const char* fi
 }
 #endif
 
-INT8 ir_binary_open(const UINT8 category, const UINT8 sub_category, UINT8* binary, UINT16 binary_length)
+INT8 ir_binary_open(const UINT8 category, const UINT8 sub_category, UINT8* binary, UINT16 bin_length)
 {
-    INT8 ret = IR_DECODE_SUCCEEDED;
+    INT8 ret = 0;
 
-    if (category == IR_CATEGORY_AC)
+    if (category < REMOTE_CATEGORY_AC ||
+        category >= REMOTE_CATEGORY_NEXT)
+    {
+        ir_printf("wrong remote category\n");
+        return IR_DECODE_FAILED;
+    }
+    remote_category = (t_remote_category) category;
+
+    if (sub_category < SUB_CATEGORY_QUATERNARY ||
+        sub_category >= SUB_CATEGORY_NEXT)
+    {
+        ir_printf("wrong remote sub category : %d\n", sub_category);
+        return IR_DECODE_FAILED;
+    }
+
+    if (category == REMOTE_CATEGORY_AC)
     {
         ir_binary_type = IR_TYPE_STATUS;
-        ret = ir_ac_binary_open(binary, binary_length);
+        ret = ir_ac_binary_open(binary, bin_length);
         if (IR_DECODE_SUCCEEDED == ret)
         {
             return ir_ac_lib_parse();
@@ -164,7 +218,7 @@ INT8 ir_binary_open(const UINT8 category, const UINT8 sub_category, UINT8* binar
             return IR_DECODE_FAILED;
         }
 
-        ret = ir_tv_binary_open(binary, binary_length);
+        ret = ir_tv_binary_open(binary, bin_length);
         if (IR_DECODE_SUCCEEDED == ret)
         {
             return ir_tv_binary_parse(ir_hexadecimal);
@@ -176,10 +230,18 @@ INT8 ir_binary_open(const UINT8 category, const UINT8 sub_category, UINT8* binar
     }
 }
 
-
+/** the main entry of decode algorithm **/
 UINT16 ir_decode(UINT8 key_code, UINT16* user_data,
         t_remote_ac_status* ac_status, BOOL change_wind_direction)
 {
+    ir_printf("remote_category = %d, KEY_CODE_MAX = %d\n", remote_category, KEY_CODE_MAX[remote_category]);
+
+    if (key_code < 0 || key_code >= KEY_CODE_MAX[remote_category])
+    {
+        ir_printf("key_code exceeded!\n");
+        return 0;
+    }
+
     if (IR_TYPE_COMMANDS == ir_binary_type)
     {
         return ir_tv_control(key_code, user_data);
@@ -192,7 +254,7 @@ UINT16 ir_decode(UINT8 key_code, UINT16* user_data,
         }
         ir_printf("ac status is not null in decode core : power = %d, mode = %d, "
                   "temp = %d, wind_dir = %d, wind_speed = %d, "
-                  "keycode = %d, change_wind_direction = %d\n",
+                  "key_code = %d, change_wind_direction = %d\n",
                   ac_status->ac_power, ac_status->ac_mode,
                   ac_status->ac_temp, ac_status->ac_wind_dir,
                   ac_status->ac_wind_speed,
@@ -215,11 +277,6 @@ INT8 ir_close()
         return ir_ac_binary_close();
     }
 }
-
-
-#if (defined BOARD_PC || defined BOARD_PC_DLL)
-void ir_lib_free_inner_buffer();
-#endif
 
 
 // static function definitions
@@ -275,25 +332,20 @@ static INT8 ir_ac_file_open(const char *file_name)
 }
 #endif
 
-static INT8 ir_ac_binary_open(UINT8 *binary, UINT16 binary_length)
+static INT8 ir_ac_binary_open(UINT8 *binary, UINT16 bin_length)
 {
     // it is recommended that the parameter binary pointing to
     // a global memory block in embedded platform environment
     p_ir_buffer->data = binary;
-    p_ir_buffer->len = binary_length;
+    p_ir_buffer->len = bin_length;
     p_ir_buffer->offset = 0;
     return IR_DECODE_SUCCEEDED;
 }
 
-static UINT16 ir_ac_control(t_remote_ac_status ac_status, UINT16 *user_data, UINT8 key_code,
+static UINT16 ir_ac_control(t_remote_ac_status ac_status, UINT16* user_data, UINT8 key_code,
                             BOOL change_wind_direction)
 {
     UINT16 time_length = 0;
-
-#if defined BOARD_PC
-    UINT16 i = 0;
-#endif
-
     UINT8 function_code = 0;
 
     switch(key_code)
@@ -321,6 +373,9 @@ static UINT16 ir_ac_control(t_remote_ac_status ac_status, UINT16 *user_data, UIN
         case 11:
             function_code = AC_FUNCTION_WIND_FIX;
             break;
+        default:
+            ir_printf("unsupported key_code\n");
+            return 0;
     }
 
     if (0 == context->default_code.len)
@@ -415,18 +470,6 @@ static UINT16 ir_ac_control(t_remote_ac_status ac_status, UINT16 *user_data, UIN
 
     time_length = create_ir_frame();
 
-#if (defined BOARD_PC)
-#if (defined BOARD_PC_JNI)
-    ir_printf("code count = %d\n", context->code_cnt);
-#else
-    for (i = 0; i < context->code_cnt; i++)
-    {
-        ir_printf("%d,", context->time[i]);
-    }
-#endif
-    ir_printf("\n");
-#endif
-
     return time_length;
 }
 
@@ -468,7 +511,7 @@ INT8 get_temperature_range(UINT8 ac_mode, INT8 *temp_min, INT8 *temp_max)
 
     *temp_min = -1;
     *temp_max = -1;
-    for (i = 0; i < AC_TEMP_MAX; i++)
+    for (i = 0; i < (UINT8) AC_TEMP_MAX; i++)
     {
         if (is_in(context->n_mode[ac_mode].temp, i, context->n_mode[ac_mode].temp_cnt) ||
             (context->temp1.len != 0 && 0 == context->temp1.comp_data[i].seg_len) ||
@@ -497,13 +540,13 @@ INT8 get_supported_mode(UINT8 *supported_mode)
     }
     *supported_mode = 0x1F;
 
-    for (i = 0; i < AC_MODE_MAX; i++)
+    for (i = 0; i < (UINT8) AC_MODE_MAX; i++)
     {
         if (0 == context->n_mode[i].enable ||
             (context->mode1.len != 0 && 0 == context->mode1.comp_data[i].seg_len) ||
             (context->mode2.len != 0 && 0 == context->mode2.comp_data[i].seg_len))
         {
-            *supported_mode &= ~(1 << i);
+            *supported_mode &= (UINT8)(~(UINT8)((UINT8)1 << (UINT8)i));
         }
     }
 
@@ -531,13 +574,13 @@ INT8 get_supported_wind_speed(UINT8 ac_mode, UINT8 *supported_wind_speed)
 
     *supported_wind_speed = 0x0F;
 
-    for (i = 0; i < AC_WS_MAX; i++)
+    for (i = 0; i < (UINT8) AC_WS_MAX; i++)
     {
         if (is_in(context->n_mode[ac_mode].speed, i, context->n_mode[ac_mode].speed_cnt) ||
             (context->speed1.len != 0 && 0 == context->speed1.comp_data[i].seg_len) ||
             (context->speed2.len != 0 && 0 == context->speed2.comp_data[i].seg_len))
         {
-            *supported_wind_speed &= ~(1 << i);
+            *supported_wind_speed &= (UINT8)(~(UINT8)((UINT8)1 << (UINT8)i));
         }
     }
 
@@ -580,6 +623,10 @@ INT8 get_supported_wind_direction(UINT8 *supported_wind_direction)
     if (NULL != context)
     {
         *supported_wind_direction = (UINT8) (context->si.mode_count - 1);
+        if (*supported_wind_direction < 0)
+        {
+            *supported_wind_direction = 0;
+        }
         return IR_DECODE_SUCCEEDED;
     }
     else
@@ -642,9 +689,9 @@ static INT8 ir_tv_file_open(const char *file_name)
 }
 #endif
 
-static INT8 ir_tv_binary_open(UINT8 *binary, UINT16 binary_length)
+static INT8 ir_tv_binary_open(UINT8 *binary, UINT16 bin_length)
 {
-    return tv_binary_open(binary, binary_length);
+    return tv_binary_open(binary, bin_length);
 }
 
 static INT8 ir_tv_binary_parse(UINT8 ir_hex_encode)
@@ -666,15 +713,6 @@ static UINT16 ir_tv_control(UINT8 key, UINT16 *l_user_data)
     memset(l_user_data, 0x00, USER_DATA_SIZE);
     ir_code_length = tv_binary_decode(key, l_user_data);
 
-#if defined BOARD_PC
-    // have some debug
-    ir_printf("length of IR code = %d\n", ir_code_length);
-    for (print_index = 0; print_index < ir_code_length; print_index++)
-    {
-        ir_printf("%d ", l_user_data[print_index]);
-    }
-#endif
-
     return ir_code_length;
 }
 
@@ -689,13 +727,29 @@ static INT8 ir_tv_binary_close()
 
 // combo decode for JNI which means call open, decode and then close in one JNI call
 UINT16 ir_decode_combo(const UINT8 category, const UINT8 sub_category,
-                       UINT8* binary, UINT16 binary_length,
+                       UINT8* binary, UINT16 bin_length,
                        UINT8 key_code, UINT16* user_data,
                        t_remote_ac_status* ac_status, BOOL change_wind_direction)
 {
     UINT16 decoded_length = 0;
+
+    if (category < REMOTE_CATEGORY_AC ||
+        category >= REMOTE_CATEGORY_NEXT)
+    {
+        ir_printf("wrong remote category\n");
+        return IR_DECODE_FAILED;
+    }
+
+    remote_category = (t_remote_category) category;
+
+    if (key_code < 0 || key_code >= KEY_CODE_MAX[remote_category])
+    {
+        ir_printf("key_code exceeded!\n");
+        return 0;
+    }
+
     if (IR_DECODE_SUCCEEDED ==
-        ir_binary_open(category, sub_category, binary, binary_length))
+        ir_binary_open(category, sub_category, binary, bin_length))
     {
         decoded_length = ir_decode(key_code, user_data, ac_status, change_wind_direction);
         ir_close();

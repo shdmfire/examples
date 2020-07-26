@@ -1,5 +1,5 @@
 /**************************************************************************************
-Filename:       DecodeTestWin.cpp
+Filename:       ir_main.c
 Revised:        Date: 2016-11-05
 Revision:       Revision: 1.0
 
@@ -9,14 +9,16 @@ Revision log:
 * 2016-11-05: created by strawmanbobi
 **************************************************************************************/
 
+#pragma ide diagnostic ignored "OCUnusedMacroInspection"
 
 #include <ctype.h>
+#include <libgen.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-#include "ir_decoder\src\include\ir_defs.h"
-#include "ir_decoder\src\include\ir_decode.h"
+#include "include/ir_defs.h"
+#include "include/ir_decode.h"
 
 #define INPUT_MAX 3
 
@@ -29,14 +31,14 @@ void input_number(int *val)
     char n[50]={0};
     int i = 0;
     *val = 0;
-    scanf_s("%3s", n);
+    scanf("%s", n);
     getchar();
     while(1)
     {
         if(n[i] < '0'||n[i] > '9')
         {
             printf("\nInvalid number format, please re-input : ");
-            scanf_s("%3s", n);
+            scanf("%s", n);
             i=0;
         }
         else
@@ -72,13 +74,13 @@ static INT8 decode_as_ac(char *file_name)
     UINT8 supported_swing = 0x00;
     UINT8 supported_wind_direction = 0x00;
 
-    BOOL need_control = TRUE;
+    BOOL need_control;
 
     // init air conditioner status
     ac_status.ac_display = 0;
     ac_status.ac_sleep = 0;
     ac_status.ac_timer = 0;
-    ac_status.ac_power = AC_POWER_ON;
+    ac_status.ac_power = AC_POWER_OFF;
     ac_status.ac_mode = AC_MODE_COOL;
     ac_status.ac_temp = AC_TEMP_20;
     ac_status.ac_wind_dir = AC_SWING_ON;
@@ -160,9 +162,6 @@ static INT8 decode_as_ac(char *file_name)
         }
         else
         {
-            int temp_mode = 0;
-            int temp_wind_speed = 0;
-
             switch (key_code)
             {
                 case 0:
@@ -171,28 +170,26 @@ static INT8 decode_as_ac(char *file_name)
                     break;
 
                 case 1:
-                    temp_mode = (int) ac_status.ac_mode;
-                    temp_mode++;
-                    ac_status.ac_mode = (t_ac_mode) (temp_mode % AC_MODE_MAX);
+                    ++ac_status.ac_mode;
+                    ac_status.ac_mode = ac_status.ac_mode % AC_MODE_MAX;
                     need_control = TRUE;
                     break;
 
                 case 2:
                 case 7:
-                    ac_status.ac_temp = (t_ac_temperature) ((ac_status.ac_temp == AC_TEMP_30) ? AC_TEMP_30 : (ac_status.ac_temp + 1));
+                    ac_status.ac_temp = ((ac_status.ac_temp == AC_TEMP_30) ? AC_TEMP_30 : (ac_status.ac_temp + 1));
                     need_control = TRUE;
                     break;
 
                 case 3:
                 case 8:
-                    ac_status.ac_temp = (t_ac_temperature) ((ac_status.ac_temp == AC_TEMP_16) ? AC_TEMP_16 : (ac_status.ac_temp - 1));
+                    ac_status.ac_temp = ((ac_status.ac_temp == AC_TEMP_16) ? AC_TEMP_16 : (ac_status.ac_temp - 1));
                     need_control = TRUE;
                     break;
 
                 case 9:
-                    temp_wind_speed = (int)ac_status.ac_wind_speed;
-                    temp_wind_speed++;
-                    ac_status.ac_wind_speed = (t_ac_wind_speed) (temp_wind_speed % AC_WS_MAX);
+                    ++ac_status.ac_wind_speed;
+                    ac_status.ac_wind_speed = ac_status.ac_wind_speed % AC_WS_MAX;
                     need_control = TRUE;
                     break;
 
@@ -299,7 +296,7 @@ int main(int argc, char *argv[])
 
     if (4 != argc)
     {
-        print_usage(argv[0]);
+        print_usage(basename(argv[0]));
         return -1;
     }
 
