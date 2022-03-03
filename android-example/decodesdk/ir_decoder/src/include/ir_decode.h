@@ -12,8 +12,10 @@ Revision log:
 #ifndef _IR_DECODE_H_
 #define _IR_DECODE_H_
 
+#if defined (BOARD_PC)
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 #pragma ide diagnostic ignored "OCUnusedMacroInspection"
+#endif
 
 #ifdef __cplusplus
 extern "C"
@@ -219,10 +221,11 @@ typedef enum
 
 typedef enum
 {
-    SUB_CATEGORY_QUATERNARY = 0,
-    SUB_CATEGORY_HEXADECIMAL = 1,
-    SUB_CATEGORY_NEXT = 2,
-    SUB_CATEGORY_MAX = 7,
+    SUB_CATEGORY_BINARY = 0, // deprecated
+    SUB_CATEGORY_QUATERNARY = 1,
+    SUB_CATEGORY_HEXADECIMAL = 2,
+    SUB_CATEGORY_NEXT = 3,
+    SUB_CATEGORY_MAX = 4,
 } t_remote_sub_category;
 
 /**

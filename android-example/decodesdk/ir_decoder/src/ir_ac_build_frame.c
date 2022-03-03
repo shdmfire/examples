@@ -1,5 +1,5 @@
 /**************************************************************************************
-Filename:       ir_irframe.c
+Filename:       ir_ac_build_frame.c
 Revised:        Date: 2016-10-01
 Revision:       Revision: 1.0
 
@@ -9,8 +9,10 @@ Revision log:
 * 2016-10-01: created by strawmanbobi
 **************************************************************************************/
 
+#if defined (BOARD_PC)
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
 #pragma ide diagnostic ignored "readability-redundant-declaration"
+#endif
 
 #include "include/ir_ac_build_frame.h"
 #include "include/ir_decode.h"

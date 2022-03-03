@@ -31,8 +31,10 @@ struct tag_head tags[TAG_COUNT_FOR_PROTOCOL];
 #endif
 
 static UINT8 byte_array[PROTOCOL_SIZE] = { 0 };
+#if !defined NO_FS
 static size_t binary_length = 0;
 static UINT8 *binary_content = NULL;
+#endif
 
 static t_remote_category remote_category = REMOTE_CATEGORY_NONE;
 static UINT8 ir_binary_type = IR_TYPE_STATUS;
@@ -137,13 +139,13 @@ INT8 ir_file_open(const UINT8 category, const UINT8 sub_category, const char* fi
     else
     {
         ir_binary_type = IR_TYPE_COMMANDS;
-        if (1 == sub_category)
+        if (SUB_CATEGORY_QUATERNARY == sub_category)
         {
-            ir_hexadecimal = SUB_CATEGORY_QUATERNARY;
+            ir_hexadecimal = 0;
         }
-        else if (2 == sub_category)
+        else if (SUB_CATEGORY_HEXADECIMAL == sub_category)
         {
-            ir_hexadecimal = SUB_CATEGORY_HEXADECIMAL;
+            ir_hexadecimal = 1;
         }
         else
         {
@@ -178,7 +180,7 @@ INT8 ir_binary_open(const UINT8 category, const UINT8 sub_category, UINT8* binar
         ir_printf("wrong remote category\n");
         return IR_DECODE_FAILED;
     }
-    remote_category = category;
+    remote_category = (t_remote_category) category;
 
     if (sub_category < SUB_CATEGORY_QUATERNARY ||
         sub_category >= SUB_CATEGORY_NEXT)
@@ -203,13 +205,13 @@ INT8 ir_binary_open(const UINT8 category, const UINT8 sub_category, UINT8* binar
     else
     {
         ir_binary_type = IR_TYPE_COMMANDS;
-        if (1 == sub_category)
+        if (SUB_CATEGORY_QUATERNARY == sub_category)
         {
-            ir_hexadecimal = SUB_CATEGORY_QUATERNARY;
+            ir_hexadecimal = 0;
         }
-        else if (2 == sub_category)
+        else if (SUB_CATEGORY_HEXADECIMAL == sub_category)
         {
-            ir_hexadecimal = SUB_CATEGORY_HEXADECIMAL;
+            ir_hexadecimal = 1;
         }
         else
         {
@@ -468,19 +470,6 @@ static UINT16 ir_ac_control(t_remote_ac_status ac_status, UINT16* user_data, UIN
 
     time_length = create_ir_frame();
 
-#if (defined BOARD_PC)
-#if (defined BOARD_PC_JNI)
-    ir_printf("code count = %d\n", context->code_cnt);
-#else
-    int i = 0;
-    for (i = 0; i < context->code_cnt; i++)
-    {
-        ir_printf("%d,", context->time[i]);
-    }
-#endif
-    ir_printf("\n");
-#endif
-
     return time_length;
 }
 
@@ -724,15 +713,6 @@ static UINT16 ir_tv_control(UINT8 key, UINT16 *l_user_data)
     memset(l_user_data, 0x00, USER_DATA_SIZE);
     ir_code_length = tv_binary_decode(key, l_user_data);
 
-#if defined BOARD_PC
-    // have some debug
-    ir_printf("length of IR code = %d\n", ir_code_length);
-    for (print_index = 0; print_index < ir_code_length; print_index++)
-    {
-        ir_printf("%d ", l_user_data[print_index]);
-    }
-#endif
-
     return ir_code_length;
 }
 
@@ -760,7 +740,7 @@ UINT16 ir_decode_combo(const UINT8 category, const UINT8 sub_category,
         return IR_DECODE_FAILED;
     }
 
-    remote_category = category;
+    remote_category = (t_remote_category) category;
 
     if (key_code < 0 || key_code >= KEY_CODE_MAX[remote_category])
     {

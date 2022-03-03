@@ -1,9 +1,9 @@
 /**************************************************************************************
-Filename:       ir_main.c
+Filename:       ir_decode_test.c
 Revised:        Date: 2016-11-05
 Revision:       Revision: 1.0
 
-Description:    This file provides main entry for irda decoder
+Description:    This file provides main entry for irda decoder test
 
 Revision log:
 * 2016-11-05: created by strawmanbobi
@@ -12,7 +12,6 @@ Revision log:
 #pragma ide diagnostic ignored "OCUnusedMacroInspection"
 
 #include <ctype.h>
-#include <libgen.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -60,9 +59,10 @@ static INT8 decode_as_ac(char *file_name)
 {
     BOOL op_match = TRUE;
     BOOL change_wind_dir = FALSE;
-    UINT8 function_code = AC_FUNCTION_MAX;
     int key_code = 0;
     int first_time = 1;
+    int length = 0;
+    int index = 0;
 
     // get status
     UINT8 supported_mode = 0x00;
@@ -72,13 +72,13 @@ static INT8 decode_as_ac(char *file_name)
     UINT8 supported_swing = 0x00;
     UINT8 supported_wind_direction = 0x00;
 
-    BOOL need_control;
+    BOOL need_control = TRUE;
 
     // init air conditioner status
     ac_status.ac_display = 0;
     ac_status.ac_sleep = 0;
     ac_status.ac_timer = 0;
-    ac_status.ac_power = AC_POWER_OFF;
+    ac_status.ac_power = AC_POWER_ON;
     ac_status.ac_mode = AC_MODE_COOL;
     ac_status.ac_temp = AC_TEMP_20;
     ac_status.ac_wind_dir = AC_SWING_ON;
@@ -162,8 +162,9 @@ static INT8 decode_as_ac(char *file_name)
         {
             switch (key_code)
             {
+                // notice: only if ac_power is turned on will user_data change when input a different key_code
                 case 0:
-                    ac_status.ac_power = ((ac_status.ac_wind_dir == AC_POWER_ON) ? AC_POWER_OFF : AC_POWER_ON);
+                    ac_status.ac_power = ((ac_status.ac_power == AC_POWER_ON) ? AC_POWER_OFF : AC_POWER_ON);
                     need_control = TRUE;
                     break;
 
@@ -210,15 +211,20 @@ static INT8 decode_as_ac(char *file_name)
 
             if (TRUE == op_match && TRUE == need_control)
             {
-                printf("switch AC to power = %d, mode = %d, temp = %d, speed = %d, swing = %d with function code = %d\n",
+                printf("switch AC to power = %d, mode = %d, temp = %d, speed = %d, swing = %d with key_code = %d\n",
                        ac_status.ac_power,
                        ac_status.ac_mode,
                        ac_status.ac_temp,
                        ac_status.ac_wind_speed,
                        ac_status.ac_wind_dir,
-                       function_code);
-
-                ir_decode(function_code, user_data, &ac_status, change_wind_dir);
+                       key_code);
+                length = ir_decode(key_code, user_data, &ac_status, change_wind_dir);
+                printf("\n === Binary decoded : %d\n", length);
+                for (index = 0; index < length; index++)
+                {
+                    printf("%d, ", user_data[index]);
+                }
+                printf("\n");
             }
         }
     } while (TRUE);
@@ -233,6 +239,8 @@ static INT8 decode_as_tv(char *file_name, UINT8 ir_hex_encode)
     // keyboard input
     int key_code = 0;
     int first_time = 1;
+    int length = 0;
+    int index = 0;
 
     // here remote category TV represents for command typed IR code
     if (IR_DECODE_FAILED == ir_file_open(REMOTE_CATEGORY_TV, ir_hex_encode, file_name))
@@ -258,7 +266,13 @@ static INT8 decode_as_tv(char *file_name, UINT8 ir_hex_encode)
         {
             break;
         }
-        ir_decode(key_code, user_data, NULL, 0);
+        length = ir_decode(key_code, user_data, NULL, 0);
+        printf("\n === Binary decoded : %d\n", length);
+        for (index = 0; index < length; index++)
+        {
+            printf("%d, ", user_data[index]);
+        }
+        printf("===\n");
 
     } while (TRUE);
 
@@ -280,7 +294,7 @@ int main(int argc, char *argv[])
 
     if (4 != argc)
     {
-        print_usage(basename(argv[0]));
+        print_usage((argv[0]));
         return -1;
     }
 

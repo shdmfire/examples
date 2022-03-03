@@ -1,5 +1,5 @@
 /**************************************************************************************
-Filename:       ir_lib.h
+Filename:       ir_tv_control.h
 Revised:        Date: 2016-02-23
 Revision:       Revision: 1.0
 
@@ -12,8 +12,10 @@ Revision log:
 #ifndef _IR_TV_CONTROL_H_
 #define _IR_TV_CONTROL_H_
 
+#if defined (BOARD_PC)
 #pragma ide diagnostic ignored "OCUnusedMacroInspection"
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
+#endif
 
 #ifdef __cplusplus
 extern "C"

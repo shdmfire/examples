@@ -1,5 +1,5 @@
 /**************************************************************************************
-Filename:       ir_lib.c
+Filename:       ir_tv_control.c
 Revised:        Date: 2016-10-21
 Revision:       Revision: 1.0
 
@@ -9,7 +9,9 @@ Revision log:
 * 2016-10-21: created by strawmanbobi
 **************************************************************************************/
 
+#if defined (BOARD_PC)
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
+#endif
 
 #include <string.h>
 
@@ -118,7 +120,8 @@ static BOOL get_ir_protocol(UINT8 encode_type)
 
     if (encode_type == 0)
     {
-        cycles_num_size = 8;      /* "BOOT", "STOP", "SEP", "ONE", "ZERO", "FLIP", "TWO", "THREE" */
+        cycles_num_size = 8;
+        /* "BOOT", "STOP", "SEP", "ONE", "ZERO", "FLIP", "TWO", "THREE" */
         if (prot_cycles_num[IRDA_TWO] == 0 && prot_cycles_num[IRDA_THREE] == 0)
         {
             ir_decode_flag = IRDA_DECODE_1_BIT;

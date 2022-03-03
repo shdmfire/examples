@@ -9,7 +9,9 @@ Revision log:
 * 2016-10-05: created by strawmanbobi
 **************************************************************************************/
 
+#if defined (BOARD_PC)
 #pragma ide diagnostic ignored "readability-redundant-declaration"
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>

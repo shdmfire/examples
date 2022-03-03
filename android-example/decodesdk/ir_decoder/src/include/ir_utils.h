@@ -12,7 +12,9 @@ Revision log:
 #ifndef _IR_UTILS_H_
 #define _IR_UTILS_H_
 
+#if defined (BOARD_PC)
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
+#endif
 
 #ifdef __cplusplus
 extern "C"
