@@ -3,22 +3,20 @@ apply plugin: 'com.android.library'
 android {
     signingConfigs {
     }
-    compileSdkVersion 28
+    compileSdkVersion 33
     defaultConfig {
         minSdkVersion 19
-        targetSdkVersion 28
-        versionCode 1
-        versionName "0.1.2"
+        targetSdkVersion 33
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            versionNameSuffix '0.1.2'
         }
     }
     productFlavors {
     }
+    namespace 'net.irext.webapi'
 }
 
 dependencies {

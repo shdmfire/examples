@@ -35,7 +35,7 @@ public class WebAPIs {
 
     private static WebAPIs mInstance = null;
 
-    private static final String DEFAULT_ADDRESS = "http://irext.net";
+    private static final String DEFAULT_ADDRESS = "http://srv.irext.net";
     private static final String DEFAULT_APP = "/irext-server";
     private static String URL_PREFIX = DEFAULT_ADDRESS + DEFAULT_APP;
 
@@ -93,6 +93,7 @@ public class WebAPIs {
                 = MediaType.parse("application/json; charset=utf-8");
 
         RequestBody body = RequestBody.create(JSON, json);
+        Log.d(TAG, "post URL = " + url);
         Request request = new Request.Builder()
                 .url(url)
                 .post(body)
