@@ -210,50 +210,29 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
     public void onClick(View v) {
         vibrate(mParent);
         int []decoded = null;
-        switch(v.getId()) {
-            case R.id.iv_power:
-                decoded = irControl(KEY_POWER);
-                break;
-
-            case R.id.iv_up:
-                decoded = irControl(KEY_UP);
-                break;
-
-            case R.id.iv_down:
-                decoded = irControl(KEY_DOWN);
-                break;
-
-            case R.id.iv_left:
-                decoded = irControl(KEY_LEFT);
-                break;
-
-            case R.id.iv_right:
-                decoded = irControl(KEY_RIGHT);
-                break;
-
-            case R.id.iv_ok:
-                decoded = irControl(KEY_OK);
-                break;
-
-            case R.id.iv_plus:
-                decoded = irControl(KEY_PLUS);
-                break;
-
-            case R.id.iv_minus:
-                decoded = irControl(KEY_MINUS);
-                break;
-
-            case R.id.iv_back:
-                decoded = irControl(KEY_BACK);
-                break;
-
-            case R.id.iv_home:
-                decoded = irControl(KEY_HOME);
-                break;
-
-            case R.id.iv_menu:
-                decoded = irControl(KEY_MENU);
-                break;
+        int id = v.getId();
+        if (id == R.id.iv_power) {
+            decoded = irControl(KEY_POWER);
+        } else if (id == R.id.iv_up) {
+            decoded = irControl(KEY_UP);
+        } else if (id == R.id.iv_down) {
+            decoded = irControl(KEY_DOWN);
+        } else if (id == R.id.iv_left) {
+            decoded = irControl(KEY_LEFT);
+        } else if (id == R.id.iv_right) {
+            decoded = irControl(KEY_RIGHT);
+        } else if (id == R.id.iv_ok) {
+            decoded = irControl(KEY_OK);
+        } else if (id == R.id.iv_plus) {
+            decoded = irControl(KEY_PLUS);
+        } else if (id == R.id.iv_minus) {
+            decoded = irControl(KEY_MINUS);
+        } else if (id == R.id.iv_back) {
+            decoded = irControl(KEY_BACK);
+        } else if (id == R.id.iv_home) {
+            decoded = irControl(KEY_HOME);
+        } else if (id == R.id.iv_menu) {
+            decoded = irControl(KEY_MENU);
         }
         // send decoded integer array to IR emitter
         ConsumerIrManager irEmitter =
