@@ -54,7 +54,7 @@ JNIEXPORT jint JNICALL Java_net_irext_decode_sdk_IRDecode_irOpenBinary
         (*env)->ReleaseByteArrayElements(env, binaries, j_buffer, JNI_ABORT);
         return IR_DECODE_FAILED;
     }
-
+    (*env)->ReleaseByteArrayElements(env, binaries, j_buffer, JNI_ABORT);
     return IR_DECODE_SUCCEEDED;
 }
 

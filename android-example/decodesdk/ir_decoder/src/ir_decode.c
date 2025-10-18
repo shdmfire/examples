@@ -22,7 +22,7 @@ Revision log:
 struct ir_bin_buffer binary_file;
 struct ir_bin_buffer *p_ir_buffer = &binary_file;
 
-static const char* version = "0.2.5";
+static const char* version = IR_DECODE_LIB_VER;
 
 #if defined USE_DYNAMIC_TAG
 struct tag_head *tags;
@@ -82,6 +82,7 @@ static INT8 ir_ac_binary_open(UINT8 *binary, UINT16 bin_length);
 static UINT16 ir_ac_control(t_remote_ac_status ac_status, UINT16* user_data, UINT8 key_code,
                             BOOL change_wind_direction);
 static INT8 ir_ac_binary_close();
+static BOOL validate_ac_status(t_remote_ac_status* ac_status, BOOL change_wind_dir);
 
 #if !defined NO_FS
 static INT8 ir_tv_file_open(const char *file_name);
@@ -218,7 +219,19 @@ INT8 ir_binary_open(const UINT8 category, const UINT8 sub_category, UINT8* binar
             return IR_DECODE_FAILED;
         }
 
-        ret = ir_tv_binary_open(binary, bin_length);
+#if (defined(BOARD_PC) || defined (BOARD_PC_DLL) || defined (BOARD_ANDROID))
+        binary_content = (UINT8 *) ir_malloc(bin_length);
+        if (NULL == binary_content)
+        {
+            ir_printf("failed to malloc memory for binary\n");
+            return IR_DECODE_FAILED;
+        }
+        memcpy(binary_content, binary, bin_length);
+#else
+        binary_content = binary;
+#endif
+
+        ret = ir_tv_binary_open(binary_content, bin_length);
         if (IR_DECODE_SUCCEEDED == ret)
         {
             return ir_tv_binary_parse(ir_hexadecimal);
@@ -259,6 +272,10 @@ UINT16 ir_decode(UINT8 key_code, UINT16* user_data,
                   ac_status->ac_temp, ac_status->ac_wind_dir,
                   ac_status->ac_wind_speed,
                   key_code, change_wind_direction);
+        // ac status validation
+        if (FALSE == validate_ac_status(ac_status, change_wind_direction)) {
+            return 0;
+        }
         return ir_ac_control(*ac_status, user_data, key_code, change_wind_direction);
     }
 }
@@ -489,6 +506,35 @@ static INT8 ir_ac_binary_close()
     return IR_DECODE_SUCCEEDED;
 }
 
+static BOOL validate_ac_status(t_remote_ac_status* ac_status, BOOL change_wind_dir)
+{
+    if (AC_POWER_OFF != ac_status->ac_power && AC_POWER_ON != ac_status->ac_power)
+    {
+        return FALSE;
+    }
+    if (ac_status->ac_mode < AC_MODE_COOL || ac_status->ac_mode >= AC_MODE_MAX)
+    {
+        return FALSE;
+    }
+    if (ac_status->ac_temp < AC_TEMP_16 || ac_status->ac_temp >= AC_TEMP_MAX)
+    {
+        return FALSE;
+    }
+    if (ac_status->ac_wind_speed < AC_WS_AUTO || ac_status->ac_wind_speed >= AC_WS_MAX)
+    {
+        return FALSE;
+    }
+    if (ac_status->ac_wind_dir < AC_SWING_ON || ac_status->ac_wind_dir >= AC_SWING_MAX)
+    {
+        return FALSE;
+    }
+    if (0 != change_wind_dir && 1 != change_wind_dir)
+    {
+        return FALSE;
+    }
+    return TRUE;
+}
+
 // utils
 INT8 get_temperature_range(UINT8 ac_mode, INT8 *temp_min, INT8 *temp_max)
 {
@@ -652,7 +698,7 @@ static INT8 ir_tv_file_open(const char *file_name)
 
     if (stream == NULL)
     {
-        ir_printf("\nfile open failed\n");
+        ir_printf("file open failed\n");
         return IR_DECODE_FAILED;
     }
 
@@ -662,7 +708,7 @@ static INT8 ir_tv_file_open(const char *file_name)
     binary_content = (UINT8 *) ir_malloc(binary_length);
     if (NULL == binary_content)
     {
-        ir_printf("\nfailed to alloc memory for binary\n");
+        ir_printf("failed to malloc memory for binary\n");
         fclose(stream);
         return IR_DECODE_FAILED;
     }
@@ -681,6 +727,7 @@ static INT8 ir_tv_file_open(const char *file_name)
 
     if (IR_DECODE_FAILED == ir_tv_binary_open(binary_content, (UINT16) binary_length))
     {
+        ir_printf("failed to parse command type binary\n");
         ir_free(binary_content);
         binary_length = 0;
         return IR_DECODE_FAILED;
