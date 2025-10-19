@@ -124,7 +124,7 @@ public class IndexFragment extends BaseCreateFragment {
             @Override
             public void run() {
                 mApp.mWeAPIs.listRemoteIndexes(mParent.getCurrentCategory().getId(),
-                        mBrandId, mCityCode, mOperatorId, mListIndexesCallback);
+                        mBrandId, mCityCode, mOperatorId, 0, mListIndexesCallback);
             }
         }.start();
     }
