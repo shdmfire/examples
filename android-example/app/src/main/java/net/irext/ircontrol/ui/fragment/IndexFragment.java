@@ -145,10 +145,11 @@ public class IndexFragment extends BaseCreateFragment {
     }
 
     private boolean createDirectory() {
-        File file = new File(FileUtils.BIN_PATH);
+        File file = new File(FileUtils.binDir);
         if (file.exists()) {
             return true;
         }
+        Log.d(TAG, "create directory : " + file.getAbsolutePath());
         return file.mkdirs();
     }
 
@@ -157,7 +158,7 @@ public class IndexFragment extends BaseCreateFragment {
             @Override
             public void run() {
                 if (createDirectory()) {
-                    File binFile = new File(FileUtils.BIN_PATH +
+                    File binFile = new File(FileUtils.binDir +
                             FileUtils.FILE_NAME_PREFIX + mCurrentIndex.getRemoteMap() +
                             FileUtils.FILE_NAME_EXT);
                     boolean ret = FileUtils.write(binFile, mBinStream);

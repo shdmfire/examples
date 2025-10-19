@@ -2,6 +2,7 @@ package net.irext.ircontrol.utils;
 
 import android.os.Environment;
 import android.util.Log;
+import net.irext.ircontrol.IRApplication;
 
 import java.io.*;
 
@@ -20,9 +21,9 @@ public class FileUtils {
 
     private static final String TAG = FileUtils.class.getSimpleName();
 
-    public static final String BASE_PATH = Environment.getExternalStorageDirectory() + File.separator +
-            "irext" + File.separator;
-    public static final String BIN_PATH = BASE_PATH + "bin" + File.separator;
+    public static final String packageDataDir = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator +
+            Environment.DIRECTORY_DOWNLOADS + File.separator + IRApplication.getApplicationName() + File.separator;
+    public static final String binDir = packageDataDir + "bin" + File.separator;
 
     public static final String FILE_NAME_PREFIX = "irext_";
     public static final String FILE_NAME_EXT = ".ir";
@@ -64,36 +65,15 @@ public class FileUtils {
         return false;
     }
 
-    public static File createBinaryFile(String fileName) {
-        if(createDirs(BASE_PATH) && createDirs(BIN_PATH)) {
-            String path = BIN_PATH + fileName;
-            File file = new File(path);
-            if (!file.exists()) {
-                try {
-                    if (file.createNewFile()) {
-                        return file;
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                Log.w(TAG, "binary file already exists ?");
-            }
-        } else {
-            Log.e(TAG, "failed to create dirs");
-        }
-        return null;
-    }
-
     private static boolean createDirs(String path) {
         File file = new File(path);
         return file.exists() || file.mkdir();
     }
 
     public static File getLocalFile(String fileName) {
-        File file = new File(BIN_PATH);
+        File file = new File(binDir);
         if (file.exists()) {
-            String path = BIN_PATH + fileName;
+            String path = binDir + fileName;
             file = new File(path);
             if (file.exists()) {
                 return file;
