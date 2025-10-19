@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 28
+    compileSdk 36
     defaultConfig {
         applicationId "net.irext.ircontrol"
-        minSdkVersion 19
-        targetSdkVersion 28
-        versionCode 6
-        versionName '0.2.4'
+        targetSdkVersion 36
+        minSdkVersion 26
+        versionCode 7
+        versionName '1.5.0'
     }
     buildTypes {
         release {
@@ -15,25 +15,35 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    sourceSets.main {
-        jniLibs.srcDirs = ['src/main/jniLibs']
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
     }
-    repositories {
-        mavenCentral()
-        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
-    }
-    compileOptions {
-    }
+
+    flavorDimensions = ['app']
+
     productFlavors {
+        app {
+            ndk {
+                abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+            }
+        }
     }
     namespace 'net.irext.ircontrol'
 }
 
 dependencies {
+    implementation project(':decodesdk')
+    implementation project(':web-api')
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(dir: 'libs', include: ['*.aar'])
+
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.android.support:design:28.0.0'
     implementation 'com.android.support:support-v4:28.0.0'
-    implementation 'com.michaelpardo:activeandroid:3.1.0-SNAPSHOT'
-    implementation project(':decodesdk')
-    implementation project(':web-api')
+
+    implementation 'com.android.support:multidex:1.0.3'
+
 }

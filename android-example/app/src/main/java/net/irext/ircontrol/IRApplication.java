@@ -71,4 +71,8 @@ public class IRApplication extends com.activeandroid.app.Application {
             }
         }.start();
     }
+
+    public static String getApplicationName() {
+        return IRApplication.class.getPackageName();
+    }
 }

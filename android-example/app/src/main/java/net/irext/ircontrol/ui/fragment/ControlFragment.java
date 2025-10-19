@@ -132,7 +132,7 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
         mCurrentRemoteControl = RemoteControl.getRemoteControl(mRemoteID);
         if (null != mCurrentRemoteControl) {
             int category = mCurrentRemoteControl.getCategoryId();
-            String binFileName = FileUtils.BIN_PATH + FileUtils.FILE_NAME_PREFIX +
+            String binFileName = FileUtils.binDir + FileUtils.FILE_NAME_PREFIX +
                     mCurrentRemoteControl.getRemoteMap() + FileUtils.FILE_NAME_EXT;
 
             /* decode SDK - load binary file */
@@ -234,6 +234,14 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
         } else if (id == R.id.iv_menu) {
             decoded = irControl(KEY_MENU);
         }
+
+        // debug decoded value
+        String decodedValue = "";
+        for (int i = 0; i < decoded.length; i++) {
+            decodedValue += decoded[i];
+            decodedValue += ",";
+        }
+        Log.d(TAG, "decodedValue : " + decodedValue);
         // send decoded integer array to IR emitter
         ConsumerIrManager irEmitter =
                 (ConsumerIrManager) mParent.getSystemService(Context.CONSUMER_IR_SERVICE);

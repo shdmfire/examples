@@ -42,7 +42,7 @@ public class WebAPIs {
     // download bin from OSS
     private static final String IR_BIN_FILE_PREFIX = "irda_";
     private static final String IR_BIN_FILE_SUFFIX = ".bin";
-    private static final String IR_BIN_DOWNLOAD_PREFIX = "http://irext-debug.oss-cn-hangzhou.aliyuncs.com/";
+    private static final String IR_BIN_DOWNLOAD_PREFIX = "https://irext-release.oss-cn-hangzhou.aliyuncs.com/";
 
     private static final String SERVICE_SIGN_IN = "/app/app_login";
     private static final String SERVICE_LIST_CATEGORIES = "/indexing/list_categories";
@@ -79,6 +79,7 @@ public class WebAPIs {
     }
 
     private InputStream getFileByteStreamByURL(String url) throws IOException {
+        Log.d(TAG, "download remote binary file, url = " + url);
         Request request = new Request.Builder()
                 .url(url)
                 .get()

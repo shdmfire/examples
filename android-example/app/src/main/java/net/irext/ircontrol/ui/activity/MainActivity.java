@@ -11,16 +11,20 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 import net.irext.ircontrol.R;
 import net.irext.ircontrol.bean.RemoteControl;
 import net.irext.ircontrol.ui.fragment.MainFragment;
 import net.irext.ircontrol.utils.MessageUtil;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Filename:       MainActivity.java
@@ -36,6 +40,11 @@ import java.lang.ref.WeakReference;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+
+    private boolean mReadPermissionGranted = false;
+
+    private boolean mWritePermissionGranted = false;
+    private static final int PERMISSIONS_REQUEST_STORAGE = 1001;
 
     public static final int CMD_GOTO_CONTROL = 0;
 
@@ -62,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         initView();
+        checkAndRequestStoragePermissions();
     }
 
     @Override
@@ -98,49 +108,64 @@ public class MainActivity extends AppCompatActivity {
                 gotoCreateNew();
             }
         });
-        isReadStoragePermissionGranted();
-        isWriteStoragePermissionGranted();
     }
 
-    public void isReadStoragePermissionGranted() {
-        if (Build.VERSION.SDK_INT >= 23) {
-            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED) {
-                Log.v(TAG,"read permission is granted");
-            } else {
+    private void checkAndRequestStoragePermissions() {
+        boolean readGranted = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+        boolean writeGranted = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
 
-                Log.v(TAG,"read permission is revoked");
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 3);
-            }
+        List<String> permissionsToRequest = new ArrayList<>();
+
+        if (!readGranted) {
+            permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+            Log.w(TAG, "read external storage permission not granted");
         }
-        else { //permission is automatically granted on sdk<23 upon installation
-            Log.v(TAG,"read permission is granted");
+
+        if (!writeGranted) {
+            permissionsToRequest.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            Log.w(TAG, "write external storage permission not granted");
+        }
+
+        if (!permissionsToRequest.isEmpty()) {
+            Log.d(TAG, "requesting permission: " + String.join(", ", permissionsToRequest));
+            ActivityCompat.requestPermissions(this,
+                    permissionsToRequest.toArray(new String[0]),
+                    PERMISSIONS_REQUEST_STORAGE);
+        } else {
+            Log.i(TAG, "storage permissions already granted.");
+            mReadPermissionGranted = true;
+            mWritePermissionGranted = true;
         }
     }
 
-    public void isWriteStoragePermissionGranted() {
-        if (Build.VERSION.SDK_INT >= 23) {
-            if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED) {
-                Log.v(TAG,"write permission is granted");
-            } else {
-
-                Log.v(TAG,"write permission is revoked");
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 2);
-            }
-        }
-        else {
-            // permission is automatically granted on sdk<23 upon installation
-            Log.v(TAG,"write permission is granted");
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSIONS_REQUEST_STORAGE) {
+            Log.d(TAG, "storage permission requested successfully");
+            mReadPermissionGranted = true;
+            mWritePermissionGranted = true;
         }
     }
 
     private void gotoCreateNew() {
+        if (!mReadPermissionGranted || !mWritePermissionGranted) {
+            Log.e(TAG, "storage read and write permission not granted");
+            Toast.makeText(this, this.getString(R.string.storage_permission_warning), Toast.LENGTH_SHORT).show();
+            checkAndRequestStoragePermissions();
+        }
         Intent intent = new Intent(this, CreateActivity.class);
         startActivity(intent);
     }
 
     private void gotoControl() {
+        if (!mReadPermissionGranted || !mWritePermissionGranted) {
+            Log.e(TAG, "storage read and write permission not granted");
+            Toast.makeText(this, this.getString(R.string.storage_permission_warning), Toast.LENGTH_SHORT).show();
+            checkAndRequestStoragePermissions();
+        }
         Intent intent = new Intent(this, ControlActivity.class);
         Bundle bundle = new Bundle();
         bundle.putLong(ControlActivity.KEY_REMOTE_ID, mCurrentRemoteControl.getID());
@@ -166,11 +191,5 @@ public class MainActivity extends AppCompatActivity {
                 mainActivity.gotoControl();
             }
         }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 }
