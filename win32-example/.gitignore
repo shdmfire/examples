@@ -290,7 +290,7 @@ __pycache__/
 *.odx.cs
 *.xsd.cs
 
-DecodeTestWin/DecodeTestWin.vcxproj.filters
-DecodeTestWin/DecodeTestWin.vcxproj
+DecodeTestWin.vcxproj.filters
+DecodeTestWin.vcxproj
 
 # End of https://www.gitignore.io/api/visualstudio
