@@ -1,0 +1,23 @@
+# PlatformIO Build Environments
+.pio/
+.pioenvs/
+
+# PlatformIO Library Dependencies
+.piolibdeps/
+
+# Clang Complete files (if used for IntelliSense)
+.clang_complete
+gcc-flags.json
+
+# VS Code specific files (if using VS Code)
+.vscode/
+
+# Other common ignored files
+*.o
+*.elf
+*.bin
+*.hex
+*.map
+*.lst
+.DS_Store # macOS specific
+Thumb.db # Windows specific
