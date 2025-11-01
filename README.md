@@ -7,4 +7,4 @@ Version 1.5.0
 - Android example
 - Java web example with JNI
 - Windows example
-- Arduino example
+- Arduino example (TBD)
