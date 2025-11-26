@@ -51,11 +51,11 @@ void setup() {
 
   if (status == WL_CONNECTED) {
     // If connected successfully
-    Serial.println("\n✅ Connection Successful!");
+    Serial.println("\nConnection Successful!");
     printWiFiStatus();
   } else {
     // If connection failed
-    Serial.print("\n❌ Connection Failed! Status: ");
+    Serial.print("\nConnection Failed! Status: ");
     Serial.println(status);
   }
 }
