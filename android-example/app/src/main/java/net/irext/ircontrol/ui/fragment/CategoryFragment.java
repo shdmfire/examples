@@ -17,8 +17,8 @@ import net.irext.ircontrol.ui.activity.CreateActivity;
 import net.irext.ircontrol.ui.adapter.CategoryAdapter;
 import net.irext.ircontrol.ui.widget.PullToRefreshListView;
 import net.irext.ircontrol.utils.MessageUtil;
+import net.irext.webapi.WebAPICallbacks;
 import net.irext.webapi.model.Category;
-import net.irext.webapi.WebAPICallbacks.ListCategoriesCallback;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -50,7 +50,7 @@ public class CategoryFragment extends BaseCreateFragment {
     private MsgHandler mMsgHandler;
     private IRApplication mApp;
 
-    private ListCategoriesCallback mListCategoriesCallback = new ListCategoriesCallback() {
+    private WebAPICallbacks.ListCategoriesCallback mListCategoriesCallback = new WebAPICallbacks.ListCategoriesCallback() {
         @Override
         public void onListCategoriesSuccess(List<Category> categories) {
             mCategories = categories;
