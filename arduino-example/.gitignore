@@ -21,3 +21,27 @@ gcc-flags.json
 *.lst
 .DS_Store # macOS specific
 Thumb.db # Windows specific
+
+# Build artifacts
+cmake-build-debug/
+cmake-build-release/
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.a
+*.lib
+
+# CLion specific files
+.idea/workspace.xml
+.idea/user.prefs
+.idea/vcs.xml
+.idea/misc.xml
+.idea/*.iml
+.idea/*.xml
+
+# Other temporary files
+*.log
+*.swp
+*~
