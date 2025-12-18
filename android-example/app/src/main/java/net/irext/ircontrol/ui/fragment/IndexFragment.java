@@ -3,7 +3,6 @@ package net.irext.ircontrol.ui.fragment;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import androidx.annotation.NonNull;
 import net.irext.ircontrol.IRApplication;
 import net.irext.ircontrol.bean.RemoteControl;
 import net.irext.ircontrol.ui.widget.PullToRefreshListView;
@@ -212,7 +212,7 @@ public class IndexFragment extends BaseCreateFragment {
         View view = inflater.inflate(R.layout.fragment_index, container, false);
 
         mMsgHandler = new MsgHandler(this);
-        mApp = (IRApplication) Objects.requireNonNull(this.getActivity()).getApplication();
+        mApp = (IRApplication) this.requireActivity().getApplication();
 
         Category category = mParent.getCurrentCategory();
         Brand brand = mParent.getCurrentBrand();
@@ -240,7 +240,6 @@ public class IndexFragment extends BaseCreateFragment {
                 listIndexes();
             }
         });
-
         mIndexList.setOnItemClickListener(new ListView.OnItemClickListener() {
 
             @Override

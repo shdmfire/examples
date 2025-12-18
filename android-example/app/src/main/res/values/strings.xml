@@ -6,7 +6,7 @@
     <!-- Public UI -->
     <string name="ptr_pull_to_refresh">Pull to refresh</string>
     <string name="ptr_release_to_refresh">Release to refresh</string>
-    <string name="ptr_refreshing">Refreshing...</string>
+    <string name="ptr_refreshing">Refreshing&#8230;</string>
     <string name="ptr_last_updated">Updated: %1$s</string>
 
     <!-- Main UI -->
@@ -30,5 +30,14 @@
     <string name="button_ok">OK</string>
     <string name="button_plus">+</string>
     <string name="button_minus">-</string>
+    <string name="ir_not_supported">IR emitter is not supported in this device, please try with external emitters</string>
+
+    <string name="emitter_ip">Emitter IP</string>
+    <string name="default_ip">192.168.1.100</string>
+    <string name="connect">connect</string>
+    <string name="use_emitter">Use Emitter</string>
+    <string name="input_emitter_ip_address">Please input IP address of emitter</string>
+    <string name="connect_failed">Connect failed</string>
+    <string name="connect_disconnected">Disconnected</string>
 
 </resources>

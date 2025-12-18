@@ -3,11 +3,12 @@ package net.irext.ircontrol.ui.activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
+import androidx.activity.OnBackPressedCallback;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import net.irext.ircontrol.R;
 import net.irext.ircontrol.ui.fragment.*;
 import net.irext.ircontrol.utils.MessageUtil;
@@ -53,6 +54,18 @@ public class CreateActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create);
 
+        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (null == mFragment) {
+                    finish();
+                    return;
+                }
+                mFragment.onBackPressed();
+            }
+        };
+        getOnBackPressedDispatcher().addCallback(this, callback);
+
         mMsgHandler = new MsgHandler(this);
 
         mFragments = new ArrayList<>();
@@ -73,17 +86,6 @@ public class CreateActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (null == mFragment) {
-            this.finish();
-            super.onBackPressed();
-            return;
-        }
-        mFragment.onBackPressed();
-        super.onBackPressed();
     }
 
     private void switchPage(int next, Integer from) {

@@ -3,13 +3,13 @@ package net.irext.ircontrol.ui.fragment;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 
+import androidx.annotation.NonNull;
 import net.irext.ircontrol.IRApplication;
 import net.irext.ircontrol.R;
 import net.irext.ircontrol.ui.activity.CreateActivity;
@@ -22,7 +22,6 @@ import net.irext.webapi.model.Brand;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Filename:       BrandFragment.java
@@ -97,7 +96,7 @@ public class BrandFragment extends BaseCreateFragment {
         super.onCreateView(inflater, container, savedInstanceState);
         getFrom();
         View view = inflater.inflate(R.layout.fragment_brand, container, false);
-        mApp = (IRApplication) Objects.requireNonNull(getActivity()).getApplication();
+        mApp = (IRApplication) requireActivity().getApplication();
 
         mMsgHandler = new MsgHandler(this);
 

@@ -1,10 +1,10 @@
 package net.irext.ircontrol.ui.activity;
 
 import android.os.Bundle;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import net.irext.ircontrol.R;
 import net.irext.ircontrol.ui.fragment.ControlFragment;
 

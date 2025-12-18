@@ -8,6 +8,7 @@ android {
         minSdkVersion 26
         versionCode 7
         versionName '1.5.0'
+
     }
     buildTypes {
         release {
@@ -39,11 +40,11 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation fileTree(dir: 'libs', include: ['*.aar'])
 
-    implementation 'net.irext.webapi:irext-androidapi:1.5.1'
+    implementation 'net.irext.webapi:irext-androidapi:1.5.2'
 
-    implementation 'com.android.support:appcompat-v7:28.0.0'
-    implementation 'com.android.support:design:28.0.0'
-    implementation 'com.android.support:support-v4:28.0.0'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.core:core:1.13.1'
+    implementation 'com.google.android.material:material:1.13.0'
 
     implementation 'com.android.support:multidex:1.0.3'
 

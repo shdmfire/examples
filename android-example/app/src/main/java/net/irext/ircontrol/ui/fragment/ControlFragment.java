@@ -6,14 +6,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Vibrator;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
 
+import androidx.fragment.app.Fragment;
 import net.irext.decode.sdk.IRDecode;
 import net.irext.decode.sdk.bean.ACStatus;
 import net.irext.decode.sdk.utils.Constants;
@@ -22,8 +21,15 @@ import net.irext.ircontrol.bean.RemoteControl;
 import net.irext.ircontrol.ui.activity.ControlActivity;
 import net.irext.ircontrol.utils.FileUtils;
 import net.irext.ircontrol.utils.MessageUtil;
+import net.irext.ircontrol.utils.ToastUtils;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 /**
  * Filename:       ControlFragment.java
@@ -56,6 +62,11 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
     private static final int KEY_HOME = 9;
     private static final int KEY_MENU = 10;
 
+    private static final int EMITTER_PORT = 8000;
+
+    private Socket emitterConn = null;
+    private int emitterConnected = 0;
+
     private MsgHandler mHandler;
 
     private ControlActivity mParent;
@@ -78,17 +89,17 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
         mParent = (ControlActivity)getActivity();
         View view = inflater.inflate(R.layout.fragment_control, container, false);
 
-        ImageButton mBtnPower = (ImageButton) view.findViewById(R.id.iv_power);
-        ImageButton mBtnBack = (ImageButton) view.findViewById(R.id.iv_back);
-        ImageButton mBtnHome = (ImageButton) view.findViewById(R.id.iv_home);
-        ImageButton mBtnMenu = (ImageButton) view.findViewById(R.id.iv_menu);
-        ImageButton mBtnUp = (ImageButton) view.findViewById(R.id.iv_up);
-        ImageButton mBtnDown = (ImageButton) view.findViewById(R.id.iv_down);
-        ImageButton mBtnLeft = (ImageButton) view.findViewById(R.id.iv_left);
-        ImageButton mBtnRight = (ImageButton) view.findViewById(R.id.iv_right);
-        ImageButton mBtnOK = (ImageButton) view.findViewById(R.id.iv_ok);
-        ImageButton mBtnPlus = (ImageButton) view.findViewById(R.id.iv_plus);
-        ImageButton mBtnMinus = (ImageButton) view.findViewById(R.id.iv_minus);
+        ImageButton mBtnPower = view.findViewById(R.id.iv_power);
+        ImageButton mBtnBack = view.findViewById(R.id.iv_back);
+        ImageButton mBtnHome = view.findViewById(R.id.iv_home);
+        ImageButton mBtnMenu = view.findViewById(R.id.iv_menu);
+        ImageButton mBtnUp = view.findViewById(R.id.iv_up);
+        ImageButton mBtnDown = view.findViewById(R.id.iv_down);
+        ImageButton mBtnLeft = view.findViewById(R.id.iv_left);
+        ImageButton mBtnRight = view.findViewById(R.id.iv_right);
+        ImageButton mBtnOK = view.findViewById(R.id.iv_ok);
+        ImageButton mBtnPlus = view.findViewById(R.id.iv_plus);
+        ImageButton mBtnMinus = view.findViewById(R.id.iv_minus);
 
         mBtnPower.setOnClickListener(this);
         mBtnBack.setOnClickListener(this);
@@ -101,6 +112,23 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
         mBtnOK.setOnClickListener(this);
         mBtnPlus.setOnClickListener(this);
         mBtnMinus.setOnClickListener(this);
+
+        CheckBox mCbUseEmitter = view.findViewById(R.id.cb_use_emitter);
+        EditText mEtEmitterIp = view.findViewById(R.id.emitter_ip);
+        ImageButton mBtnConnect = view.findViewById(R.id.btn_connection_status);
+
+        mBtnConnect.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                String emitterIp = mEtEmitterIp.getText().toString();
+                if (android.net.InetAddresses.isNumericAddress(emitterIp)) {
+                    connectToEmitter(emitterIp, String.valueOf(EMITTER_PORT));
+                } else {
+                    ToastUtils.showToast(mParent, mParent.getString(R.string.input_emitter_ip_address), null);
+                }
+            }
+        });
 
         return view;
     }
@@ -145,7 +173,6 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
         mIRDecode.closeBinary();
     }
 
-    @Nullable
     private int[] irControl(int keyCode) {
         int inputKeyCode;
         ACStatus acStatus = new ACStatus();
@@ -205,6 +232,69 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
         return mIRDecode.decodeBinary(inputKeyCode, acStatus, 0);
     }
 
+    private void onEmitterDisconnected() {
+        if (1 == emitterConnected) {
+            Log.d(TAG, "emitter disconnected");
+        } else {
+            Log.d(TAG, "emitter disconnected");
+        }
+
+        mParent.runOnUiThread(() -> {
+            if (1 == emitterConnected) {
+                ToastUtils.showToast(mParent, mParent.getString(R.string.connect_failed), Toast.LENGTH_SHORT);
+            } else {
+                ToastUtils.showToast(mParent, mParent.getString(R.string.connect_disconnected), Toast.LENGTH_SHORT);
+            }
+        });
+
+        emitterConnected = 0;
+    }
+
+    private void onEmitterResponse(String line) {
+        Log.d(TAG, "emitter: " + line);
+    }
+
+    private void sendDecodedToEmitter(String value) {
+        new Thread(() -> {
+            try {
+                PrintWriter out = new PrintWriter(emitterConn.getOutputStream(), true);
+                out.println(value);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    private void connectToEmitter(String ipAddress, String port) {
+        if (0 == emitterConnected) {
+            if (null == ipAddress || null == port) {
+                return;
+            }
+            new Thread(() -> {
+                try {
+                    emitterConn = new Socket(ipAddress, Integer.parseInt(port));
+                    emitterConn.setKeepAlive(true);
+                    emitterConnected = 1;
+                    BufferedReader in = new BufferedReader(new InputStreamReader(emitterConn.getInputStream()));
+                    String line;
+                    while ((line = in.readLine()) != null) {
+                        onEmitterResponse(line);
+                    }
+                    onEmitterDisconnected();
+                } catch (IOException ioException) {
+                    onEmitterDisconnected();
+                }
+            }).start();
+        } else {
+            try {
+                emitterConnected = 0;
+                emitterConn.close();
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     // control
     @Override
     public void onClick(View v) {
@@ -242,13 +332,16 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
             decodedValue += ",";
         }
         Log.d(TAG, "decodedValue : " + decodedValue);
+        sendDecodedToEmitter(decodedValue);
         // send decoded integer array to IR emitter
         ConsumerIrManager irEmitter =
                 (ConsumerIrManager) mParent.getSystemService(Context.CONSUMER_IR_SERVICE);
-        if (irEmitter.hasIrEmitter()) {
-            if (null != decoded && decoded.length > 0) {
+        if (null != irEmitter && irEmitter.hasIrEmitter()) {
+            if (decoded.length > 0) {
                 irEmitter.transmit(38000, decoded);
             }
+        } else {
+            ToastUtils.showToast(mParent, this.getString(R.string.ir_not_supported), null);
         }
     }
 

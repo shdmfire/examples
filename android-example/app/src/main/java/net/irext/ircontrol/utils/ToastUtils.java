@@ -15,8 +15,12 @@ import android.widget.Toast;
  */
 public class ToastUtils {
 
-    public static void showToast(Context context, String text) {
-        int duration = Toast.LENGTH_SHORT;
+    public static void showToast(Context context, String text, Integer specificDuration) {
+        int duration = Toast.LENGTH_LONG;
+
+        if (null != specificDuration) {
+            duration = specificDuration;
+        }
 
         Toast toast = Toast.makeText(context, text, duration);
         toast.show();

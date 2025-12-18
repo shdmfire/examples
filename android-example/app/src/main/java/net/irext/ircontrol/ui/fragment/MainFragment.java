@@ -2,7 +2,6 @@ package net.irext.ircontrol.ui.fragment;
 
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
+import androidx.fragment.app.Fragment;
 import net.irext.ircontrol.R;
 import net.irext.ircontrol.bean.RemoteControl;
 import net.irext.ircontrol.ui.activity.MainActivity;

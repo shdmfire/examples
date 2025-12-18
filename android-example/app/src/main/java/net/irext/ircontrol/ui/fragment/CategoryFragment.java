@@ -3,13 +3,13 @@ package net.irext.ircontrol.ui.fragment;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 
+import androidx.annotation.NonNull;
 import net.irext.decode.sdk.utils.Constants;
 import net.irext.ircontrol.IRApplication;
 import net.irext.ircontrol.R;
@@ -95,7 +95,7 @@ public class CategoryFragment extends BaseCreateFragment {
         super.onCreateView(inflater, container, savedInstanceState);
         mFrom = -1;
         View view = inflater.inflate(R.layout.fragment_category, container, false);
-        mApp = (IRApplication) Objects.requireNonNull(getActivity()).getApplication();
+        mApp = (IRApplication) requireActivity().getApplication();
 
         mMsgHandler = new MsgHandler(this);
 
