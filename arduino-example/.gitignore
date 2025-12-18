@@ -34,12 +34,10 @@ cmake-build-release/
 *.lib
 
 # CLion specific files
-.idea/workspace.xml
-.idea/user.prefs
-.idea/vcs.xml
-.idea/misc.xml
-.idea/*.iml
-.idea/*.xml
+.idea/*
+.idea/**
+*/.idea
+**/.idea
 
 # Other temporary files
 *.log
