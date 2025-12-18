@@ -1,77 +1,153 @@
-//
-// Created by strawmanbobi on 10/14/25.
-//
+/**
+ *
+ * Copyright (c) 2020-2025 IRext Opensource Organization
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #include <Arduino.h>
-#include <WiFiS3.h> // Library for the UNO R4 WiFi connectivity
-#include "configure.h" // Your secret credentials file
+#include <WiFiS3.h>
 
-// --- Global Variables ---
-// Read credentials from the secrets file
-const char ssid[] = SECRET_SSID;
-const char pass[] = SECRET_PASS;
+#include "ArduinoGraphics.h"
+#include "Arduino_LED_Matrix.h"
+
+#include "configure.h"
+
+#define WIFI_SERVER_PORT  (8000)
+
+
+// global variable definitions
+constexpr char ssid[] = SECRET_SSID;
+constexpr char pass[] = SECRET_PASS;
 
 int status = WL_IDLE_STATUS;
+unsigned long lastStatusCheck = 0;
+boolean wifiStatusPrinted = false;
+ArduinoLEDMatrix matrix;
 
-// --- Function to print connection details ---
+WiFiServer server(WIFI_SERVER_PORT);
+WiFiClient client;
+boolean clientConnected = false;
+
+void drawIp(const char *ipAddr) {
+    matrix.beginDraw();
+
+    matrix.stroke(0xFFFFFFFF);
+    matrix.textScrollSpeed(100);
+
+    matrix.textFont(Font_5x7);
+    matrix.beginText(0, 1, 0xFFFFFF);
+    matrix.println(ipAddr);
+    matrix.endText(SCROLL_LEFT);
+    matrix.endDraw();
+}
+
 void printWiFiStatus() {
-  // Print the SSID of the network you're attached to
-  Serial.print("SSID: ");
-  Serial.println(WiFi.SSID());
+    unsigned long currentMillis = millis();
+    if (currentMillis - lastStatusCheck >= 10000 && !wifiStatusPrinted) {
+        IPAddress ip = WiFi.localIP();
+        if (0 == strcmp(ip.toString().c_str(), "0.0.0.0")) {
+            lastStatusCheck = currentMillis;
+            return;
+        }
+        Serial.print("SSID: ");
+        Serial.println(WiFi.SSID());
 
-  // Print the UNO R4's IP address
-  IPAddress ip = WiFi.localIP();
-  Serial.print("IP Address: ");
-  Serial.println(ip);
+        Serial.print("IP Address: ");
+        Serial.println(ip);
 
-  // Print the received signal strength (RSSI)
-  long rssi = WiFi.RSSI();
-  Serial.print("Signal Strength (RSSI): ");
-  Serial.print(rssi);
-  Serial.println(" dBm");
-}
+        long rssi = WiFi.RSSI();
+        Serial.print("Signal Strength (RSSI): ");
+        Serial.print(rssi);
+        Serial.println(" dBm");
 
-// ----------------------------------------------------------------------
-void setup() {
-  Serial.begin(115200);
-  while (!Serial); // Wait for serial port to connect
-
-  Serial.println("--- Arduino UNO R4 WiFi: Station Mode ---");
-
-  // Set the board to Wi-Fi Station (client) mode
-  // The WiFiS3 library handles this mode implicitly with WiFi.begin()
-
-  // Attempt to connect to the Wi-Fi network
-  Serial.print("Attempting to connect to SSID: ");
-  Serial.println(ssid);
-
-  // Connect to the Wi-Fi network
-  // This is a blocking call that retries until a connection is made or times out
-  status = WiFi.begin(ssid, pass);
-
-  if (status == WL_CONNECTED) {
-    // If connected successfully
-    Serial.println("\nConnection Successful!");
-    printWiFiStatus();
-  } else {
-    // If connection failed
-    Serial.print("\nConnection Failed! Status: ");
-    Serial.println(status);
-  }
-}
-
-// ----------------------------------------------------------------------
-void loop() {
-  // Check WiFi status and attempt to reconnect if disconnected
-  if (WiFi.status() != WL_CONNECTED) {
-    Serial.print("Connection lost. Reconnecting...");
-    status = WiFi.begin(ssid, pass);
-    if (status == WL_CONNECTED) {
-      Serial.println("Reconnected!");
-      printWiFiStatus();
+        drawIp(ip.toString().c_str());
+        lastStatusCheck = currentMillis;
+        wifiStatusPrinted = true;
     }
-  }
+}
 
-  // Your main application logic goes here
-  delay(5000);
+void setup() {
+    Serial.begin(115200);
+    while (!Serial) {
+        delay(100);
+    }
+
+    matrix.begin();
+    matrix.beginDraw();
+
+    matrix.stroke(0xFFFFFFFF);
+    matrix.textScrollSpeed(100);
+
+    constexpr char text[] = "IRext Example";
+    matrix.textFont(Font_4x6);
+    matrix.beginText(0, 1, 0xFFFFFF);
+    matrix.println(text);
+    matrix.endText(SCROLL_LEFT);
+    matrix.endDraw();
+
+    Serial.println("Wi-Fi: Station Mode");
+
+    Serial.print("Attempting to connect to SSID: ");
+    Serial.println(ssid);
+
+    status = WiFi.begin(ssid, pass);
+
+    if (status == WL_CONNECTED) {
+        Serial.println("\nConnection Successful!");
+        server.begin();
+    }
+    else {
+        Serial.print("\nConnection Failed! Status: ");
+        Serial.println(status);
+    }
+}
+
+void loop() {
+    if (WiFi.status() != WL_CONNECTED) {
+        Serial.print("Connection lost. Reconnecting...");
+        status = WiFi.begin(ssid, pass);
+        if (status == WL_CONNECTED) {
+            Serial.println("Reconnected!");
+        }
+    } else {
+        printWiFiStatus();
+        client = server.available();
+        if (client.connected()) {
+            if (false == clientConnected) {
+                client.flush();
+                Serial.println("We have a new client");
+                client.println("Hello, client");
+                clientConnected = true;
+            }
+
+            if (client.available() > 0) {
+                String received = client.readStringUntil('\n');
+                Serial.println(received);
+            }
+        } else {
+            if (clientConnected) {
+                client.stop();
+                Serial.println("Client disconnected");
+            }
+            clientConnected = false;
+        }
+    }
+    delay(10);
 }

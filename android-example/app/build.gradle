@@ -1,7 +1,6 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdk 36
     defaultConfig {
         applicationId "net.irext.ircontrol"
         targetSdkVersion 36
