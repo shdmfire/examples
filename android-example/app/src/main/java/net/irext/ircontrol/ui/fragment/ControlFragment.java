@@ -1,11 +1,10 @@
 package net.irext.ircontrol.ui.fragment;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.hardware.ConsumerIrManager;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.os.Vibrator;
+import android.net.InetAddresses;
+import android.os.*;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,7 +28,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 /**
  * Filename:       ControlFragment.java
@@ -76,6 +74,11 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
     // define the single instance of IRDecode
     private IRDecode mIRDecode;
 
+    private CheckBox mCbUseEmitter;
+    private EditText mEtEmitterIp;
+    private ImageButton mBtnConnect;
+    private TextView mTvConnectionStatus;
+
     public ControlFragment() {
     }
 
@@ -89,44 +92,48 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
         mParent = (ControlActivity)getActivity();
         View view = inflater.inflate(R.layout.fragment_control, container, false);
 
-        ImageButton mBtnPower = view.findViewById(R.id.iv_power);
-        ImageButton mBtnBack = view.findViewById(R.id.iv_back);
-        ImageButton mBtnHome = view.findViewById(R.id.iv_home);
-        ImageButton mBtnMenu = view.findViewById(R.id.iv_menu);
-        ImageButton mBtnUp = view.findViewById(R.id.iv_up);
-        ImageButton mBtnDown = view.findViewById(R.id.iv_down);
-        ImageButton mBtnLeft = view.findViewById(R.id.iv_left);
-        ImageButton mBtnRight = view.findViewById(R.id.iv_right);
-        ImageButton mBtnOK = view.findViewById(R.id.iv_ok);
-        ImageButton mBtnPlus = view.findViewById(R.id.iv_plus);
-        ImageButton mBtnMinus = view.findViewById(R.id.iv_minus);
+        ImageButton btnPower = view.findViewById(R.id.iv_power);
+        ImageButton btnBack = view.findViewById(R.id.iv_back);
+        ImageButton btnHome = view.findViewById(R.id.iv_home);
+        ImageButton btnMenu = view.findViewById(R.id.iv_menu);
+        ImageButton btnUp = view.findViewById(R.id.iv_up);
+        ImageButton btnDown = view.findViewById(R.id.iv_down);
+        ImageButton btnLeft = view.findViewById(R.id.iv_left);
+        ImageButton btnRight = view.findViewById(R.id.iv_right);
+        ImageButton btnOK = view.findViewById(R.id.iv_ok);
+        ImageButton btnPlus = view.findViewById(R.id.iv_plus);
+        ImageButton btnMinus = view.findViewById(R.id.iv_minus);
 
-        mBtnPower.setOnClickListener(this);
-        mBtnBack.setOnClickListener(this);
-        mBtnHome.setOnClickListener(this);
-        mBtnMenu.setOnClickListener(this);
-        mBtnUp.setOnClickListener(this);
-        mBtnDown.setOnClickListener(this);
-        mBtnLeft.setOnClickListener(this);
-        mBtnRight.setOnClickListener(this);
-        mBtnOK.setOnClickListener(this);
-        mBtnPlus.setOnClickListener(this);
-        mBtnMinus.setOnClickListener(this);
+        btnPower.setOnClickListener(this);
+        btnBack.setOnClickListener(this);
+        btnHome.setOnClickListener(this);
+        btnMenu.setOnClickListener(this);
+        btnUp.setOnClickListener(this);
+        btnDown.setOnClickListener(this);
+        btnLeft.setOnClickListener(this);
+        btnRight.setOnClickListener(this);
+        btnOK.setOnClickListener(this);
+        btnPlus.setOnClickListener(this);
+        btnMinus.setOnClickListener(this);
 
-        CheckBox mCbUseEmitter = view.findViewById(R.id.cb_use_emitter);
-        EditText mEtEmitterIp = view.findViewById(R.id.emitter_ip);
-        ImageButton mBtnConnect = view.findViewById(R.id.btn_connection_status);
+        mCbUseEmitter = view.findViewById(R.id.cb_use_emitter);
+        mEtEmitterIp = view.findViewById(R.id.emitter_ip);
+        mBtnConnect = view.findViewById(R.id.btn_connect_emitter);
+        mTvConnectionStatus = view.findViewById(R.id.tv_connection_status);
 
         mBtnConnect.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
+                vibrate(mParent);
                 String emitterIp = mEtEmitterIp.getText().toString();
-                if (android.net.InetAddresses.isNumericAddress(emitterIp)) {
-                    connectToEmitter(emitterIp, String.valueOf(EMITTER_PORT));
-                } else {
-                    ToastUtils.showToast(mParent, mParent.getString(R.string.input_emitter_ip_address), null);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    if (!InetAddresses.isNumericAddress(emitterIp)) {
+                        ToastUtils.showToast(mParent, mParent.getString(R.string.input_emitter_ip_address), null);
+                        return;
+                    }
                 }
+                connectToEmitter(emitterIp, String.valueOf(EMITTER_PORT));
             }
         });
 
@@ -232,6 +239,14 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
         return mIRDecode.decodeBinary(inputKeyCode, acStatus, 0);
     }
 
+    private void onEmitterConnected() {
+        emitterConnected = 1;
+        mParent.runOnUiThread(() -> {
+            mBtnConnect.setImageDrawable(mParent.getDrawable(R.mipmap.button_unlink));
+            mTvConnectionStatus.setText(mParent.getString(R.string.status_connected));
+            mTvConnectionStatus.setTextColor(Color.parseColor("#7F7FFF"));
+        });
+    }
     private void onEmitterDisconnected() {
         if (1 == emitterConnected) {
             Log.d(TAG, "emitter disconnected");
@@ -245,6 +260,9 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
             } else {
                 ToastUtils.showToast(mParent, mParent.getString(R.string.connect_disconnected), Toast.LENGTH_SHORT);
             }
+            mBtnConnect.setImageDrawable(mParent.getDrawable(R.mipmap.button_link));
+            mTvConnectionStatus.setText(mParent.getString(R.string.status_not_connected));
+            mTvConnectionStatus.setTextColor(Color.parseColor("#FF7F7F"));
         });
 
         emitterConnected = 0;
@@ -274,7 +292,7 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
                 try {
                     emitterConn = new Socket(ipAddress, Integer.parseInt(port));
                     emitterConn.setKeepAlive(true);
-                    emitterConnected = 1;
+                    onEmitterConnected();
                     BufferedReader in = new BufferedReader(new InputStreamReader(emitterConn.getInputStream()));
                     String line;
                     while ((line = in.readLine()) != null) {
@@ -332,7 +350,9 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
             decodedValue += ",";
         }
         Log.d(TAG, "decodedValue : " + decodedValue);
-        sendDecodedToEmitter(decodedValue);
+        if (1 == emitterConnected) {
+            sendDecodedToEmitter(decodedValue);
+        }
         // send decoded integer array to IR emitter
         ConsumerIrManager irEmitter =
                 (ConsumerIrManager) mParent.getSystemService(Context.CONSUMER_IR_SERVICE);

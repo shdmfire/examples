@@ -33,10 +33,12 @@
     <string name="ir_not_supported">该设备不支持红外发射, 请连接外部模块进行发射</string>
 
     <string name="emitter_ip">发射端 IP</string>
-    <string name="default_ip">192.168.1.100</string>
+    <string name="default_ip">192.168.2.85</string>
     <string name="connect">连接</string>
     <string name="use_emitter">使用发射器</string>
     <string name="input_emitter_ip_address">请输入接收器的 IP 地址</string>
     <string name="connect_failed">连接失败</string>
-    <string name="connect_disconnected">断开连接</string>
+    <string name="connect_disconnected">连接已断开</string>
+    <string name="status_not_connected">未连接</string>
+    <string name="status_connected">已连接</string>
 </resources>
