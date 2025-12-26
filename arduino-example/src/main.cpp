@@ -36,6 +36,15 @@
 constexpr char ssid[] = SECRET_SSID;
 constexpr char pass[] = SECRET_PASS;
 
+// commands and events
+auto *aHello = "a_hello";
+auto *eHello = "e_hello";
+auto *aBin = "a_bin";
+auto *eBin = "e_bin";
+auto *aControl = "a_control";
+auto *eControl = "e_control";
+
+
 int status = WL_IDLE_STATUS;
 unsigned long lastStatusCheck = 0;
 boolean wifiStatusPrinted = false;
@@ -133,7 +142,7 @@ void loop() {
             if (false == clientConnected) {
                 client.flush();
                 Serial.println("We have a new client");
-                client.println("Hello, client");
+                client.println("e_hello");
                 clientConnected = true;
             }
 
