@@ -65,6 +65,15 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
     private Socket emitterConn = null;
     private int emitterConnected = 0;
 
+    private static final String A_REQUEST_HELLO = "a_hello";
+    private static final String E_RESPONSE_HELLO = "e_hello";
+
+    private static final String A_REQUEST_BIN = "a_bin";
+    private static final String E_RESPONSE_BIN = "e_bin";
+
+    private static final String A_REQUEST_CTRL = "a_control";
+    private static final String E_RESPONSE_CTRL = "e_control";
+
     private MsgHandler mHandler;
 
     private ControlActivity mParent;
@@ -74,7 +83,7 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
     // define the single instance of IRDecode
     private IRDecode mIRDecode;
 
-    private CheckBox mCbUseEmitter;
+    private CheckBox mCbDecodeOnBoard;
     private EditText mEtEmitterIp;
     private ImageButton mBtnConnect;
     private TextView mTvConnectionStatus;
@@ -116,7 +125,7 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
         btnPlus.setOnClickListener(this);
         btnMinus.setOnClickListener(this);
 
-        mCbUseEmitter = view.findViewById(R.id.cb_use_emitter);
+        mCbDecodeOnBoard = view.findViewById(R.id.cb_use_encoded);
         mEtEmitterIp = view.findViewById(R.id.emitter_ip);
         mBtnConnect = view.findViewById(R.id.btn_connect_emitter);
         mTvConnectionStatus = view.findViewById(R.id.tv_connection_status);
@@ -246,6 +255,7 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
             mTvConnectionStatus.setText(mParent.getString(R.string.status_connected));
             mTvConnectionStatus.setTextColor(Color.parseColor("#7F7FFF"));
         });
+        sendHelloToEmitter();
     }
     private void onEmitterDisconnected() {
         if (1 == emitterConnected) {
@@ -268,10 +278,41 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
         emitterConnected = 0;
     }
 
-    private void onEmitterResponse(String line) {
-        Log.d(TAG, "emitter: " + line);
+    private void processEHello(String response) {
+
     }
 
+    private void processEBin(String response) {
+
+    }
+
+    private void processECtrl(String response) {
+
+    }
+
+    private void onEmitterResponse(String response) {
+        Log.d(TAG, "emitter: " + response);
+        if (response.startsWith(E_RESPONSE_HELLO)) {
+            processEHello(response);
+        } else if (response.startsWith(E_RESPONSE_BIN)) {
+            processEBin(response);
+        } else if (response.startsWith(E_RESPONSE_CTRL)) {
+            processECtrl(response);
+        } else {
+            Log.e(TAG, "unexpected response : " + response);
+        }
+    }
+
+    private void sendHelloToEmitter() {
+        new Thread(() -> {
+            try {
+                PrintWriter out = new PrintWriter(emitterConn.getOutputStream(), true);
+                out.println(A_REQUEST_HELLO);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
     private void sendDecodedToEmitter(String value) {
         new Thread(() -> {
             try {
@@ -294,9 +335,9 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
                     emitterConn.setKeepAlive(true);
                     onEmitterConnected();
                     BufferedReader in = new BufferedReader(new InputStreamReader(emitterConn.getInputStream()));
-                    String line;
-                    while ((line = in.readLine()) != null) {
-                        onEmitterResponse(line);
+                    String response = "";
+                    while ((response = in.readLine()) != null) {
+                        onEmitterResponse(response);
                     }
                     onEmitterDisconnected();
                 } catch (IOException ioException) {

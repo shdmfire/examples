@@ -35,7 +35,7 @@
     <string name="emitter_ip">发射端 IP</string>
     <string name="default_ip">192.168.2.85</string>
     <string name="connect">连接</string>
-    <string name="use_emitter">使用发射器</string>
+    <string name="decode_on_board">在单片机上解码</string>
     <string name="input_emitter_ip_address">请输入接收器的 IP 地址</string>
     <string name="connect_failed">连接失败</string>
     <string name="connect_disconnected">连接已断开</string>

@@ -35,7 +35,7 @@
     <string name="emitter_ip">Emitter IP</string>
     <string name="default_ip">192.168.2.85</string>
     <string name="connect">connect</string>
-    <string name="use_emitter">Use Emitter</string>
+    <string name="decode_on_board">Decode On Board</string>
     <string name="input_emitter_ip_address">Please input IP address of emitter</string>
     <string name="connect_failed">Connect failed</string>
     <string name="connect_disconnected">The connection has lost</string>
