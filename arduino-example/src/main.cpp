@@ -128,6 +128,16 @@ void setup() {
     }
 }
 
+void onCommand(const String *command, WiFiClient *client) {
+    if (command->startsWith(aHello)) {
+        client->println(eBin);
+        client->flush();
+    } else if (command->startsWith(aBin)) {
+        Serial.println("Received bin command");
+        Serial.println(*command);
+    }
+}
+
 void loop() {
     if (WiFi.status() != WL_CONNECTED) {
         Serial.print("Connection lost. Reconnecting...");
@@ -146,9 +156,10 @@ void loop() {
                 clientConnected = true;
             }
 
-            if (client.available() > 0) {
+            if (client.available()) {
                 String received = client.readStringUntil('\n');
                 Serial.println(received);
+                onCommand(&received, &client);
             }
         } else {
             if (clientConnected) {
