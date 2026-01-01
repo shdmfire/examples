@@ -297,7 +297,7 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
             byte []binContent = FileUtils.getByteArrayFromFile(binFileName);
             sendBinToEmitter(binContent);
         } else {
-            emitterConnected = EMITTER_CONNECTED;
+            emitterConnected = EMITTER_BIN_RECEIVED;
         }
     }
 
@@ -342,8 +342,14 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
     }
 
     private void sendBinToEmitter(byte[] binContent) {
+        if (null == binContent) {
+            Log.e(TAG, "binary bytes is null");
+            return;
+        }
+        int categoryId = mCurrentRemoteControl.getCategoryId();
+        int subCate = mCurrentRemoteControl.getSubCategory();
         String binBase64 = Base64.getEncoder().encodeToString(binContent);
-        String binStr = A_REQUEST_BIN + "," + binBase64.length() + "," + binBase64;
+        String binStr = A_REQUEST_BIN + "," + categoryId + "," + subCate + "," + binBase64.length() + "," + binBase64;
         Log.d(TAG, "sending bin in base64: " + binStr);
         new Thread(() -> {
             try {

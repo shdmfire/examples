@@ -23,14 +23,14 @@
 
 #include <Arduino.h>
 #include <WiFiS3.h>
-
-#include "ArduinoGraphics.h"
-#include "Arduino_LED_Matrix.h"
+#include <ArduinoGraphics.h>
+#include <Arduino_LED_Matrix.h>
 
 #include "configure.h"
+#include "remote.h"
 
-#define WIFI_SERVER_PORT  (8000)
 
+#define WIFI_SERVER_PORT (8000)
 
 // global variable definitions
 constexpr char ssid[] = SECRET_SSID;
@@ -43,7 +43,6 @@ auto *aBin = "a_bin";
 auto *eBin = "e_bin";
 auto *aControl = "a_control";
 auto *eControl = "e_control";
-
 
 int status = WL_IDLE_STATUS;
 unsigned long lastStatusCheck = 0;
@@ -81,7 +80,7 @@ void printWiFiStatus() {
         Serial.print("IP Address: ");
         Serial.println(ip);
 
-        long rssi = WiFi.RSSI();
+        const long rssi = WiFi.RSSI();
         Serial.print("Signal Strength (RSSI): ");
         Serial.print(rssi);
         Serial.println(" dBm");
@@ -135,6 +134,7 @@ void onCommand(const String *command, WiFiClient *client) {
     } else if (command->startsWith(aBin)) {
         Serial.println("Received bin command");
         Serial.println(*command);
+        onRemoteBin(command->c_str());
     }
 }
 
