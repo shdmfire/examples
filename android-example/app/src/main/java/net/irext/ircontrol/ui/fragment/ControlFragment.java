@@ -90,11 +90,9 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
 
     // define the single instance of IRDecode
     private IRDecode mIRDecode;
-
-    private CheckBox mCbDecodeOnBoard;
     private EditText mEtEmitterIp;
     private ImageButton mBtnConnect;
-    private TextView mTvConnectionStatus;
+    private View mVWConnectStatus;
 
     public ControlFragment() {
     }
@@ -133,10 +131,9 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
         btnPlus.setOnClickListener(this);
         btnMinus.setOnClickListener(this);
 
-        mCbDecodeOnBoard = view.findViewById(R.id.cb_use_encoded);
         mEtEmitterIp = view.findViewById(R.id.emitter_ip);
         mBtnConnect = view.findViewById(R.id.btn_connect_emitter);
-        mTvConnectionStatus = view.findViewById(R.id.tv_connection_status);
+        mVWConnectStatus = view.findViewById(R.id.vw_connect_status);
 
         mBtnConnect.setOnClickListener(new View.OnClickListener() {
 
@@ -261,8 +258,7 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
         emitterConnected = EMITTER_CONNECTED;
         mParent.runOnUiThread(() -> {
             mBtnConnect.setImageDrawable(AppCompatResources.getDrawable(mParent, R.mipmap.button_unlink));
-            mTvConnectionStatus.setText(mParent.getString(R.string.status_connected));
-            mTvConnectionStatus.setTextColor(Color.parseColor("#7F7FFF"));
+            mVWConnectStatus.setBackgroundColor(Color.parseColor("#3FAFFF"));
         });
     }
     private void onEmitterDisconnected() {
@@ -279,8 +275,7 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
                 ToastUtils.showToast(mParent, mParent.getString(R.string.connect_disconnected), Toast.LENGTH_SHORT);
             }
             mBtnConnect.setImageDrawable(AppCompatResources.getDrawable(mParent, R.mipmap.button_link));
-            mTvConnectionStatus.setText(mParent.getString(R.string.status_not_connected));
-            mTvConnectionStatus.setTextColor(Color.parseColor("#FF7F7F"));
+            mVWConnectStatus.setBackgroundColor(Color.parseColor("#FF7F7F"));
         });
 
         emitterConnected = EMITTER_DISCONNECTED;
@@ -291,14 +286,10 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
     }
 
     private void processEBin(String response) {
-        if (mCbDecodeOnBoard.isChecked()) {
-            String binFileName = FileUtils.binDir + FileUtils.FILE_NAME_PREFIX +
-                    mCurrentRemoteControl.getRemoteMap() + FileUtils.FILE_NAME_EXT;
-            byte []binContent = FileUtils.getByteArrayFromFile(binFileName);
-            sendBinToEmitter(binContent);
-        } else {
-            emitterConnected = EMITTER_BIN_RECEIVED;
-        }
+        String binFileName = FileUtils.binDir + FileUtils.FILE_NAME_PREFIX +
+                mCurrentRemoteControl.getRemoteMap() + FileUtils.FILE_NAME_EXT;
+        byte []binContent = FileUtils.getByteArrayFromFile(binFileName);
+        sendBinToEmitter(binContent);
     }
 
     private void processECtrl(String response) {
@@ -395,60 +386,53 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         vibrate(mParent);
+        // decode directly in mobile phone
+        int []decoded = null;
+        int id = v.getId();
+        if (id == R.id.iv_power) {
+            decoded = irControl(KEY_POWER);
+        } else if (id == R.id.iv_up) {
+            decoded = irControl(KEY_UP);
+        } else if (id == R.id.iv_down) {
+            decoded = irControl(KEY_DOWN);
+        } else if (id == R.id.iv_left) {
+            decoded = irControl(KEY_LEFT);
+        } else if (id == R.id.iv_right) {
+            decoded = irControl(KEY_RIGHT);
+        } else if (id == R.id.iv_ok) {
+            decoded = irControl(KEY_OK);
+        } else if (id == R.id.iv_plus) {
+            decoded = irControl(KEY_PLUS);
+        } else if (id == R.id.iv_minus) {
+            decoded = irControl(KEY_MINUS);
+        } else if (id == R.id.iv_back) {
+            decoded = irControl(KEY_BACK);
+        } else if (id == R.id.iv_home) {
+            decoded = irControl(KEY_HOME);
+        } else if (id == R.id.iv_menu) {
+            decoded = irControl(KEY_MENU);
+        }
 
-        boolean decodeOnBoard = mCbDecodeOnBoard.isChecked();
-
-        if (decodeOnBoard) {
-            // send control command to emitter
+        // debug decoded value
+        StringBuilder decodedValue = new StringBuilder();
+        for (int i = 0; i < Objects.requireNonNull(decoded).length; i++) {
+            decodedValue.append(decoded[i]);
+            decodedValue.append(",");
+        }
+        Log.d(TAG, "decodedValue : " + decodedValue);
+        if (EMITTER_AVAILABLE == emitterConnected) {
+            Log.d(TAG, "emitter available, send decoded to emitter");
+            sendDecodedToEmitter(decodedValue.toString());
+        }
+        // send decoded integer array to IR emitter
+        ConsumerIrManager irEmitter =
+                (ConsumerIrManager) mParent.getSystemService(Context.CONSUMER_IR_SERVICE);
+        if (null != irEmitter && irEmitter.hasIrEmitter()) {
+            if (decoded.length > 0) {
+                irEmitter.transmit(38000, decoded);
+            }
         } else {
-            // decode directly in mobile phone
-            int []decoded = null;
-            int id = v.getId();
-            if (id == R.id.iv_power) {
-                decoded = irControl(KEY_POWER);
-            } else if (id == R.id.iv_up) {
-                decoded = irControl(KEY_UP);
-            } else if (id == R.id.iv_down) {
-                decoded = irControl(KEY_DOWN);
-            } else if (id == R.id.iv_left) {
-                decoded = irControl(KEY_LEFT);
-            } else if (id == R.id.iv_right) {
-                decoded = irControl(KEY_RIGHT);
-            } else if (id == R.id.iv_ok) {
-                decoded = irControl(KEY_OK);
-            } else if (id == R.id.iv_plus) {
-                decoded = irControl(KEY_PLUS);
-            } else if (id == R.id.iv_minus) {
-                decoded = irControl(KEY_MINUS);
-            } else if (id == R.id.iv_back) {
-                decoded = irControl(KEY_BACK);
-            } else if (id == R.id.iv_home) {
-                decoded = irControl(KEY_HOME);
-            } else if (id == R.id.iv_menu) {
-                decoded = irControl(KEY_MENU);
-            }
-
-            // debug decoded value
-            StringBuilder decodedValue = new StringBuilder();
-            for (int i = 0; i < Objects.requireNonNull(decoded).length; i++) {
-                decodedValue.append(decoded[i]);
-                decodedValue.append(",");
-            }
-            Log.d(TAG, "decodedValue : " + decodedValue);
-            if (EMITTER_AVAILABLE == emitterConnected) {
-                Log.d(TAG, "emitter available, send decoded to emitter");
-                sendDecodedToEmitter(decodedValue.toString());
-            }
-            // send decoded integer array to IR emitter
-            ConsumerIrManager irEmitter =
-                    (ConsumerIrManager) mParent.getSystemService(Context.CONSUMER_IR_SERVICE);
-            if (null != irEmitter && irEmitter.hasIrEmitter()) {
-                if (decoded.length > 0) {
-                    irEmitter.transmit(38000, decoded);
-                }
-            } else {
-                ToastUtils.showToast(mParent, this.getString(R.string.ir_not_supported), null);
-            }
+            ToastUtils.showToast(mParent, this.getString(R.string.ir_not_supported), null);
         }
     }
 

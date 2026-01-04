@@ -24,8 +24,12 @@
 #ifndef ARDUINO_EXAMPLE_REMOTE_H
 #define ARDUINO_EXAMPLE_REMOTE_H
 
-// #define REMOTE_BIN_DEBUG (1)
+#define REMOTE_BIN_DEBUG (1)
 
-int onRemoteBin(const char *binStr);
+int remoteOpen(const char *binStr);
+
+int remoteControl(const char *controlStr);
+
+void remoteClose();
 
 #endif //ARDUINO_EXAMPLE_REMOTE_H

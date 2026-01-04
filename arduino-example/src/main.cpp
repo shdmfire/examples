@@ -43,6 +43,8 @@ auto *aBin = "a_bin";
 auto *eBin = "e_bin";
 auto *aControl = "a_control";
 auto *eControl = "e_control";
+auto *aError = "a_error";
+auto *eError = "e_error";
 
 int status = WL_IDLE_STATUS;
 unsigned long lastStatusCheck = 0;
@@ -77,11 +79,11 @@ void printWiFiStatus() {
         Serial.print("SSID: ");
         Serial.println(WiFi.SSID());
 
-        Serial.print("IP Address: ");
+        Serial.print("IP address: ");
         Serial.println(ip);
 
         const long rssi = WiFi.RSSI();
-        Serial.print("Signal Strength (RSSI): ");
+        Serial.print("Signal strength (RSSI): ");
         Serial.print(rssi);
         Serial.println(" dBm");
 
@@ -110,8 +112,7 @@ void setup() {
     matrix.endText(SCROLL_LEFT);
     matrix.endDraw();
 
-    Serial.println("Wi-Fi: Station Mode");
-
+    Serial.println("Wi-Fi started in station mode");
     Serial.print("Attempting to connect to SSID: ");
     Serial.println(ssid);
 
@@ -127,14 +128,43 @@ void setup() {
     }
 }
 
+void onConnected(WiFiClient *client) {
+    client->flush();
+    Serial.println("Client connected");
+    client->println(eHello);
+}
+
+void onDisconnected(WiFiClient *client) {
+    remoteClose();
+    client->flush();
+    client->stop();
+    Serial.println("Client disconnected");
+}
+
+void onError(WiFiClient *client) {
+    client->flush();
+    client->stop();
+}
+
 void onCommand(const String *command, WiFiClient *client) {
     if (command->startsWith(aHello)) {
+        Serial.println("Received hello command");
         client->println(eBin);
         client->flush();
     } else if (command->startsWith(aBin)) {
         Serial.println("Received bin command");
-        Serial.println(*command);
-        onRemoteBin(command->c_str());
+        if (remoteOpen(command->c_str()) > 0) {
+            client->println(eControl);
+        } else {
+            Serial.println("Failed to parse bin command");
+            client->println(eError);
+        }
+    } else if (command->startsWith(aControl)) {
+        Serial.println("Received control command");
+        remoteControl(command->c_str());
+    } else if (command->startsWith(aError)) {
+        Serial.println("Received error command");
+        onError(client);
     }
 }
 
@@ -150,21 +180,17 @@ void loop() {
         client = server.available();
         if (client.connected()) {
             if (false == clientConnected) {
-                client.flush();
-                Serial.println("We have a new client");
-                client.println("e_hello");
-                clientConnected = true;
+                onConnected(&client);
             }
-
+            clientConnected = true;
             if (client.available()) {
-                String received = client.readStringUntil('\n');
+                const String received = client.readStringUntil('\n');
                 Serial.println(received);
                 onCommand(&received, &client);
             }
         } else {
             if (clientConnected) {
-                client.stop();
-                Serial.println("Client disconnected");
+                onDisconnected(&client);
             }
             clientConnected = false;
         }

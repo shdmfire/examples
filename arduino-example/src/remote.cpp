@@ -43,7 +43,7 @@ int remoteBinLen = 0;
 
 
 // public function definitions
-int onRemoteBin(const char *binStr) {
+int remoteOpen(const char *binStr) {
     char *aBinCommand[ABIN_COMMAND_SEG];
     char *remoteBinStr = nullptr;
     int categoryId = 0;
@@ -53,7 +53,8 @@ int onRemoteBin(const char *binStr) {
 
     aBinCommandSeg = splitString(binStr, aBinCommand, ABIN_COMMAND_SEG, ",");
     if (ABIN_COMMAND_SEG != aBinCommandSeg) {
-        Serial.println("Invalid aBinCommand");
+        Serial.print("Invalid aBin command: ");
+        Serial.println(binStr);
         return -1;
     }
     categoryId = strtol(aBinCommand[SEG_ABIN_CATE], nullptr, 10);
@@ -61,7 +62,7 @@ int onRemoteBin(const char *binStr) {
     remoteBinBase64Len = strtol(aBinCommand[SEG_ABIN_LENGTH], nullptr, 10);
     remoteBinStr = aBinCommand[SEG_ABIN_BIN];
     if (remoteBinBase64Len != strlen(remoteBinStr)) {
-        Serial.println("remoteBin length not correct");
+        Serial.println("Remote bin length not correct");
         return -1;
     }
 
@@ -69,19 +70,19 @@ int onRemoteBin(const char *binStr) {
     remoteBin = static_cast<unsigned char*>(malloc(remoteBinLen));
     char debugStr[129];
     if (nullptr == remoteBin) {
-        Serial.println("Not enough memory for remoteBin");
+        Serial.println("Not enough memory for remote bin");
         return -1;
     }
-    Serial.print("Remote bin length = ");
-    Serial.println(remoteBinLen);
     memset(remoteBin, 0, remoteBinLen);
 
     if (remoteBinLen != base64_decode(reinterpret_cast<char*>(remoteBin), remoteBinStr, remoteBinBase64Len)) {
-        Serial.println("Base64 decode failed");
+        Serial.println("Failed to decode remote bin");
         return -1;
     }
 
 #if defined REMOTE_BIN_DEBUG
+    Serial.print("Remote bin length = ");
+    Serial.println(remoteBinLen);
     snprintf(debugStr, 128, "%02x %02x %02x %02x %02x %02x %02x %02x",
         remoteBin[0], remoteBin[1], remoteBin[2], remoteBin[3],
         remoteBin[4], remoteBin[5], remoteBin[6], remoteBin[7]);
@@ -93,11 +94,18 @@ int onRemoteBin(const char *binStr) {
 #endif
 
     if (IR_DECODE_FAILED == ir_binary_open(categoryId, subCateId, remoteBin, remoteBinLen)) {
-        Serial.println("ir_binary_open failed");
+        Serial.println("Failed to load remote bin");
         return -1;
     }
-    Serial.println("ir_binary_open success");
-    ir_close();
+    Serial.println("Remote bin loaded successfully");
 
     return remoteBinLen;
+}
+
+int remoteControl(const char *controlStr) {
+    return 0;
+}
+
+void remoteClose() {
+    ir_close();
 }

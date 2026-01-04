@@ -23,7 +23,7 @@
 
 #include <Arduino.h>
 
-#include <string.h>
+#include <cstring>
 
 
 // public function definitions

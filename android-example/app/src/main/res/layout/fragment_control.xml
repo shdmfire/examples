@@ -227,35 +227,11 @@
             android:orientation="vertical"
             android:layout_alignParentBottom="true">
         <View
+                android:id="@+id/vw_connect_status"
                 android:layout_width="match_parent"
-                android:layout_height="1dp"
+                android:layout_height="2dp"
                 android:layout_margin="4dp"
-                android:background="#7F7F7F"/>
-        <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-            <CheckBox
-                    android:id="@+id/cb_use_encoded"
-                    android:layout_width="match_parent"
-                    android:layout_height="60dp"
-                    android:textSize="18sp"
-                    android:layout_marginStart="20dp"
-                    android:text="@string/decode_on_board"
-                    android:layout_weight="1"
-                    android:checked="false"/>
-            <TextView
-                    android:id="@+id/tv_connection_status"
-                    android:layout_width="match_parent"
-                    android:layout_height="60dp"
-                    android:gravity="center_vertical|end"
-                    android:layout_marginEnd="20dp"
-                    android:layout_weight="1"
-                    android:textSize="18sp"
-                    android:textColor="#FF7F7F"
-                    android:text="@string/status_not_connected"/>
-        </LinearLayout>
-
+                android:background="#FF3F3F"/>
         <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

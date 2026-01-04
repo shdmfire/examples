@@ -25,6 +25,6 @@
 #define ARDUINO_EXAMPLE_UTILS_H
 
 int splitString(const char *str, char *parts[],
-                const int parts_max, const char *delimiter);
+                int parts_max, const char *delimiter);
 
 #endif //ARDUINO_EXAMPLE_UTILS_H
