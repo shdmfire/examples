@@ -205,6 +205,7 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
             acStatus.setAcTemp(Constants.ACTemperature.TEMP_24.getValue());
             acStatus.setAcWindSpeed(Constants.ACWindSpeed.SPEED_AUTO.getValue());
             acStatus.setAcWindDir(Constants.ACSwing.SWING_ON.getValue());
+            acStatus.setChangeWindDir(0);
             acStatus.setAcDisplay(0);
             acStatus.setAcTimer(0);
             acStatus.setAcSleep(0);
@@ -250,7 +251,7 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
         /* translate key code for AC according to the mapping above */
         /* ac status is useless for decoding devices other than AC, it's an optional parameter */
         /* change wind dir is an optional parameter, set to 0 as default */
-        return mIRDecode.decodeBinary(inputKeyCode, acStatus, 0);
+        return mIRDecode.decodeBinary(inputKeyCode, acStatus);
     }
 
     private void onEmitterConnected() {
