@@ -33,7 +33,7 @@
     <string name="ir_not_supported">该设备不支持红外发射, 请连接外部模块进行发射</string>
 
     <string name="emitter_ip">发射端 IP</string>
-    <string name="default_ip">192.168.2.85</string>
+    <string name="default_ip">192.168.1.40</string>
     <string name="connect">连接</string>
     <string name="decode_on_board">在单片机上解码</string>
     <string name="input_emitter_ip_address">请输入接收器的 IP 地址</string>

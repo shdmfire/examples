@@ -57,7 +57,6 @@ void input_number(int *val)
 static INT8 decode_as_ac(char *file_name)
 {
     BOOL op_match = TRUE;
-    BOOL change_wind_dir = FALSE;
     UINT8 function_code = AC_FUNCTION_MAX;
     int key_code = 0;
     int first_time = 1;
@@ -83,6 +82,7 @@ static INT8 decode_as_ac(char *file_name)
     ac_status.ac_temp = AC_TEMP_20;
     ac_status.ac_wind_dir = AC_SWING_ON;
     ac_status.ac_wind_speed = AC_WS_AUTO;
+    ac_status.change_wind_direction = FALSE;
 
     if (IR_DECODE_FAILED == ir_file_open(REMOTE_CATEGORY_AC, 0, file_name))
     {
@@ -106,7 +106,6 @@ static INT8 decode_as_ac(char *file_name)
 
         op_match = TRUE;
         need_control = FALSE;
-        change_wind_dir = FALSE;
 
         if (99 == key_code)
         {
@@ -203,7 +202,7 @@ static INT8 decode_as_ac(char *file_name)
 
                 case 11:
                     if (ac_status.ac_wind_dir == AC_SWING_OFF) {
-                        change_wind_dir = TRUE;
+                        ac_status.change_wind_direction = TRUE;
                     }
                     need_control = TRUE;
                     break;
@@ -223,7 +222,7 @@ static INT8 decode_as_ac(char *file_name)
                        ac_status.ac_wind_dir,
                        function_code);
 
-                length = ir_decode(function_code, user_data, &ac_status, change_wind_dir);
+                length = ir_decode(function_code, user_data, &ac_status);
                 printf("\n === Binary decoded : %d\n", length);
                 for (index = 0; index < length; index++)
                 {
@@ -271,7 +270,7 @@ static INT8 decode_as_tv(char *file_name, UINT8 ir_hex_encode)
         {
             break;
         }
-        length = ir_decode(key_code, user_data, NULL, 0);
+        length = ir_decode(key_code, user_data, NULL);
         printf("\n === Binary decoded : %d\n", length);
         for (index = 0; index < length; index++)
         {

@@ -3,7 +3,6 @@ package net.irext.ircontrol.ui.fragment;
 import android.content.Context;
 import android.graphics.Color;
 import android.hardware.ConsumerIrManager;
-import android.net.InetAddresses;
 import android.os.*;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -23,14 +22,12 @@ import net.irext.ircontrol.utils.FileUtils;
 import net.irext.ircontrol.utils.MessageUtil;
 import net.irext.ircontrol.utils.ToastUtils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
-import java.net.Socket;
-import java.util.Base64;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Objects;
+
+import net.irext.ircontrol.utils.IRSocketEmitter;
 
 /**
  * Filename:       ControlFragment.java
@@ -63,24 +60,7 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
     private static final int KEY_HOME = 9;
     private static final int KEY_MENU = 10;
 
-    private static final int EMITTER_PORT = 8000;
-
-    private static final int EMITTER_DISCONNECTED = 0;
-    private static final int EMITTER_CONNECTED = 1;
-    private static final int EMITTER_AVAILABLE = 2;
-    private static final int EMITTER_BIN_RECEIVED = 3;
-
-    private Socket emitterConn = null;
-    private int emitterConnected = EMITTER_DISCONNECTED;
-
-    private static final String A_REQUEST_HELLO = "a_hello";
-    private static final String E_RESPONSE_HELLO = "e_hello";
-
-    private static final String A_REQUEST_BIN = "a_bin";
-    private static final String E_RESPONSE_BIN = "e_bin";
-
-    private static final String A_REQUEST_CTRL = "a_control";
-    private static final String E_RESPONSE_CTRL = "e_control";
+    private IRSocketEmitter mIRSocketEmitter;
 
     private MsgHandler mHandler;
 
@@ -135,19 +115,35 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
         mBtnConnect = view.findViewById(R.id.btn_connect_emitter);
         mVWConnectStatus = view.findViewById(R.id.vw_connect_status);
 
+        // Initialize IRSocketEmitter with callback
+        mIRSocketEmitter = new IRSocketEmitter(new IRSocketEmitter.IRSocketEmitterCallback() {
+            @Override
+            public void onConnected() {
+                onEmitterConnected();
+            }
+
+            @Override
+            public void onDisconnected() {
+                onEmitterDisconnected();
+            }
+
+            @Override
+            public void onResponse(String response) {
+                onEmitterResponse(response);
+            }
+        });
+
         mBtnConnect.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
                 vibrate(mParent);
                 String emitterIp = mEtEmitterIp.getText().toString();
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    if (!InetAddresses.isNumericAddress(emitterIp)) {
-                        ToastUtils.showToast(mParent, mParent.getString(R.string.input_emitter_ip_address), null);
-                        return;
-                    }
+                if (isIpAddress(emitterIp)) {
+                    ToastUtils.showToast(mParent, mParent.getString(R.string.input_emitter_ip_address), null);
+                    return;
                 }
-                connectToEmitter(emitterIp, String.valueOf(EMITTER_PORT));
+                mIRSocketEmitter.connectToEmitter(emitterIp, String.valueOf(IRSocketEmitter.EMITTER_PORT));
             }
         });
 
@@ -165,7 +161,6 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
         } else {
             getRemote();
         }
-
     }
 
     private void getRemote() {
@@ -250,46 +245,38 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
         /* translate key code for AC according to the mapping above */
         /* ac status is useless for decoding devices other than AC, it's an optional parameter */
         /* change wind dir is an optional parameter, set to 0 as default */
+        if (mIRSocketEmitter.getConnectionStatus() == IRSocketEmitter.EMITTER_CONNECTED) {
+            decodeOnBoard(inputKeyCode, acStatus, 0);
+        } else {
+            decodeInApp(inputKeyCode, acStatus, 0);
+        }
         return mIRDecode.decodeBinary(inputKeyCode, acStatus, 0);
     }
 
     private void onEmitterConnected() {
         Log.d(TAG, "the emitter is connected");
-        emitterConnected = EMITTER_CONNECTED;
         mParent.runOnUiThread(() -> {
             mBtnConnect.setImageDrawable(AppCompatResources.getDrawable(mParent, R.mipmap.button_unlink));
             mVWConnectStatus.setBackgroundColor(Color.parseColor("#3FAFFF"));
         });
     }
     private void onEmitterDisconnected() {
-        if (EMITTER_DISCONNECTED != emitterConnected) {
-            Log.d(TAG, "the emitter is disconnected");
-        } else {
-            Log.d(TAG, "the emitter is disconnected not status is not changed");
-        }
-
         mParent.runOnUiThread(() -> {
-            if (EMITTER_DISCONNECTED != emitterConnected) {
-                ToastUtils.showToast(mParent, mParent.getString(R.string.connect_failed), Toast.LENGTH_SHORT);
-            } else {
-                ToastUtils.showToast(mParent, mParent.getString(R.string.connect_disconnected), Toast.LENGTH_SHORT);
-            }
+            ToastUtils.showToast(mParent, mParent.getString(R.string.connect_disconnected), Toast.LENGTH_SHORT);
             mBtnConnect.setImageDrawable(AppCompatResources.getDrawable(mParent, R.mipmap.button_link));
             mVWConnectStatus.setBackgroundColor(Color.parseColor("#FF7F7F"));
         });
-
-        emitterConnected = EMITTER_DISCONNECTED;
     }
 
     private void processEHello(String response) {
-        sendHelloToEmitter();
+        mIRSocketEmitter.sendHelloToEmitter();
     }
 
     private void processEBin(String response) {
         String binFileName = FileUtils.binDir + FileUtils.FILE_NAME_PREFIX +
                 mCurrentRemoteControl.getRemoteMap() + FileUtils.FILE_NAME_EXT;
         byte []binContent = FileUtils.getByteArrayFromFile(binFileName);
-        sendBinToEmitter(binContent);
+        mIRSocketEmitter.sendBinToEmitter(binContent, mCurrentRemoteControl.getCategoryId(), mCurrentRemoteControl.getSubCategory());
     }
 
     private void processECtrl(String response) {
@@ -298,87 +285,14 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
 
     private void onEmitterResponse(String response) {
         Log.d(TAG, "emitter: " + response);
-        if (response.startsWith(E_RESPONSE_HELLO)) {
+        if (response.startsWith(IRSocketEmitter.E_RESPONSE_HELLO)) {
             processEHello(response);
-        } else if (response.startsWith(E_RESPONSE_BIN)) {
+        } else if (response.startsWith(IRSocketEmitter.E_RESPONSE_BIN)) {
             processEBin(response);
-        } else if (response.startsWith(E_RESPONSE_CTRL)) {
+        } else if (response.startsWith(IRSocketEmitter.E_RESPONSE_CTRL)) {
             processECtrl(response);
         } else {
             Log.e(TAG, "unexpected response : " + response);
-        }
-    }
-
-    private void sendHelloToEmitter() {
-        new Thread(() -> {
-            try {
-                Log.d(TAG, "sending a_hello to emitter");
-                PrintWriter out = new PrintWriter(emitterConn.getOutputStream(), true);
-                out.println(A_REQUEST_HELLO);
-            } catch (IOException e) {
-                e.getMessage();
-            }
-        }).start();
-    }
-
-    private void sendDecodedToEmitter(String value) {
-        new Thread(() -> {
-            try {
-                PrintWriter out = new PrintWriter(emitterConn.getOutputStream(), true);
-                out.println(value);
-            } catch (IOException e) {
-                e.getMessage();
-            }
-        }).start();
-    }
-
-    private void sendBinToEmitter(byte[] binContent) {
-        if (null == binContent) {
-            Log.e(TAG, "binary bytes is null");
-            return;
-        }
-        int categoryId = mCurrentRemoteControl.getCategoryId();
-        int subCate = mCurrentRemoteControl.getSubCategory();
-        String binBase64 = Base64.getEncoder().encodeToString(binContent);
-        String binStr = A_REQUEST_BIN + "," + categoryId + "," + subCate + "," + binBase64.length() + "," + binBase64;
-        Log.d(TAG, "sending bin in base64: " + binStr);
-        new Thread(() -> {
-            try {
-                PrintWriter out = new PrintWriter(emitterConn.getOutputStream(), true);
-                out.println(binStr);
-            } catch (IOException e) {
-                e.getMessage();
-            }
-        }).start();
-    }
-
-    private void connectToEmitter(String ipAddress, String port) {
-        if (EMITTER_DISCONNECTED == emitterConnected) {
-            if (null == ipAddress || null == port) {
-                return;
-            }
-            new Thread(() -> {
-                try {
-                    emitterConn = new Socket(ipAddress, Integer.parseInt(port));
-                    emitterConn.setKeepAlive(true);
-                    onEmitterConnected();
-                    BufferedReader in = new BufferedReader(new InputStreamReader(emitterConn.getInputStream()));
-                    String response = "";
-                    while ((response = in.readLine()) != null) {
-                        onEmitterResponse(response);
-                    }
-                    onEmitterDisconnected();
-                } catch (IOException ioException) {
-                    onEmitterDisconnected();
-                }
-            }).start();
-        } else {
-            try {
-                emitterConnected = EMITTER_DISCONNECTED;
-                emitterConn.close();
-            } catch(IOException e) {
-                e.getMessage();
-            }
         }
     }
 
@@ -420,9 +334,9 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
             decodedValue.append(",");
         }
         Log.d(TAG, "decodedValue : " + decodedValue);
-        if (EMITTER_AVAILABLE == emitterConnected) {
+        if (mIRSocketEmitter.isConnected()) {
             Log.d(TAG, "emitter available, send decoded to emitter");
-            sendDecodedToEmitter(decodedValue.toString());
+            mIRSocketEmitter.sendDecodedToEmitter(decodedValue.toString());
         }
         // send decoded integer array to IR emitter
         ConsumerIrManager irEmitter =
@@ -433,6 +347,15 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
             }
         } else {
             ToastUtils.showToast(mParent, this.getString(R.string.ir_not_supported), null);
+        }
+    }
+
+    private boolean isIpAddress(String ipAddress) {
+        try {
+            InetAddress inetAddress = InetAddress.getByName(ipAddress);
+            return Objects.equals(inetAddress.getHostAddress(), ipAddress);
+        } catch (UnknownHostException e) {
+            return false;
         }
     }
 
