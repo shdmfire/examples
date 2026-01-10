@@ -4,7 +4,6 @@ import net.irext.decode.sdk.bean.ACStatus;
 import net.irext.decode.sdk.bean.TemperatureRange;
 import net.irext.decode.sdk.utils.Constants;
 
-
 /**
  * Filename:       IRDecode.java
  * Revised:        Date: 2017-04-22
@@ -31,7 +30,7 @@ public class IRDecode {
 
     private native int irOpenBinary(int category, int subCate, byte[] binaries, int binLength);
 
-    private native int[] irDecode(int keyCode, ACStatus acStatus, int changeWindDirection);
+    private native int[] irDecode(int keyCode, ACStatus acStatus);
 
     private native void irClose();
 
@@ -46,7 +45,6 @@ public class IRDecode {
     private native int irACGetSupportedWindDirection(int acMode);
 
     private static IRDecode mInstance;
-
     public static IRDecode getInstance() {
         if (null == mInstance) {
             mInstance = new IRDecode();
@@ -66,17 +64,17 @@ public class IRDecode {
         return irOpenBinary(category, subCate, binaries, binLength);
     }
 
-    public int[] decodeBinary(int keyCode, ACStatus acStatus, int changeWindDir) {
+    public int[] decodeBinary(int keyCode, ACStatus acStatus) {
         int []decoded;
         synchronized (mSync) {
             if (null == acStatus) {
                 acStatus = new ACStatus();
             }
             // validate ac status
-            if (!validateAcStatus(acStatus, keyCode, changeWindDir)) {
+            if (!validateAcStatus(acStatus, keyCode)) {
                 return new int[0];
             }
-            decoded = irDecode(keyCode, acStatus, changeWindDir);
+            decoded = irDecode(keyCode, acStatus);
         }
         return decoded;
     }
@@ -129,7 +127,7 @@ public class IRDecode {
         return irACGetSupportedWindDirection(acMode);
     }
 
-    private boolean validateAcStatus(ACStatus acStatus, int keyCode, int changeWindDir) {
+    private boolean validateAcStatus(ACStatus acStatus, int keyCode) {
         if (acStatus.getAcPower() != Constants.ACPower.POWER_ON.getValue() &&
             acStatus.getAcPower() != Constants.ACPower.POWER_OFF.getValue()) {
             return false;
@@ -150,7 +148,7 @@ public class IRDecode {
                 acStatus.getAcWindDir() > Constants.ACSwing.SWING_OFF.getValue()) {
             return false;
         }
-        if (changeWindDir != 0 && changeWindDir != 1) {
+        if (acStatus.getChangeWindDir() != 0 && acStatus.getChangeWindDir() != 1) {
             return false;
         }
         return true;
