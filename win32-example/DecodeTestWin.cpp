@@ -29,14 +29,14 @@ void input_number(int *val)
     char n[50]={0};
     int i = 0;
     *val = 0;
-    scanf_s("%3s", n);
+    scanf_s("%3s", n, (unsigned)_countof(n));
     getchar();
     while(1)
     {
         if(n[i] < '0'||n[i] > '9')
         {
             printf("\nInvalid number format, please re-input : ");
-            scanf_s("%3s", n);
+            scanf_s("%3s", n, (unsigned)_countof(n));
             i=0;
         }
         else
@@ -54,7 +54,7 @@ void input_number(int *val)
     }
 }
 
-static INT8 decode_as_ac(char *file_name)
+static INT8 decode_as_ac(char *file_name, int sub_cate)
 {
     BOOL op_match = TRUE;
     UINT8 function_code = AC_FUNCTION_MAX;
@@ -84,8 +84,9 @@ static INT8 decode_as_ac(char *file_name)
     ac_status.ac_wind_speed = AC_WS_AUTO;
     ac_status.change_wind_direction = FALSE;
 
-    if (IR_DECODE_FAILED == ir_file_open(REMOTE_CATEGORY_AC, 0, file_name))
+    if (IR_DECODE_FAILED == ir_file_open(REMOTE_CATEGORY_AC, sub_cate, file_name))
     {
+        printf("Failed to open file: %s\n", file_name);
         ir_close();
         return IR_DECODE_FAILED;
     }
@@ -106,6 +107,8 @@ static INT8 decode_as_ac(char *file_name)
 
         op_match = TRUE;
         need_control = FALSE;
+
+        printf("input key code = %d\n", key_code);
 
         if (99 == key_code)
         {
@@ -165,7 +168,7 @@ static INT8 decode_as_ac(char *file_name)
             switch (key_code)
             {
                 case 0:
-                    ac_status.ac_power = ((ac_status.ac_wind_dir == AC_POWER_ON) ? AC_POWER_OFF : AC_POWER_ON);
+                    ac_status.ac_power = ((ac_status.ac_power == AC_POWER_ON) ? AC_POWER_OFF : AC_POWER_ON);
                     need_control = TRUE;
                     break;
 
@@ -309,7 +312,7 @@ int main(int argc, char *argv[])
     {
         case '0':
             printf("Decode %s as status-typed binary\n", argv[2]);
-            decode_as_ac(argv[2]);
+            decode_as_ac(argv[2], ir_hex_encode);
             break;
 
         case '1':

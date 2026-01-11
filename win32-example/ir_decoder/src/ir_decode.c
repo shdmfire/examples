@@ -335,6 +335,7 @@ static INT8 ir_ac_file_open(const char *file_name)
 
     if (ret <= 0)
     {
+        ir_printf("ir_ac_binary_open fread failed\n");
         fclose(stream);
         ir_free(binary_content);
         binary_length = 0;
@@ -345,6 +346,7 @@ static INT8 ir_ac_file_open(const char *file_name)
 
     if (IR_DECODE_FAILED == ir_ac_binary_open(binary_content, (UINT16) binary_length))
     {
+        ir_printf("ir_ac_binary_open failed\n");
         ir_free(binary_content);
         binary_length = 0;
         return IR_DECODE_FAILED;
