@@ -96,7 +96,7 @@ static INT8 decode_as_ac(char *file_name, int sub_cate)
         if (1 == first_time)
         {
             printf("Please input valid key code "
-                   "(Key code could be referenced from https://irext.net/doc#keymap) : \n");
+                   "(Key code could be referenced from https://site.irext.net/doc#keymap) : \n");
             first_time = 0;
         }
         else
