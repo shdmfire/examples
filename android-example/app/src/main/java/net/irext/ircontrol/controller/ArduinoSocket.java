@@ -1,6 +1,7 @@
-package net.irext.ircontrol.utils;
+package net.irext.ircontrol.controller;
 
 import android.util.Log;
+import android.util.Patterns;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,11 +11,11 @@ import java.net.Socket;
 import java.util.Base64;
 
 /**
- * Filename:       IRSocketEmitter.java
+ * Filename:       ArduinoSocket.java
  * Description:    Handle socket communication with external IR emitter
  */
-public class IRSocketEmitter {
-    private static final String TAG = IRSocketEmitter.class.getSimpleName();
+public class ArduinoSocket {
+    private static final String TAG = ArduinoSocket.class.getSimpleName();
 
     public static final int EMITTER_DISCONNECTED = 0;
     public static final int EMITTER_CONNECTED = 1;
@@ -42,7 +43,7 @@ public class IRSocketEmitter {
         void onResponse(String response);
     }
 
-    public IRSocketEmitter(IRSocketEmitterCallback callback) {
+    public ArduinoSocket(IRSocketEmitterCallback callback) {
         this.callback = callback;
     }
 
@@ -163,5 +164,12 @@ public class IRSocketEmitter {
 
     public void processECtrl(String response) {
         // Handle control response if needed
+    }
+
+    public static boolean isValidIPv4(String ip) {
+        if (ip == null) {
+            return false;
+        }
+        return Patterns.IP_ADDRESS.matcher(ip).matches();
     }
 }

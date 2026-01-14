@@ -2,7 +2,6 @@ package net.irext.ircontrol.ui.fragment;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.hardware.ConsumerIrManager;
 import android.os.*;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,21 +12,18 @@ import android.widget.*;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.fragment.app.Fragment;
 import net.irext.decode.sdk.IRDecode;
-import net.irext.decode.sdk.bean.ACStatus;
-import net.irext.decode.sdk.utils.Constants;
 import net.irext.ircontrol.R;
 import net.irext.ircontrol.bean.RemoteControl;
+import net.irext.ircontrol.controller.ArduinoRemote;
+import net.irext.ircontrol.controller.ArduinoSocket;
+import net.irext.ircontrol.controller.PhoneRemote;
+import net.irext.ircontrol.controller.implementable.IRemote;
 import net.irext.ircontrol.ui.activity.ControlActivity;
 import net.irext.ircontrol.utils.FileUtils;
 import net.irext.ircontrol.utils.MessageUtil;
 import net.irext.ircontrol.utils.ToastUtils;
 
 import java.lang.ref.WeakReference;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Objects;
-
-import net.irext.ircontrol.utils.IRSocketEmitter;
 
 /**
  * Filename:       ControlFragment.java
@@ -48,19 +44,7 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
 
     private static final int CMD_GET_REMOTE_CONTROL = 0;
 
-    private static final int KEY_POWER = 0;
-    private static final int KEY_UP = 1;
-    private static final int KEY_DOWN = 2;
-    private static final int KEY_LEFT = 3;
-    private static final int KEY_RIGHT = 4;
-    private static final int KEY_OK = 5;
-    private static final int KEY_PLUS = 6;
-    private static final int KEY_MINUS = 7;
-    private static final int KEY_BACK = 8;
-    private static final int KEY_HOME = 9;
-    private static final int KEY_MENU = 10;
-
-    private IRSocketEmitter mIRSocketEmitter;
+    private ArduinoSocket mArduinoSocket;
 
     private MsgHandler mHandler;
 
@@ -115,8 +99,8 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
         mBtnConnect = view.findViewById(R.id.btn_connect_emitter);
         mVWConnectStatus = view.findViewById(R.id.vw_connect_status);
 
-        // Initialize IRSocketEmitter with callback
-        mIRSocketEmitter = new IRSocketEmitter(new IRSocketEmitter.IRSocketEmitterCallback() {
+        // Initialize ArduinoSocket with callback
+        mArduinoSocket = new ArduinoSocket(new ArduinoSocket.IRSocketEmitterCallback() {
             @Override
             public void onConnected() {
                 onEmitterConnected();
@@ -139,11 +123,12 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
             public void onClick(View v) {
                 vibrate(mParent);
                 String emitterIp = mEtEmitterIp.getText().toString();
-                if (isIpAddress(emitterIp)) {
+                if (!ArduinoSocket.isValidIPv4(emitterIp)) {
+                    Log.e(TAG, "IP address is invalid: " + emitterIp);
                     ToastUtils.showToast(mParent, mParent.getString(R.string.input_emitter_ip_address), null);
                     return;
                 }
-                mIRSocketEmitter.connectToEmitter(emitterIp, String.valueOf(IRSocketEmitter.EMITTER_PORT));
+                mArduinoSocket.connectToEmitter(emitterIp, String.valueOf(ArduinoSocket.EMITTER_PORT));
             }
         });
 
@@ -189,66 +174,6 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
         mIRDecode.closeBinary();
     }
 
-    private int[] irControl(int keyCode) {
-        int inputKeyCode;
-        ACStatus acStatus = new ACStatus();
-        /* decode SDK - decode according to key code */
-        if (Constants.CategoryID.AIR_CONDITIONER.getValue() ==
-                mCurrentRemoteControl.getCategoryId()) {
-            acStatus.setAcPower(Constants.ACPower.POWER_OFF.getValue());
-            acStatus.setAcMode(Constants.ACMode.MODE_COOL.getValue());
-            acStatus.setAcTemp(Constants.ACTemperature.TEMP_24.getValue());
-            acStatus.setAcWindSpeed(Constants.ACWindSpeed.SPEED_AUTO.getValue());
-            acStatus.setAcWindDir(Constants.ACSwing.SWING_ON.getValue());
-            acStatus.setChangeWindDir(0);
-            acStatus.setAcDisplay(0);
-            acStatus.setAcTimer(0);
-            acStatus.setAcSleep(0);
-
-            switch(keyCode) {
-                case KEY_POWER:
-                    // power key --> change power
-                    inputKeyCode = Constants.ACFunction.FUNCTION_SWITCH_POWER.getValue();
-                    break;
-                case KEY_UP:
-                    // up key --> change wind speed
-                    inputKeyCode = Constants.ACFunction.FUNCTION_SWITCH_WIND_SPEED.getValue();
-                    break;
-                case KEY_DOWN:
-                    // down key --> change wind dir
-                    inputKeyCode = Constants.ACFunction.FUNCTION_SWITCH_WIND_DIR.getValue();
-                    break;
-                case KEY_RIGHT:
-                    // right key --> change mode
-                    inputKeyCode = Constants.ACFunction.FUNCTION_CHANGE_MODE.getValue();
-                    break;
-                case KEY_OK:
-                    // center key --> fix wind dir
-                    inputKeyCode = Constants.ACFunction.FUNCTION_SWITCH_SWING.getValue();
-                    break;
-                case KEY_PLUS:
-                    // plus key --> temp up
-                    inputKeyCode = Constants.ACFunction.FUNCTION_TEMPERATURE_UP.getValue();
-                    break;
-                case KEY_MINUS:
-                    // minus key --> temp down
-                    inputKeyCode = Constants.ACFunction.FUNCTION_TEMPERATURE_DOWN.getValue();
-                    break;
-
-                default:
-                    return null;
-            }
-        } else {
-            inputKeyCode = keyCode;
-        }
-
-        /* decode SDK - decode from binary */
-        /* translate key code for AC according to the mapping above */
-        /* ac status is useless for decoding devices other than AC, it's an optional parameter */
-        /* change wind dir is an optional parameter, set to 0 as default */
-        return mIRDecode.decodeBinary(inputKeyCode, acStatus);
-    }
-
     private void onEmitterConnected() {
         Log.d(TAG, "the emitter is connected");
         mParent.runOnUiThread(() -> {
@@ -265,14 +190,14 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
     }
 
     private void processEHello(String response) {
-        mIRSocketEmitter.sendHelloToEmitter();
+        mArduinoSocket.sendHelloToEmitter();
     }
 
     private void processEBin(String response) {
         String binFileName = FileUtils.binDir + FileUtils.FILE_NAME_PREFIX +
                 mCurrentRemoteControl.getRemoteMap() + FileUtils.FILE_NAME_EXT;
         byte []binContent = FileUtils.getByteArrayFromFile(binFileName);
-        mIRSocketEmitter.sendBinToEmitter(binContent, mCurrentRemoteControl.getCategoryId(), mCurrentRemoteControl.getSubCategory());
+        mArduinoSocket.sendBinToEmitter(binContent, mCurrentRemoteControl.getCategoryId(), mCurrentRemoteControl.getSubCategory());
     }
 
     private void processECtrl(String response) {
@@ -281,11 +206,11 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
 
     private void onEmitterResponse(String response) {
         Log.d(TAG, "emitter: " + response);
-        if (response.startsWith(IRSocketEmitter.E_RESPONSE_HELLO)) {
+        if (response.startsWith(ArduinoSocket.E_RESPONSE_HELLO)) {
             processEHello(response);
-        } else if (response.startsWith(IRSocketEmitter.E_RESPONSE_BIN)) {
+        } else if (response.startsWith(ArduinoSocket.E_RESPONSE_BIN)) {
             processEBin(response);
-        } else if (response.startsWith(IRSocketEmitter.E_RESPONSE_CTRL)) {
+        } else if (response.startsWith(ArduinoSocket.E_RESPONSE_CTRL)) {
             processECtrl(response);
         } else {
             Log.e(TAG, "unexpected response : " + response);
@@ -296,63 +221,39 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         vibrate(mParent);
-        // decode directly in mobile phone
-        int []decoded = null;
+        IRemote remote = null;
+        int keyCode = 0;
         int id = v.getId();
         if (id == R.id.iv_power) {
-            decoded = irControl(KEY_POWER);
+            keyCode = IRemote.KEY_POWER;
         } else if (id == R.id.iv_up) {
-            decoded = irControl(KEY_UP);
+            keyCode = IRemote.KEY_UP;
         } else if (id == R.id.iv_down) {
-            decoded = irControl(KEY_DOWN);
+            keyCode = IRemote.KEY_DOWN;
         } else if (id == R.id.iv_left) {
-            decoded = irControl(KEY_LEFT);
+            keyCode = IRemote.KEY_LEFT;
         } else if (id == R.id.iv_right) {
-            decoded = irControl(KEY_RIGHT);
+            keyCode = IRemote.KEY_RIGHT;
         } else if (id == R.id.iv_ok) {
-            decoded = irControl(KEY_OK);
+            keyCode = IRemote.KEY_OK;
         } else if (id == R.id.iv_plus) {
-            decoded = irControl(KEY_PLUS);
+            keyCode = IRemote.KEY_PLUS;
         } else if (id == R.id.iv_minus) {
-            decoded = irControl(KEY_MINUS);
+            keyCode = IRemote.KEY_MINUS;
         } else if (id == R.id.iv_back) {
-            decoded = irControl(KEY_BACK);
+            keyCode = IRemote.KEY_BACK;
         } else if (id == R.id.iv_home) {
-            decoded = irControl(KEY_HOME);
+            keyCode = IRemote.KEY_HOME;
         } else if (id == R.id.iv_menu) {
-            decoded = irControl(KEY_MENU);
+            keyCode = IRemote.KEY_MENU;
         }
 
-        // debug decoded value
-        StringBuilder decodedValue = new StringBuilder();
-        for (int i = 0; i < Objects.requireNonNull(decoded).length; i++) {
-            decodedValue.append(decoded[i]);
-            decodedValue.append(",");
-        }
-        Log.d(TAG, "decodedValue : " + decodedValue);
-        if (mIRSocketEmitter.isConnected()) {
-            Log.d(TAG, "emitter available, send decoded to emitter");
-            mIRSocketEmitter.sendDecodedToEmitter(decodedValue.toString());
-        }
-        // send decoded integer array to IR emitter
-        ConsumerIrManager irEmitter =
-                (ConsumerIrManager) mParent.getSystemService(Context.CONSUMER_IR_SERVICE);
-        if (null != irEmitter && irEmitter.hasIrEmitter()) {
-            if (decoded.length > 0) {
-                irEmitter.transmit(38000, decoded);
-            }
+        if (mArduinoSocket.isConnected()) {
+            remote = new ArduinoRemote(mParent, mArduinoSocket);
         } else {
-            ToastUtils.showToast(mParent, this.getString(R.string.ir_not_supported), null);
+            remote = new PhoneRemote(mParent);
         }
-    }
-
-    private boolean isIpAddress(String ipAddress) {
-        try {
-            InetAddress inetAddress = InetAddress.getByName(ipAddress);
-            return Objects.equals(inetAddress.getHostAddress(), ipAddress);
-        } catch (UnknownHostException e) {
-            return false;
-        }
+        remote.irControl(mCurrentRemoteControl.getCategoryId(), mCurrentRemoteControl.getSubCategory(), keyCode);
     }
 
     private static class MsgHandler extends Handler {
