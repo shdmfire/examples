@@ -197,7 +197,12 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
         String binFileName = FileUtils.binDir + FileUtils.FILE_NAME_PREFIX +
                 mCurrentRemoteControl.getRemoteMap() + FileUtils.FILE_NAME_EXT;
         byte []binContent = FileUtils.getByteArrayFromFile(binFileName);
-        mArduinoSocket.sendBinToEmitter(binContent, mCurrentRemoteControl.getCategoryId(), mCurrentRemoteControl.getSubCategory());
+        if (null != binContent) {
+            mArduinoSocket.sendBinToEmitter(binContent, mCurrentRemoteControl.getCategoryId(), mCurrentRemoteControl.getSubCategory());
+        } else {
+            Log.e(TAG, "emitter sender could not open the binary file");
+            ToastUtils.showToast(mParent, mParent.getString(R.string.file_could_not_open), Toast.LENGTH_SHORT);
+        }
     }
 
     private void processECtrl(String response) {
@@ -248,7 +253,7 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
             keyCode = IRemote.KEY_MENU;
         }
 
-        if (mArduinoSocket.isConnected()) {
+        if (mArduinoSocket.isConnected() && mArduinoSocket.getConnectionStatus() == ArduinoSocket.EMITTER_BIN_RECEIVED) {
             remote = new ArduinoRemote(mParent, mArduinoSocket);
         } else {
             remote = new PhoneRemote(mParent);

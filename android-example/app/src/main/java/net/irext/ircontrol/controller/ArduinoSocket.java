@@ -81,7 +81,7 @@ public class ArduinoSocket {
                             callback.onResponse(response);
                         }
                     }
-                    
+
                     if (callback != null) {
                         callback.onDisconnected();
                     }
@@ -93,7 +93,7 @@ public class ArduinoSocket {
                     if (callback != null) {
                         callback.onDisconnected();
                     }
-                    
+
                     connectionStatus = EMITTER_DISCONNECTED;
                 }
             }).start();

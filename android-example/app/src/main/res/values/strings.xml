@@ -30,16 +30,20 @@
     <string name="button_ok">OK</string>
     <string name="button_plus">+</string>
     <string name="button_minus">-</string>
-    <string name="ir_not_supported">IR emitter is not supported in this device, please try with external emitters</string>
 
+    <!-- Emitter panel -->
     <string name="emitter_ip">Emitter IP</string>
     <string name="default_ip">192.168.1.40</string>
-    <string name="connect">connect</string>
+    <string name="connect">Connect</string>
     <string name="decode_on_board">Decode On Board</string>
+
+    <!-- Error messages -->
+    <string name="ir_not_supported">IR emitter is not supported in this device, please try with external emitters</string>
     <string name="input_emitter_ip_address">Please input IP address of emitter</string>
     <string name="connect_failed">Connect failed</string>
     <string name="connect_disconnected">The connection has lost</string>
     <string name="status_not_connected">Disconnected</string>
     <string name="status_connected">Connected</string>
+    <string name="file_could_not_open">The IR binary file could not be opened</string>
 
 </resources>
