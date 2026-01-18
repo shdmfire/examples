@@ -11,7 +11,17 @@ import java.util.Objects;
 
 import static net.irext.ircontrol.controller.implementable.IRemote.*;
 
-public class ControlUtils {
+/**
+ * Filename:       ControlHelper.java
+ * Revised:        Date: 2026-01-18
+ * Revision:       Revision: 1.0
+ * <p>
+ * Description:    Remote control helper class
+ * <p>
+ * Revision log:
+ *2026-01-18: created by strawmanbobi
+ */
+public class ControlHelper {
 
     public static int translateKeyCode(int category, int keyCode, ACStatus acStatus) {
         int inputKeyCode = 0;

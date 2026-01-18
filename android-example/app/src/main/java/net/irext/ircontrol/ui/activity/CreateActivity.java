@@ -11,7 +11,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import net.irext.ircontrol.R;
 import net.irext.ircontrol.ui.fragment.*;
-import net.irext.ircontrol.utils.MessageUtil;
+import net.irext.ircontrol.utils.MessageUtils;
 import net.irext.webapi.model.Brand;
 import net.irext.webapi.model.Category;
 import net.irext.webapi.model.City;
@@ -22,6 +22,16 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Filename:       CreateActivity.java
+ * Revised:        Date: 2017-04-22
+ * Revision:       Revision: 1.0
+ * <p>
+ * Description:    Create remote activity
+ * <p>
+ * Revision log:
+ * 2017-04-22: created by strawmanbobi
+ */
 @SuppressWarnings("unused")
 public class CreateActivity extends AppCompatActivity {
 
@@ -152,7 +162,7 @@ public class CreateActivity extends AppCompatActivity {
 
         @Override
         public void handleMessage(Message msg) {
-            int cmd = msg.getData().getInt(MessageUtil.KEY_CMD);
+            int cmd = msg.getData().getInt(MessageUtils.KEY_CMD);
             Log.d(TAG, "handle message " + cmd);
 
             CreateActivity createActivity = mCreateActivity.get();

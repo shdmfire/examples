@@ -17,7 +17,6 @@ import java.util.List;
  * Revision log:
  * 2017-04-06: created by strawmanbobi
  */
-
 @Table(name = "RemoteControl")
 @SuppressWarnings("unused")
 public class RemoteControl extends Model {

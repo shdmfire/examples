@@ -15,7 +15,7 @@ import net.irext.ircontrol.R;
 import net.irext.ircontrol.ui.activity.CreateActivity;
 import net.irext.ircontrol.ui.adapter.BrandAdapter;
 import net.irext.ircontrol.ui.widget.PullToRefreshListView;
-import net.irext.ircontrol.utils.MessageUtil;
+import net.irext.ircontrol.utils.MessageUtils;
 import net.irext.webapi.WebAPICallbacks.ListBrandsCallback;
 import net.irext.webapi.model.Brand;
 
@@ -56,7 +56,7 @@ public class BrandFragment extends BaseCreateFragment {
             if (null == mBrands) {
                 mBrands = new ArrayList<>();
             }
-            MessageUtil.postMessage(mMsgHandler, CMD_REFRESH_BRAND_LIST);
+            MessageUtils.postMessage(mMsgHandler, CMD_REFRESH_BRAND_LIST);
         }
 
         @Override
@@ -115,7 +115,7 @@ public class BrandFragment extends BaseCreateFragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Brand brand = (Brand)mBrandAdapter.getItem(position);
                 mParent.setCurrentBrand(brand);
-                MessageUtil.postMessage(mParent.mMsgHandler,
+                MessageUtils.postMessage(mParent.mMsgHandler,
                         CreateActivity.PAGE_INDEX,
                         CreateActivity.PAGE_BRAND);
             }
@@ -140,7 +140,7 @@ public class BrandFragment extends BaseCreateFragment {
 
         @Override
         public void handleMessage(Message msg) {
-            int cmd = msg.getData().getInt(MessageUtil.KEY_CMD);
+            int cmd = msg.getData().getInt(MessageUtils.KEY_CMD);
             Log.d(TAG, "handle message " + cmd);
 
             BrandFragment brandFragment = mBrandFragment.get();

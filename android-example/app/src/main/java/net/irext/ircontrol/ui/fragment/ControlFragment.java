@@ -20,7 +20,7 @@ import net.irext.ircontrol.controller.PhoneRemote;
 import net.irext.ircontrol.controller.implementable.IRemote;
 import net.irext.ircontrol.ui.activity.ControlActivity;
 import net.irext.ircontrol.utils.FileUtils;
-import net.irext.ircontrol.utils.MessageUtil;
+import net.irext.ircontrol.utils.MessageUtils;
 import net.irext.ircontrol.utils.ToastUtils;
 
 import java.lang.ref.WeakReference;
@@ -148,11 +148,23 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
         }
     }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+        mArduinoSocket.disconnect();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        mArduinoSocket.disconnect();
+    }
+
     private void getRemote() {
         new Thread() {
             @Override
             public void run() {
-                MessageUtil.postMessage(mHandler, CMD_GET_REMOTE_CONTROL);
+                MessageUtils.postMessage(mHandler, CMD_GET_REMOTE_CONTROL);
             }
         }.start();
     }
@@ -175,7 +187,6 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
     }
 
     private void onEmitterConnected() {
-        Log.d(TAG, "the emitter is connected");
         mParent.runOnUiThread(() -> {
             mBtnConnect.setImageDrawable(AppCompatResources.getDrawable(mParent, R.mipmap.button_unlink));
             mVWConnectStatus.setBackgroundColor(Color.parseColor("#3FAFFF"));
@@ -272,7 +283,7 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
 
         @Override
         public void handleMessage(Message msg) {
-            int cmd = msg.getData().getInt(MessageUtil.KEY_CMD);
+            int cmd = msg.getData().getInt(MessageUtils.KEY_CMD);
 
             ControlFragment controlFragment = mMainFragment.get();
             if (cmd == CMD_GET_REMOTE_CONTROL) {

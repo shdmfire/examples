@@ -19,7 +19,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import net.irext.ircontrol.R;
 import net.irext.ircontrol.bean.RemoteControl;
 import net.irext.ircontrol.ui.fragment.MainFragment;
-import net.irext.ircontrol.utils.MessageUtil;
+import net.irext.ircontrol.utils.MessageUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -182,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void handleMessage(Message msg) {
-            int cmd = msg.getData().getInt(MessageUtil.KEY_CMD);
+            int cmd = msg.getData().getInt(MessageUtils.KEY_CMD);
             Log.d(TAG, "handle message " + cmd);
 
             MainActivity mainActivity = mMainActivity.get();

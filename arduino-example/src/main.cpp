@@ -32,6 +32,8 @@
 
 #define WIFI_SERVER_PORT (8000)
 
+#define ALIVE_DEBUG_INTERVAL (20 * 1000)
+
 // global variable definitions
 constexpr char ssid[] = SECRET_SSID;
 constexpr char pass[] = SECRET_PASS;
@@ -70,7 +72,8 @@ void drawIp(const char *ipAddr) {
 
 void printWiFiStatus() {
     unsigned long currentMillis = millis();
-    if (currentMillis - lastStatusCheck >= 10000 && !wifiStatusPrinted) {
+
+    if (currentMillis - lastStatusCheck >= ALIVE_DEBUG_INTERVAL) {
         IPAddress ip = WiFi.localIP();
         if (0 == strcmp(ip.toString().c_str(), "0.0.0.0")) {
             lastStatusCheck = currentMillis;
@@ -86,10 +89,12 @@ void printWiFiStatus() {
         Serial.print("Signal strength (RSSI): ");
         Serial.print(rssi);
         Serial.println(" dBm");
-
-        drawIp(ip.toString().c_str());
         lastStatusCheck = currentMillis;
-        wifiStatusPrinted = true;
+
+        if (0 == wifiStatusPrinted) {
+            drawIp(ip.toString().c_str());
+            wifiStatusPrinted = true;
+        }
     }
 }
 
@@ -112,18 +117,18 @@ void setup() {
     matrix.endText(SCROLL_LEFT);
     matrix.endDraw();
 
-    Serial.println("Wi-Fi started in station mode");
+    Serial.println("IRext Arduino example started in station mode");
     Serial.print("Attempting to connect to SSID: ");
     Serial.println(ssid);
 
     status = WiFi.begin(ssid, pass);
 
     if (status == WL_CONNECTED) {
-        Serial.println("\nConnection Successful!");
+        Serial.println("\nConnected to Wi-Fi");
         server.begin();
     }
     else {
-        Serial.print("\nConnection Failed! Status: ");
+        Serial.print("\nFailed to connect Wi-Fi, status: ");
         Serial.println(status);
     }
 }

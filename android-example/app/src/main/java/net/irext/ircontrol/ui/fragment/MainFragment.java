@@ -16,7 +16,7 @@ import net.irext.ircontrol.bean.RemoteControl;
 import net.irext.ircontrol.ui.activity.MainActivity;
 import net.irext.ircontrol.ui.adapter.RemoteControlAdapter;
 import net.irext.ircontrol.ui.widget.PullToRefreshListView;
-import net.irext.ircontrol.utils.MessageUtil;
+import net.irext.ircontrol.utils.MessageUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -79,7 +79,7 @@ public class MainFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 RemoteControl remoteControl = (RemoteControl)mRemoteControlAdapter.getItem(position);
                 mParent.setCurrentRemoteControl(remoteControl);
-                MessageUtil.postMessage(mParent.mMsgHandler, MainActivity.CMD_GOTO_CONTROL);
+                MessageUtils.postMessage(mParent.mMsgHandler, MainActivity.CMD_GOTO_CONTROL);
             }
         });
         return view;
@@ -96,7 +96,7 @@ public class MainFragment extends Fragment {
             @Override
             public void run() {
                 mRemoteControls = RemoteControl.listRemoteControls(0, 20);
-                MessageUtil.postMessage(mHandler, CMD_REFRESH_REMOTE_LIST);
+                MessageUtils.postMessage(mHandler, CMD_REFRESH_REMOTE_LIST);
             }
         }.start();
     }
@@ -126,7 +126,7 @@ public class MainFragment extends Fragment {
 
         @Override
         public void handleMessage(Message msg) {
-            int cmd = msg.getData().getInt(MessageUtil.KEY_CMD);
+            int cmd = msg.getData().getInt(MessageUtils.KEY_CMD);
             Log.d(TAG, "handle message " + cmd);
 
             MainFragment mainFragment = mMainFragment.get();

@@ -16,7 +16,7 @@ import net.irext.ircontrol.R;
 import net.irext.ircontrol.ui.activity.CreateActivity;
 import net.irext.ircontrol.ui.adapter.CityAdapter;
 import net.irext.ircontrol.ui.adapter.OperatorAdapter;
-import net.irext.ircontrol.utils.MessageUtil;
+import net.irext.ircontrol.utils.MessageUtils;
 
 import net.irext.webapi.WebAPICallbacks.ListProvincesCallback;
 import net.irext.webapi.WebAPICallbacks.ListCitiesCallback;
@@ -28,7 +28,6 @@ import net.irext.webapi.model.StbOperator;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Filename:       CityFragment.java
@@ -72,7 +71,7 @@ public class CityFragment extends BaseCreateFragment {
             if (null == mProvinces) {
                 mProvinces = new ArrayList<>();
             }
-            MessageUtil.postMessage(mMsgHandler, CMD_REFRESH_PROVINCE_LIST);
+            MessageUtils.postMessage(mMsgHandler, CMD_REFRESH_PROVINCE_LIST);
         }
 
         @Override
@@ -93,7 +92,7 @@ public class CityFragment extends BaseCreateFragment {
             if (null == mCities) {
                 mCities = new ArrayList<>();
             }
-            MessageUtil.postMessage(mMsgHandler, CMD_REFRESH_CITY_LIST);
+            MessageUtils.postMessage(mMsgHandler, CMD_REFRESH_CITY_LIST);
         }
 
         @Override
@@ -115,7 +114,7 @@ public class CityFragment extends BaseCreateFragment {
             if (null == mOperators) {
                 mOperators = new ArrayList<>();
             }
-            MessageUtil.postMessage(mMsgHandler, CMD_REFRESH_OPERATOR_LIST);
+            MessageUtils.postMessage(mMsgHandler, CMD_REFRESH_OPERATOR_LIST);
         }
 
         @Override
@@ -147,7 +146,7 @@ public class CityFragment extends BaseCreateFragment {
                 }
             }.start();
         } else {
-            MessageUtil.postMessage(mMsgHandler, CMD_REFRESH_PROVINCE_LIST);
+            MessageUtils.postMessage(mMsgHandler, CMD_REFRESH_PROVINCE_LIST);
         }
     }
 
@@ -235,7 +234,7 @@ public class CityFragment extends BaseCreateFragment {
                     case LEVEL_OPERATOR:
                         StbOperator operator = (StbOperator)mOperatorAdapter.getItem(position);
                         mParent.setCurrentOperator(operator);
-                        MessageUtil.postMessage(mParent.mMsgHandler,
+                        MessageUtils.postMessage(mParent.mMsgHandler,
                                 CreateActivity.PAGE_INDEX,
                                 CreateActivity.PAGE_CITY);
                         break;
@@ -273,7 +272,7 @@ public class CityFragment extends BaseCreateFragment {
 
         @Override
         public void handleMessage(Message msg) {
-            int cmd = msg.getData().getInt(MessageUtil.KEY_CMD);
+            int cmd = msg.getData().getInt(MessageUtils.KEY_CMD);
             Log.d(TAG, "handle message " + cmd);
 
             CityFragment cityFragment = mCityFragment.get();

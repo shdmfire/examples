@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import net.irext.ircontrol.ui.activity.CreateActivity;
-import net.irext.ircontrol.utils.MessageUtil;
+import net.irext.ircontrol.utils.MessageUtils;
 
 /**
  * Filename:       BaseCreateFragment.java
@@ -38,7 +38,7 @@ public abstract class BaseCreateFragment extends Fragment {
 
     public void onBackPressed() {
         if (-1 != mFrom) {
-            MessageUtil.postMessage(mParent.mMsgHandler, mFrom);
+            MessageUtils.postMessage(mParent.mMsgHandler, mFrom);
         }
     }
 

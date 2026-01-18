@@ -16,14 +16,13 @@ import net.irext.ircontrol.R;
 import net.irext.ircontrol.ui.activity.CreateActivity;
 import net.irext.ircontrol.ui.adapter.CategoryAdapter;
 import net.irext.ircontrol.ui.widget.PullToRefreshListView;
-import net.irext.ircontrol.utils.MessageUtil;
+import net.irext.ircontrol.utils.MessageUtils;
 import net.irext.webapi.WebAPICallbacks;
 import net.irext.webapi.model.Category;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Filename:       CategoryFragment.java
@@ -57,7 +56,7 @@ public class CategoryFragment extends BaseCreateFragment {
             if (null == mCategories) {
                 mCategories = new ArrayList<>();
             }
-            MessageUtil.postMessage(mMsgHandler, CMD_REFRESH_CATEGORY_LIST);
+            MessageUtils.postMessage(mMsgHandler, CMD_REFRESH_CATEGORY_LIST);
         }
 
         @Override
@@ -115,11 +114,11 @@ public class CategoryFragment extends BaseCreateFragment {
                 Category category = (Category)mCategoryAdapter.getItem(position);
                 mParent.setCurrentCategory(category);
                 if (category.getId() != Constants.CategoryID.STB.getValue()) {
-                    MessageUtil.postMessage(mParent.mMsgHandler,
+                    MessageUtils.postMessage(mParent.mMsgHandler,
                             CreateActivity.PAGE_BRAND,
                             CreateActivity.PAGE_CATEGORY);
                 } else {
-                    MessageUtil.postMessage(mParent.mMsgHandler,
+                    MessageUtils.postMessage(mParent.mMsgHandler,
                             CreateActivity.PAGE_CITY,
                             CreateActivity.PAGE_CATEGORY);
                 }
@@ -144,7 +143,7 @@ public class CategoryFragment extends BaseCreateFragment {
 
         @Override
         public void handleMessage(Message msg) {
-            int cmd = msg.getData().getInt(MessageUtil.KEY_CMD);
+            int cmd = msg.getData().getInt(MessageUtils.KEY_CMD);
             Log.d(TAG, "handle message " + cmd);
 
             CategoryFragment categoryFragment = mCategoryFragment.get();

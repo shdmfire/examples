@@ -17,7 +17,7 @@ import net.irext.ircontrol.ui.widget.PullToRefreshListView;
 import net.irext.ircontrol.R;
 import net.irext.ircontrol.ui.adapter.IndexAdapter;
 import net.irext.ircontrol.utils.FileUtils;
-import net.irext.ircontrol.utils.MessageUtil;
+import net.irext.ircontrol.utils.MessageUtils;
 import net.irext.webapi.WebAPICallbacks.ListIndexesCallback;
 import net.irext.webapi.WebAPICallbacks.DownloadBinCallback;
 import net.irext.webapi.model.Brand;
@@ -31,7 +31,6 @@ import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Filename:       IndexFragment.java
@@ -82,7 +81,7 @@ public class IndexFragment extends BaseCreateFragment {
             if (null == mIndexes) {
                 mIndexes = new ArrayList<>();
             }
-            MessageUtil.postMessage(mMsgHandler, CMD_REFRESH_INDEX_LIST);
+            MessageUtils.postMessage(mMsgHandler, CMD_REFRESH_INDEX_LIST);
         }
 
         @Override
@@ -101,7 +100,7 @@ public class IndexFragment extends BaseCreateFragment {
         public void onDownloadBinSuccess(InputStream inputStream) {
             Log.d(TAG, "binary file download successfully");
             mBinStream = inputStream;
-            MessageUtil.postMessage(mMsgHandler, CMD_BIN_FILE_DOWNLOADED);
+            MessageUtils.postMessage(mMsgHandler, CMD_BIN_FILE_DOWNLOADED);
         }
 
         @Override
@@ -168,7 +167,7 @@ public class IndexFragment extends BaseCreateFragment {
                 }
 
                 if (null != mBinStream) {
-                    MessageUtil.postMessage(mMsgHandler, CMD_SAVE_REMOTE_CONTROL);
+                    MessageUtils.postMessage(mMsgHandler, CMD_SAVE_REMOTE_CONTROL);
                 } else {
                     Log.e(TAG, "bin file download failed");
                 }
@@ -245,7 +244,7 @@ public class IndexFragment extends BaseCreateFragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 mCurrentIndex = (RemoteIndex) mIndexAdapter.getItem(position);
-                MessageUtil.postMessage(mMsgHandler, CMD_DOWNLOAD_BIN_FILE);
+                MessageUtils.postMessage(mMsgHandler, CMD_DOWNLOAD_BIN_FILE);
             }
         });
 
@@ -269,7 +268,7 @@ public class IndexFragment extends BaseCreateFragment {
 
         @Override
         public void handleMessage(Message msg) {
-            int cmd = msg.getData().getInt(MessageUtil.KEY_CMD);
+            int cmd = msg.getData().getInt(MessageUtils.KEY_CMD);
 
             IndexFragment indexFragment = mIndexFragment.get();
             switch (cmd) {

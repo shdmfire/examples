@@ -6,6 +6,16 @@ import net.irext.decode.sdk.IRDecode;
 import net.irext.decode.sdk.bean.ACStatus;
 import net.irext.ircontrol.controller.implementable.IRemote;
 
+/**
+ * Filename:       PhoneRemote.java
+ * Revised:        Date: 2026-01-18
+ * Revision:       Revision: 1.0
+ * <p>
+ * Description:    Remote implementation by Android phone
+ * <p>
+ * Revision log:
+ *2026-01-18: created by strawmanbobi
+ */
 public class PhoneRemote implements IRemote {
 
     private static final String TAG = PhoneRemote.class.getSimpleName();
@@ -23,7 +33,7 @@ public class PhoneRemote implements IRemote {
         int []decoded;
         StringBuilder debugStr = new StringBuilder();
         ACStatus acStatus = new ACStatus();
-        int inputKeyCode = ControlUtils.translateKeyCode(category, keyCode, acStatus);
+        int inputKeyCode = ControlHelper.translateKeyCode(category, keyCode, acStatus);
         decoded = mIRDecode.decodeBinary(inputKeyCode, acStatus);
 
         for (int i = 0; i < decoded.length; i++) {
@@ -33,7 +43,7 @@ public class PhoneRemote implements IRemote {
             }
         }
         Log.d(TAG, "IR control decoded: " + debugStr);
-        ControlUtils.transmitIr(mContext, decoded);
+        ControlHelper.transmitIr(mContext, decoded);
         return 0;
     }
 }

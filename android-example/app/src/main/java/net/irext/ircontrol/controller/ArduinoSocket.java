@@ -12,7 +12,13 @@ import java.util.Base64;
 
 /**
  * Filename:       ArduinoSocket.java
- * Description:    Handle socket communication with external IR emitter
+ * Revised:        Date: 2026-01-18
+ * Revision:       Revision: 1.0
+ * <p>
+ * Description:    Communication interface to Arduino
+ * <p>
+ * Revision log:
+ *2026-01-18: created by strawmanbobi
  */
 public class ArduinoSocket {
     private static final String TAG = ArduinoSocket.class.getSimpleName();
@@ -69,10 +75,8 @@ public class ArduinoSocket {
                     emitterConn = new Socket(ipAddress, Integer.parseInt(port));
                     emitterConn.setKeepAlive(true);
                     connectionStatus = EMITTER_CONNECTED;
-                    
-                    if (callback != null) {
-                        callback.onConnected();
-                    }
+
+                    onConnected();
                     
                     BufferedReader in = new BufferedReader(new InputStreamReader(emitterConn.getInputStream()));
                     String response;
@@ -166,10 +170,23 @@ public class ArduinoSocket {
         // Handle control response if needed
     }
 
-    public static boolean isValidIPv4(String ip) {
-        if (ip == null) {
-            return false;
+    private void onConnected() {
+        if (callback != null) {
+            Log.d(TAG, "the emitter is connected");
+            callback.onConnected();
         }
-        return Patterns.IP_ADDRESS.matcher(ip).matches();
+    }
+
+    private void onResponse(String response) {
+        Log.d(TAG, "emitter: " + response);
+        if (response.startsWith(ArduinoSocket.E_RESPONSE_HELLO)) {
+            processEHello(response);
+        } else if (response.startsWith(ArduinoSocket.E_RESPONSE_BIN)) {
+
+        } else if (response.startsWith(ArduinoSocket.E_RESPONSE_CTRL)) {
+            processECtrl(response);
+        } else {
+            Log.e(TAG, "unexpected response : " + response);
+        }
     }
 }
