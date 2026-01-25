@@ -9,7 +9,7 @@ import net.irext.ircontrol.utils.ToastUtils;
 
 import java.util.Objects;
 
-import static net.irext.ircontrol.controller.implementable.IRemote.*;
+import static net.irext.ircontrol.controller.base.IRemote.*;
 
 /**
  * Filename:       ControlHelper.java

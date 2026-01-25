@@ -17,10 +17,11 @@ import net.irext.ircontrol.bean.RemoteControl;
 import net.irext.ircontrol.controller.ArduinoRemote;
 import net.irext.ircontrol.controller.ArduinoSocket;
 import net.irext.ircontrol.controller.PhoneRemote;
-import net.irext.ircontrol.controller.implementable.IRemote;
+import net.irext.ircontrol.controller.base.IRemote;
 import net.irext.ircontrol.ui.activity.ControlActivity;
 import net.irext.ircontrol.utils.FileUtils;
 import net.irext.ircontrol.utils.MessageUtils;
+import net.irext.ircontrol.utils.MiscUtils;
 import net.irext.ircontrol.utils.ToastUtils;
 
 import java.lang.ref.WeakReference;
@@ -123,7 +124,7 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
             public void onClick(View v) {
                 vibrate(mParent);
                 String emitterIp = mEtEmitterIp.getText().toString();
-                if (!ArduinoSocket.isValidIPv4(emitterIp)) {
+                if (!MiscUtils.isValidIPv4(emitterIp)) {
                     Log.e(TAG, "IP address is invalid: " + emitterIp);
                     ToastUtils.showToast(mParent, mParent.getString(R.string.input_emitter_ip_address), null);
                     return;
@@ -217,11 +218,10 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
     }
 
     private void processECtrl(String response) {
-
+        ;
     }
 
     private void onEmitterResponse(String response) {
-        Log.d(TAG, "emitter: " + response);
         if (response.startsWith(ArduinoSocket.E_RESPONSE_HELLO)) {
             processEHello(response);
         } else if (response.startsWith(ArduinoSocket.E_RESPONSE_BIN)) {
@@ -264,7 +264,7 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
             keyCode = IRemote.KEY_MENU;
         }
 
-        if (mArduinoSocket.isConnected() && mArduinoSocket.getConnectionStatus() == ArduinoSocket.EMITTER_BIN_RECEIVED) {
+        if (mArduinoSocket.getConnectionStatus() == ArduinoSocket.EMITTER_WORKING) {
             remote = new ArduinoRemote(mParent, mArduinoSocket);
         } else {
             remote = new PhoneRemote(mParent);

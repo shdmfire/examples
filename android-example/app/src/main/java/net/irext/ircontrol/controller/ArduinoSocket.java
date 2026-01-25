@@ -25,8 +25,7 @@ public class ArduinoSocket {
 
     public static final int EMITTER_DISCONNECTED = 0;
     public static final int EMITTER_CONNECTED = 1;
-    public static final int EMITTER_AVAILABLE = 2;
-    public static final int EMITTER_BIN_RECEIVED = 3;
+    public static final int EMITTER_WORKING = 2;
 
     public static final int EMITTER_PORT = 8000;
 
@@ -61,10 +60,6 @@ public class ArduinoSocket {
         return connectionStatus;
     }
 
-    public boolean isConnected() {
-        return connectionStatus == EMITTER_AVAILABLE;
-    }
-
     public void connectToEmitter(String ipAddress, String port) {
         if (connectionStatus == EMITTER_DISCONNECTED) {
             if (ipAddress == null || port == null) {
@@ -81,9 +76,7 @@ public class ArduinoSocket {
                     BufferedReader in = new BufferedReader(new InputStreamReader(emitterConn.getInputStream()));
                     String response;
                     while ((response = in.readLine()) != null) {
-                        if (callback != null) {
-                            callback.onResponse(response);
-                        }
+                        onResponse(response);
                     }
 
                     if (callback != null) {
@@ -129,22 +122,12 @@ public class ArduinoSocket {
         }).start();
     }
 
-    public void sendDecodedToEmitter(String value) {
-        new Thread(() -> {
-            try {
-                PrintWriter out = new PrintWriter(emitterConn.getOutputStream(), true);
-                out.println(value);
-            } catch (IOException e) {
-                Log.e(TAG, "Error sending decoded data: " + e.getMessage());
-            }
-        }).start();
-    }
-
     public void sendBinToEmitter(byte[] binContent, int categoryId, int subCate) {
         if (binContent == null) {
             Log.e(TAG, "binary bytes is null");
             return;
         }
+
         String binBase64 = Base64.getEncoder().encodeToString(binContent);
         String binStr = A_REQUEST_BIN + "," + categoryId + "," + subCate + "," + binBase64.length() + "," + binBase64;
         Log.d(TAG, "sending bin in base64: " + binStr);
@@ -152,23 +135,36 @@ public class ArduinoSocket {
             try {
                 PrintWriter out = new PrintWriter(emitterConn.getOutputStream(), true);
                 out.println(binStr);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 Log.e(TAG, "Error sending binary data: " + e.getMessage());
             }
         }).start();
     }
 
-    public void processEHello(String response) {
-        sendHelloToEmitter();
+    public void sendControlToEmitter(String command) {
+        String commandStr = A_REQUEST_CTRL + "," + command.length() + "," + command;
+        Log.d(TAG, "sending command in base64: " + commandStr);
+        new Thread(() -> {
+            try {
+                PrintWriter out = new PrintWriter(emitterConn.getOutputStream(), true);
+                out.println(commandStr);
+            } catch (IOException e) {
+                Log.e(TAG, "Error sending control data: " + e.getMessage());
+            }
+        });
     }
 
-    public void processEBin(String response, byte[] binContent, int categoryId, int subCate) {
-        sendBinToEmitter(binContent, categoryId, subCate);
+    public void sendDecodedToEmitter(String binContent) {
+        new Thread(() -> {
+            try {
+                PrintWriter out = new PrintWriter(emitterConn.getOutputStream(), true);
+                out.println(binContent);
+            } catch (IOException e) {
+                Log.e(TAG, "Error sending decoded data: " + e.getMessage());
+            }
+        }).start();
     }
 
-    public void processECtrl(String response) {
-        // Handle control response if needed
-    }
 
     private void onConnected() {
         if (callback != null) {
@@ -178,15 +174,15 @@ public class ArduinoSocket {
     }
 
     private void onResponse(String response) {
-        Log.d(TAG, "emitter: " + response);
         if (response.startsWith(ArduinoSocket.E_RESPONSE_HELLO)) {
-            processEHello(response);
+            ;
         } else if (response.startsWith(ArduinoSocket.E_RESPONSE_BIN)) {
-
+            ;
         } else if (response.startsWith(ArduinoSocket.E_RESPONSE_CTRL)) {
-            processECtrl(response);
+            connectionStatus = EMITTER_WORKING;
         } else {
             Log.e(TAG, "unexpected response : " + response);
         }
+        callback.onResponse(response);
     }
 }

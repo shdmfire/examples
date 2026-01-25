@@ -33,7 +33,7 @@
 
     <!-- Emitter panel -->
     <string name="emitter_ip">Emitter IP</string>
-    <string name="default_ip">192.168.1.40</string>
+    <string name="default_ip">192.168.1.43</string>
     <string name="connect">Connect</string>
     <string name="decode_on_board">Decode On Board</string>
 

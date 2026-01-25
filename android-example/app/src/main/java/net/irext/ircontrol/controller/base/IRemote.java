@@ -1,4 +1,4 @@
-package net.irext.ircontrol.controller.implementable;
+package net.irext.ircontrol.controller.base;
 
 /**
  * Filename:       IRemote.java

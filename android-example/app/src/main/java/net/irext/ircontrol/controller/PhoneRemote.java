@@ -4,7 +4,7 @@ import android.content.Context;
 import android.util.Log;
 import net.irext.decode.sdk.IRDecode;
 import net.irext.decode.sdk.bean.ACStatus;
-import net.irext.ircontrol.controller.implementable.IRemote;
+import net.irext.ircontrol.controller.base.IRemote;
 
 /**
  * Filename:       PhoneRemote.java
