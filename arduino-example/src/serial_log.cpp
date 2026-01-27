@@ -1,5 +1,5 @@
 /**
- *
+*
  * Copyright (c) 2020-2025 IRext Opensource Organization
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,48 +21,39 @@
  * SOFTWARE.
  */
 
-#ifndef ARDUINO_EXAMPLE_CONFIGURE_H
-#define ARDUINO_EXAMPLE_CONFIGURE_H
+#include <Arduino.h>
+#include <cstdarg>
+#include <cstdio>
+#include <cstring>
 
-#include <cstdint>
+#include "serial_log.h"
 
-// Wi-Fi Configs
-#define SECRET_SSID "Maomao的小房子"
-#define SECRET_PASS "Maomao121207"
-// #define SECRET_SSID "maomao"
-// #define SECRET_PASS "20121207"
+#define LOG_BUF_SIZE    (128)
 
-// #define TEST_BIN_RECEIVE  (1)
+// public variable definitions
+int logLevel = LOG_VERBOSE;
+char logBuf[LOG_BUF_SIZE] = { 0 };
 
-// LED Matrix Definitions
-constexpr uint32_t chip[] = {
-    0x1503f811,
-    0x3181103,
-    0xf8150000
-};
 
-constexpr uint32_t danger[] = {
-    0x400a015,
-    0x1502082,
-    0x484047fc
-};
+// public function definitions
+void serialPrint(const int logType, const char* fmt, ...) {
+    if (logType < logLevel) {
+        return;
+    }
+    memset(logBuf, 0, LOG_BUF_SIZE);
 
-constexpr uint32_t happy[] = {
-    0x19819,
-    0x80000001,
-    0x81f8000
-};
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(logBuf, LOG_BUF_SIZE, fmt, ap);
+    va_end(ap);
 
-constexpr uint32_t heart[] = {
-    0x3184a444,
-    0x44042081,
-    0x100a0040
-};
+    Serial.println(logBuf);
+}
 
-constexpr uint32_t fullOn[] = {
-    0xffffffff,
-    0xffffffff,
-    0xffffffff
-};
+void setLogLevel(const int level) {
+    logLevel = level;
+}
 
-#endif //ARDUINO_EXAMPLE_CONFIGURE_H
+int getLogLevel() {
+    return logLevel;
+}

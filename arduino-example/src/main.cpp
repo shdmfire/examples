@@ -28,6 +28,7 @@
 
 #include "configure.h"
 #include "remote.h"
+#include "serial_log.h"
 
 
 #define WIFI_SERVER_PORT (8000)
@@ -74,21 +75,18 @@ void printWiFiStatus() {
     unsigned long currentMillis = millis();
 
     if (currentMillis - lastStatusCheck >= ALIVE_DEBUG_INTERVAL) {
-        IPAddress ip = WiFi.localIP();
+        const IPAddress ip = WiFi.localIP();
         if (0 == strcmp(ip.toString().c_str(), "0.0.0.0")) {
             lastStatusCheck = currentMillis;
             return;
         }
-        Serial.print("SSID: ");
-        Serial.println(WiFi.SSID());
+        serialPrint(LOG_INFO, "Wi-Fi SSID: %s", WiFi.SSID());
 
-        Serial.print("IP address: ");
-        Serial.println(ip);
+        serialPrint(LOG_INFO, "Wi-Fi IP address: %s", ip.toString().c_str());
 
         const long rssi = WiFi.RSSI();
-        Serial.print("Signal strength (RSSI): ");
-        Serial.print(rssi);
-        Serial.println(" dBm");
+        serialPrint(LOG_INFO, "Wi-Fi signal strength (RSSI): %ld dBm", rssi);
+
         lastStatusCheck = currentMillis;
 
         if (0 == wifiStatusPrinted) {
@@ -98,11 +96,19 @@ void printWiFiStatus() {
     }
 }
 
+static void sendToClient(WiFiClient *client, const char* content) {
+    client->println(content);
+    client->flush();
+}
+
 void setup() {
     Serial.begin(115200);
+
     while (!Serial) {
         delay(100);
     }
+
+    remoteInit();
 
     matrix.begin();
     matrix.beginDraw();
@@ -117,33 +123,31 @@ void setup() {
     matrix.endText(SCROLL_LEFT);
     matrix.endDraw();
 
-    Serial.println("IRext Arduino example started in station mode");
-    Serial.print("Attempting to connect to SSID: ");
-    Serial.println(ssid);
+    serialPrint(LOG_INFO, "IRext Arduino example started in station mode");
+    serialPrint(LOG_INFO, "Attempting to connect to SSID: %s", ssid);
 
     status = WiFi.begin(ssid, pass);
 
     if (status == WL_CONNECTED) {
-        Serial.println("\nConnected to Wi-Fi");
+        serialPrint(LOG_INFO, "Connected to Wi-Fi");
         server.begin();
     }
     else {
-        Serial.print("\nFailed to connect Wi-Fi, status: ");
-        Serial.println(status);
+        serialPrint(LOG_ERROR, "Failed to connect Wi-Fi, status: %d", status);
     }
 }
 
 void onConnected(WiFiClient *client) {
     client->flush();
-    Serial.println("Client connected");
-    client->println(eHello);
+    serialPrint(LOG_DEBUG, "Client connected");
+    sendToClient(client, eHello);
 }
 
 void onDisconnected(WiFiClient *client) {
     remoteClose();
     client->flush();
     client->stop();
-    Serial.println("Client disconnected");
+    serialPrint(LOG_DEBUG, "Client disconnected");
 }
 
 void onError(WiFiClient *client) {
@@ -151,54 +155,61 @@ void onError(WiFiClient *client) {
     client->stop();
 }
 
-void onCommand(const String *command, WiFiClient *client) {
+void onCommand(WiFiClient *client, const String *command) {
     if (command->startsWith(aHello)) {
-        Serial.println("Received hello command");
-        client->println(eBin);
-        client->flush();
+        serialPrint(LOG_DEBUG, "Received hello command");
+        sendToClient(client, eBin);
     } else if (command->startsWith(aBin)) {
-        Serial.println("Received bin command");
+        serialPrint(LOG_DEBUG, "Received bin command");
+#if !defined TEST_BIN_RECEIVE
         if (remoteOpen(command->c_str()) > 0) {
-            client->println(eControl);
+            sendToClient(client, eControl);
         } else {
-            Serial.println("Failed to parse bin command");
-            client->println(eError);
+            serialPrint(LOG_ERROR, "Failed to parse bin command");
+            sendToClient(client, eError);
         }
+#else
+        sendToClient(client, eControl);
+#endif
     } else if (command->startsWith(aControl)) {
-        Serial.println("Received control command");
+        serialPrint(LOG_DEBUG, "Received control command");
         remoteControl(command->c_str());
     } else if (command->startsWith(aError)) {
-        Serial.println("Received error command");
+        serialPrint(LOG_DEBUG, "Received error command");
         onError(client);
     }
 }
 
 void loop() {
     if (WiFi.status() != WL_CONNECTED) {
-        Serial.print("Connection lost. Reconnecting...");
+        serialPrint(LOG_INFO, "Connection lost, reconnecting");
         status = WiFi.begin(ssid, pass);
         if (status == WL_CONNECTED) {
-            Serial.println("Reconnected!");
+            serialPrint(LOG_INFO, "Reconnected");
         }
     } else {
         printWiFiStatus();
-        client = server.available();
-        if (client.connected()) {
-            if (false == clientConnected) {
+        if (!client || !client.connected()) {
+            client = server.available();
+            if (client) {
+                clientConnected = true;
                 onConnected(&client);
             }
-            clientConnected = true;
+        }
+        if (client && client.connected()) {
             if (client.available()) {
-                const String received = client.readStringUntil('\n');
-                Serial.println(received);
-                onCommand(&received, &client);
+                String received = client.readStringUntil('\n');
+                received.trim();
+
+                if (received.length() > 0) {
+                    serialPrint(LOG_VERBOSE, "Data received: %d", received.length());
+                    onCommand(&client, &received);
+                }
             }
-        } else {
-            if (clientConnected) {
-                onDisconnected(&client);
-            }
+        } else if (clientConnected) {
+            onDisconnected(&client);
             clientConnected = false;
+            client.stop();
         }
     }
-    delay(10);
 }

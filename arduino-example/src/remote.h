@@ -24,7 +24,11 @@
 #ifndef ARDUINO_EXAMPLE_REMOTE_H
 #define ARDUINO_EXAMPLE_REMOTE_H
 
-#define REMOTE_BIN_DEBUG (1)
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void remoteInit();
 
 int remoteOpen(const char *binStr);
 
@@ -32,4 +36,9 @@ int remoteControl(const char *controlStr);
 
 void remoteClose();
 
-#endif //ARDUINO_EXAMPLE_REMOTE_H
+void remoteDebug(const uint16_t* userData, uint16_t userDataLen);
+
+#ifdef __cplusplus
+}
+#endif
+#endif // ARDUINO_EXAMPLE_REMOTE_H

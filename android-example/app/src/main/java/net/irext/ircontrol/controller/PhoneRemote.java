@@ -4,7 +4,8 @@ import android.content.Context;
 import android.util.Log;
 import net.irext.decode.sdk.IRDecode;
 import net.irext.decode.sdk.bean.ACStatus;
-import net.irext.ircontrol.controller.base.IRemote;
+import net.irext.ircontrol.controller.base.ControlHelper;
+import net.irext.ircontrol.controller.base.Remote;
 
 /**
  * Filename:       PhoneRemote.java
@@ -16,19 +17,27 @@ import net.irext.ircontrol.controller.base.IRemote;
  * Revision log:
  *2026-01-18: created by strawmanbobi
  */
-public class PhoneRemote implements IRemote {
+public class PhoneRemote extends Remote {
 
     private static final String TAG = PhoneRemote.class.getSimpleName();
 
-    IRDecode mIRDecode;
+    private Context mContext;
+    private IRDecode mIRDecode;
 
-    Context mContext;
+    private static PhoneRemote mInstance;
+
     public PhoneRemote(Context context) {
         mContext = context;
         mIRDecode = new IRDecode();
     }
 
-    @Override
+    public static PhoneRemote getInstance(Context context) {
+        if (mInstance == null) {
+            mInstance = new PhoneRemote(context);
+        }
+        return mInstance;
+    }
+
     public int irControl(int category, int subCategory, int keyCode) {
         int []decoded;
         StringBuilder debugStr = new StringBuilder();

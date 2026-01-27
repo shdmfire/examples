@@ -1,16 +1,16 @@
 package net.irext.ircontrol.controller.base;
 
 /**
- * Filename:       IRemote.java
+ * Filename:       Remote.java
  * Revised:        Date: 2026-01-18
  * Revision:       Revision: 1.0
  * <p>
- * Description:    IRemote interface
+ * Description:    Remote interface
  * <p>
  * Revision log:
  *2026-01-18: created by strawmanbobi
  */
-public interface IRemote {
+public abstract class Remote {
 
     public static final int KEY_POWER = 0;
     public static final int KEY_UP = 1;
@@ -24,6 +24,8 @@ public interface IRemote {
     public static final int KEY_HOME = 9;
     public static final int KEY_MENU = 10;
 
-    int irControl(int category, int subCategory, int keyCode);
+    int irControl(int category, int subCategory, int keyCode) {
+        return 0;
+    }
 
 }

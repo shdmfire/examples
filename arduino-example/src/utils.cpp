@@ -22,9 +22,9 @@
  */
 
 #include <Arduino.h>
-
 #include <cstring>
 
+#include "utils.h"
 
 // public function definitions
 int splitString(const char *str, char *parts[],

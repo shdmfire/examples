@@ -24,7 +24,15 @@
 #ifndef ARDUINO_EXAMPLE_UTILS_H
 #define ARDUINO_EXAMPLE_UTILS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int splitString(const char *str, char *parts[],
                 int parts_max, const char *delimiter);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //ARDUINO_EXAMPLE_UTILS_H

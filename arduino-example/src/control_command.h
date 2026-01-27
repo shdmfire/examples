@@ -1,5 +1,5 @@
 /**
- *
+*
  * Copyright (c) 2020-2025 IRext Opensource Organization
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,48 +21,20 @@
  * SOFTWARE.
  */
 
-#ifndef ARDUINO_EXAMPLE_CONFIGURE_H
-#define ARDUINO_EXAMPLE_CONFIGURE_H
+#ifndef ARDUINO_EXAMPLE_CONTROL_COMMAND_H
+#define ARDUINO_EXAMPLE_CONTROL_COMMAND_H
 
-#include <cstdint>
+#include "ir_decode.h"
 
-// Wi-Fi Configs
-#define SECRET_SSID "Maomao的小房子"
-#define SECRET_PASS "Maomao121207"
-// #define SECRET_SSID "maomao"
-// #define SECRET_PASS "20121207"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-// #define TEST_BIN_RECEIVE  (1)
+int parseControlCommand(int category, const char *commandJson,
+                        t_remote_ac_status *ac_status, int* keyCode);
 
-// LED Matrix Definitions
-constexpr uint32_t chip[] = {
-    0x1503f811,
-    0x3181103,
-    0xf8150000
-};
+#ifdef __cplusplus
+}
+#endif
 
-constexpr uint32_t danger[] = {
-    0x400a015,
-    0x1502082,
-    0x484047fc
-};
-
-constexpr uint32_t happy[] = {
-    0x19819,
-    0x80000001,
-    0x81f8000
-};
-
-constexpr uint32_t heart[] = {
-    0x3184a444,
-    0x44042081,
-    0x100a0040
-};
-
-constexpr uint32_t fullOn[] = {
-    0xffffffff,
-    0xffffffff,
-    0xffffffff
-};
-
-#endif //ARDUINO_EXAMPLE_CONFIGURE_H
+#endif // ARDUINO_EXAMPLE_CONTROL_COMMAND_H

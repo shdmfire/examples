@@ -12,7 +12,7 @@ Revision log:
 #ifndef _IR_DEFS_H
 #define _IR_DEFS_H
 
-#define IR_DECODE_LIB_VER "1.5.0"
+#define IR_DECODE_LIB_VER "1.5.2"
 
 #if defined (BOARD_PC)
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
@@ -27,6 +27,10 @@ extern "C"
 #if defined BOARD_ANDROID
 #include <android/log.h>
 #define LOG_TAG "ir_decode"
+#endif
+
+#if defined BOARD_ARDUINO
+#include "serial_log.h"
 #endif
 
 #define TRUE    1
@@ -59,10 +63,10 @@ void noprint(const char *fmt, ...);
 #define ir_strlen(A) strlen(A)
 #if ((defined BOARD_PC) || (defined BOARD_PC_JNI)) && (defined DEBUG)
 #define ir_printf(...) do { printf(__VA_ARGS__); fflush(stdout); } while(0)
-#else
-#define ir_printf noprint
+#elif (defined BOARD_ARDUINO)
+#define ir_printf(...) do { serialPrint(LOG_DEBUG, __VA_ARGS__); } while(0)
 #endif
-#define USER_DATA_SIZE 1636
+#define USER_DATA_SIZE 2048
 // #define USER_DATA_SIZE 4096
 
 #ifdef __cplusplus

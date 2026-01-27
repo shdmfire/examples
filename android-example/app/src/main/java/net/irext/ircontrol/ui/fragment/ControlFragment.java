@@ -3,6 +3,7 @@ package net.irext.ircontrol.ui.fragment;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.*;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,9 +16,8 @@ import net.irext.decode.sdk.IRDecode;
 import net.irext.ircontrol.R;
 import net.irext.ircontrol.bean.RemoteControl;
 import net.irext.ircontrol.controller.ArduinoRemote;
-import net.irext.ircontrol.controller.ArduinoSocket;
 import net.irext.ircontrol.controller.PhoneRemote;
-import net.irext.ircontrol.controller.base.IRemote;
+import net.irext.ircontrol.controller.base.Remote;
 import net.irext.ircontrol.ui.activity.ControlActivity;
 import net.irext.ircontrol.utils.FileUtils;
 import net.irext.ircontrol.utils.MessageUtils;
@@ -45,7 +45,8 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
 
     private static final int CMD_GET_REMOTE_CONTROL = 0;
 
-    private ArduinoSocket mArduinoSocket;
+    private PhoneRemote mPhoneRemote;
+    private ArduinoRemote mArduinoRemote;
 
     private MsgHandler mHandler;
 
@@ -96,12 +97,8 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
         btnPlus.setOnClickListener(this);
         btnMinus.setOnClickListener(this);
 
-        mEtEmitterIp = view.findViewById(R.id.emitter_ip);
-        mBtnConnect = view.findViewById(R.id.btn_connect_emitter);
-        mVWConnectStatus = view.findViewById(R.id.vw_connect_status);
-
-        // Initialize ArduinoSocket with callback
-        mArduinoSocket = new ArduinoSocket(new ArduinoSocket.IRSocketEmitterCallback() {
+        mPhoneRemote = PhoneRemote.getInstance(mParent);
+        mArduinoRemote = ArduinoRemote.getInstance(mParent, new ArduinoRemote.IRSocketEmitterCallback() {
             @Override
             public void onConnected() {
                 onEmitterConnected();
@@ -118,6 +115,10 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
             }
         });
 
+        mEtEmitterIp = view.findViewById(R.id.emitter_ip);
+        mBtnConnect = view.findViewById(R.id.btn_connect_emitter);
+        mVWConnectStatus = view.findViewById(R.id.vw_connect_status);
+
         mBtnConnect.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -129,7 +130,7 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
                     ToastUtils.showToast(mParent, mParent.getString(R.string.input_emitter_ip_address), null);
                     return;
                 }
-                mArduinoSocket.connectToEmitter(emitterIp, String.valueOf(ArduinoSocket.EMITTER_PORT));
+                mArduinoRemote.connectToEmitter(emitterIp, String.valueOf(ArduinoRemote.EMITTER_PORT));
             }
         });
 
@@ -152,13 +153,13 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onStop() {
         super.onStop();
-        mArduinoSocket.disconnect();
+        mArduinoRemote.disconnect();
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mArduinoSocket.disconnect();
+        mArduinoRemote.disconnect();
     }
 
     private void getRemote() {
@@ -202,7 +203,7 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
     }
 
     private void processEHello(String response) {
-        mArduinoSocket.sendHelloToEmitter();
+        mArduinoRemote.sendHelloToEmitter();
     }
 
     private void processEBin(String response) {
@@ -210,7 +211,7 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
                 mCurrentRemoteControl.getRemoteMap() + FileUtils.FILE_NAME_EXT;
         byte []binContent = FileUtils.getByteArrayFromFile(binFileName);
         if (null != binContent) {
-            mArduinoSocket.sendBinToEmitter(binContent, mCurrentRemoteControl.getCategoryId(), mCurrentRemoteControl.getSubCategory());
+            mArduinoRemote.sendBinToEmitter(binContent, mCurrentRemoteControl.getCategoryId(), mCurrentRemoteControl.getSubCategory());
         } else {
             Log.e(TAG, "emitter sender could not open the binary file");
             ToastUtils.showToast(mParent, mParent.getString(R.string.file_could_not_open), Toast.LENGTH_SHORT);
@@ -222,11 +223,11 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
     }
 
     private void onEmitterResponse(String response) {
-        if (response.startsWith(ArduinoSocket.E_RESPONSE_HELLO)) {
+        if (response.startsWith(ArduinoRemote.E_RESPONSE_HELLO)) {
             processEHello(response);
-        } else if (response.startsWith(ArduinoSocket.E_RESPONSE_BIN)) {
+        } else if (response.startsWith(ArduinoRemote.E_RESPONSE_BIN)) {
             processEBin(response);
-        } else if (response.startsWith(ArduinoSocket.E_RESPONSE_CTRL)) {
+        } else if (response.startsWith(ArduinoRemote.E_RESPONSE_CTRL)) {
             processECtrl(response);
         } else {
             Log.e(TAG, "unexpected response : " + response);
@@ -237,39 +238,38 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         vibrate(mParent);
-        IRemote remote = null;
+        Remote remote = null;
         int keyCode = 0;
         int id = v.getId();
         if (id == R.id.iv_power) {
-            keyCode = IRemote.KEY_POWER;
+            keyCode = Remote.KEY_POWER;
         } else if (id == R.id.iv_up) {
-            keyCode = IRemote.KEY_UP;
+            keyCode = Remote.KEY_UP;
         } else if (id == R.id.iv_down) {
-            keyCode = IRemote.KEY_DOWN;
+            keyCode = Remote.KEY_DOWN;
         } else if (id == R.id.iv_left) {
-            keyCode = IRemote.KEY_LEFT;
+            keyCode = Remote.KEY_LEFT;
         } else if (id == R.id.iv_right) {
-            keyCode = IRemote.KEY_RIGHT;
+            keyCode = Remote.KEY_RIGHT;
         } else if (id == R.id.iv_ok) {
-            keyCode = IRemote.KEY_OK;
+            keyCode = Remote.KEY_OK;
         } else if (id == R.id.iv_plus) {
-            keyCode = IRemote.KEY_PLUS;
+            keyCode = Remote.KEY_PLUS;
         } else if (id == R.id.iv_minus) {
-            keyCode = IRemote.KEY_MINUS;
+            keyCode = Remote.KEY_MINUS;
         } else if (id == R.id.iv_back) {
-            keyCode = IRemote.KEY_BACK;
+            keyCode = Remote.KEY_BACK;
         } else if (id == R.id.iv_home) {
-            keyCode = IRemote.KEY_HOME;
+            keyCode = Remote.KEY_HOME;
         } else if (id == R.id.iv_menu) {
-            keyCode = IRemote.KEY_MENU;
+            keyCode = Remote.KEY_MENU;
         }
 
-        if (mArduinoSocket.getConnectionStatus() == ArduinoSocket.EMITTER_WORKING) {
-            remote = new ArduinoRemote(mParent, mArduinoSocket);
+        if (mArduinoRemote.getConnectionStatus() == ArduinoRemote.EMITTER_WORKING) {
+            mArduinoRemote.irControl(mCurrentRemoteControl.getCategoryId(), mCurrentRemoteControl.getSubCategory(), keyCode);
         } else {
-            remote = new PhoneRemote(mParent);
+            mPhoneRemote.irControl(mCurrentRemoteControl.getCategoryId(), mCurrentRemoteControl.getSubCategory(), keyCode);
         }
-        remote.irControl(mCurrentRemoteControl.getCategoryId(), mCurrentRemoteControl.getSubCategory(), keyCode);
     }
 
     private static class MsgHandler extends Handler {

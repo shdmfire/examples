@@ -1,4 +1,4 @@
-package net.irext.ircontrol.controller;
+package net.irext.ircontrol.controller.base;
 
 import android.content.Context;
 import android.hardware.ConsumerIrManager;
@@ -9,7 +9,7 @@ import net.irext.ircontrol.utils.ToastUtils;
 
 import java.util.Objects;
 
-import static net.irext.ircontrol.controller.base.IRemote.*;
+import static net.irext.ircontrol.controller.base.Remote.*;
 
 /**
  * Filename:       ControlHelper.java
