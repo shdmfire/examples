@@ -190,12 +190,14 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
 
     private void onEmitterConnected() {
         mParent.runOnUiThread(() -> {
+            Log.d(TAG, "onEmitterConnected, set the status and button color in UI");
             mBtnConnect.setImageDrawable(AppCompatResources.getDrawable(mParent, R.mipmap.button_unlink));
             mVWConnectStatus.setBackgroundColor(Color.parseColor("#3FAFFF"));
         });
     }
     private void onEmitterDisconnected() {
         mParent.runOnUiThread(() -> {
+            Log.d(TAG, "onEmitterConnected, set the status and button color in UI");
             ToastUtils.showToast(mParent, mParent.getString(R.string.connect_disconnected), Toast.LENGTH_SHORT);
             mBtnConnect.setImageDrawable(AppCompatResources.getDrawable(mParent, R.mipmap.button_link));
             mVWConnectStatus.setBackgroundColor(Color.parseColor("#FF7F7F"));

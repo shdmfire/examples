@@ -77,7 +77,6 @@ void printWiFiStatus() {
     if (currentMillis - lastStatusCheck >= ALIVE_DEBUG_INTERVAL) {
         const IPAddress ip = WiFi.localIP();
         if (0 == strcmp(ip.toString().c_str(), "0.0.0.0")) {
-            lastStatusCheck = currentMillis;
             return;
         }
         serialPrint(LOG_INFO, "Wi-Fi SSID: %s", WiFi.SSID());
