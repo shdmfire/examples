@@ -59,13 +59,9 @@ public class ArduinoRemote extends Remote {
 
     private Context mContext = null;
 
-    private static ArduinoRemote mInstance;
-
-    public static ArduinoRemote getInstance(Context context, IRSocketEmitterCallback callback) {
-        if (mInstance == null) {
-            mInstance = new ArduinoRemote(context, callback);
-        }
-        return mInstance;
+    public ArduinoRemote(Context context, IRSocketEmitterCallback callback) {
+        this.mContext = context;
+        this.callback = callback;
     }
 
     public Context getContext() {
@@ -82,9 +78,8 @@ public class ArduinoRemote extends Remote {
         void onResponse(String response);
     }
 
-    public ArduinoRemote(Context context, IRSocketEmitterCallback callback) {
-        this.mContext = context;
-        this.callback = callback;
+    public static ArduinoRemote getInstance(Context context, IRSocketEmitterCallback callback) {
+        return new ArduinoRemote(context, callback);
     }
 
     public void setCallback(IRSocketEmitterCallback callback) {
@@ -218,7 +213,9 @@ public class ArduinoRemote extends Remote {
         } else {
             Log.e(TAG, "unexpected response : " + response);
         }
-        callback.onResponse(response);
+        if (callback != null) {
+            callback.onResponse(response);
+        }
     }
 
     public int irControl(int category, int subCategory, int keyCode) {
@@ -236,7 +233,9 @@ public class ArduinoRemote extends Remote {
             try {
                 sendControlToEmitter(controlCommand);
             } catch (Exception e) {
-                callback.onResponse(E_INDICATION_FAILED);
+                if (callback != null) {
+                    callback.onResponse(E_INDICATION_FAILED);
+                }
             }
         }).start();
 

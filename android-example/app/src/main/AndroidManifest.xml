@@ -32,20 +32,20 @@
 
         <activity
                 android:name=".ui.activity.CreateActivity"
-                android:parentActivityName="android.support.v4.app.FragmentActivity"
+                android:parentActivityName="net.irext.ircontrol.ui.activity.MainActivity"
                 android:theme="@style/AppTheme">
             <meta-data
                     android:name="android.support.PARENT_ACTIVITY"
-                    android:value="android.support.v4.app.FragmentActivity"/>
+                    android:value="net.irext.ircontrol.ui.activity.MainActivity"/>
         </activity>
 
         <activity
                 android:name=".ui.activity.ControlActivity"
-                android:parentActivityName="android.support.v4.app.FragmentActivity"
+                android:parentActivityName="net.irext.ircontrol.ui.activity.MainActivity"
                 android:theme="@style/AppTheme">
             <meta-data
                     android:name="android.support.PARENT_ACTIVITY"
-                    android:value="android.support.v4.app.FragmentActivity"/>
+                    android:value="net.irext.ircontrol.ui.activity.MainActivity"/>
         </activity>
 
         <provider
