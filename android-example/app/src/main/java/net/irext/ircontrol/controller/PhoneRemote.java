@@ -28,7 +28,7 @@ public class PhoneRemote extends Remote {
 
     public PhoneRemote(Context context) {
         mContext = context;
-        mIRDecode = new IRDecode();
+        mIRDecode = IRDecode.getInstance();
     }
 
     public static PhoneRemote getInstance(Context context) {
@@ -36,6 +36,10 @@ public class PhoneRemote extends Remote {
             mInstance = new PhoneRemote(context);
         }
         return mInstance;
+    }
+
+    public int irOpen(String remoteBinFilePath, int category, int subCategory) {
+        return mIRDecode.openFile(category, subCategory, remoteBinFilePath);
     }
 
     public int irControl(int category, int subCategory, int keyCode) {
@@ -54,5 +58,9 @@ public class PhoneRemote extends Remote {
         Log.d(TAG, "IR control decoded: " + debugStr);
         ControlHelper.transmitIr(mContext, decoded);
         return 0;
+    }
+
+    public void irClose() {
+        mIRDecode.closeBinary();
     }
 }

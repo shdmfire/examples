@@ -45,5 +45,7 @@
     <string name="status_not_connected">未连接</string>
     <string name="status_connected">已连接</string>
     <string name="file_could_not_open">编码文件无法打开</string>
+    <string name="decode_and_send_success">遥控码发送成功</string>
+    <string name="decode_and_send_failed">遥控失败</string>
 
 </resources>

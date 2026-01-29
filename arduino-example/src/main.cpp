@@ -48,6 +48,8 @@ auto *aControl = "a_control";
 auto *eControl = "e_control";
 auto *aError = "a_error";
 auto *eError = "e_error";
+auto *eControlSuccess = "e_success";
+auto *eControlFailed = "e_failed";
 
 int status = WL_IDLE_STATUS;
 unsigned long lastStatusCheck = 0;
@@ -172,7 +174,12 @@ void onCommand(WiFiClient *client, const String *command) {
 #endif
     } else if (command->startsWith(aControl)) {
         serialPrint(LOG_DEBUG, "Received control command");
-        remoteControl(command->c_str());
+        if (0 == remoteControl(command->c_str())) {
+            serialPrint(LOG_INFO, "Remote control successfully");
+            sendToClient(client, eControlSuccess);
+        } else {
+            sendToClient(client, eControlFailed);
+        }
     } else if (command->startsWith(aError)) {
         serialPrint(LOG_DEBUG, "Received error command");
         onError(client);

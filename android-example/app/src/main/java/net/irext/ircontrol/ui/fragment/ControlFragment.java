@@ -54,8 +54,6 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
     private Long mRemoteID;
     private RemoteControl mCurrentRemoteControl;
 
-    // define the single instance of IRDecode
-    private IRDecode mIRDecode;
     private EditText mEtEmitterIp;
     private ImageButton mBtnConnect;
     private View mVWConnectStatus;
@@ -67,7 +65,6 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        mIRDecode = IRDecode.getInstance();
         mHandler = new MsgHandler(this);
 
         mParent = (ControlActivity)getActivity();
@@ -179,13 +176,13 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
                     mCurrentRemoteControl.getRemoteMap() + FileUtils.FILE_NAME_EXT;
 
             /* decode SDK - load binary file */
-            int ret = mIRDecode.openFile(category, mCurrentRemoteControl.getSubCategory(), binFileName);
+            int ret = mPhoneRemote.irOpen(binFileName, category, mCurrentRemoteControl.getSubCategory());
             Log.d(TAG, "binary opened : " + ret);
         }
     }
 
     public void closeIRBinary() {
-        mIRDecode.closeBinary();
+        mPhoneRemote.irClose();
     }
 
     private void onEmitterConnected() {
@@ -221,7 +218,17 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
     }
 
     private void processECtrl(String response) {
-        ;
+
+    }
+
+    private void processControlResult(String response) {
+        mParent.runOnUiThread(() -> {
+            if (response.startsWith(ArduinoRemote.E_INDICATION_SUCCESS)) {
+                ToastUtils.showToast(mParent, mParent.getString(R.string.decode_and_send_success), null);
+            } else {
+                ToastUtils.showToast(mParent, mParent.getString(R.string.decode_and_send_failed), null);
+            }
+        });
     }
 
     private void onEmitterResponse(String response) {
@@ -231,6 +238,9 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
             processEBin(response);
         } else if (response.startsWith(ArduinoRemote.E_RESPONSE_CTRL)) {
             processECtrl(response);
+        } else if (response.startsWith(ArduinoRemote.E_INDICATION_SUCCESS) ||
+                   response.startsWith(ArduinoRemote.E_INDICATION_FAILED)) {
+            processControlResult(response);
         } else {
             Log.e(TAG, "unexpected response : " + response);
         }
@@ -242,6 +252,7 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
         vibrate(mParent);
         Remote remote = null;
         int keyCode = 0;
+        int result = 0;
         int id = v.getId();
         if (id == R.id.iv_power) {
             keyCode = Remote.KEY_POWER;
@@ -270,7 +281,12 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
         if (mArduinoRemote.getConnectionStatus() == ArduinoRemote.EMITTER_WORKING) {
             mArduinoRemote.irControl(mCurrentRemoteControl.getCategoryId(), mCurrentRemoteControl.getSubCategory(), keyCode);
         } else {
-            mPhoneRemote.irControl(mCurrentRemoteControl.getCategoryId(), mCurrentRemoteControl.getSubCategory(), keyCode);
+            result = mPhoneRemote.irControl(mCurrentRemoteControl.getCategoryId(), mCurrentRemoteControl.getSubCategory(), keyCode);
+            if (0 == result) {
+                ToastUtils.showToast(mParent, mParent.getString(R.string.decode_and_send_success), null);
+            } else {
+                ToastUtils.showToast(mParent, mParent.getString(R.string.decode_and_send_failed), null);
+            }
         }
     }
 

@@ -45,5 +45,7 @@
     <string name="status_not_connected">Disconnected</string>
     <string name="status_connected">Connected</string>
     <string name="file_could_not_open">The IR binary file could not be opened</string>
+    <string name="decode_and_send_success">Remote control code sent</string>
+    <string name="decode_and_send_failed">Remote control failed</string>
 
 </resources>

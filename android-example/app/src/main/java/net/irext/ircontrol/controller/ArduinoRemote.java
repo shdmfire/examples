@@ -15,6 +15,9 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Base64;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Filename:       ArduinoRemote.java
@@ -43,6 +46,12 @@ public class ArduinoRemote extends Remote {
 
     public static final String A_REQUEST_CTRL = "a_control";
     public static final String E_RESPONSE_CTRL = "e_control";
+
+    public static final String E_INDICATION_SUCCESS = "e_success";
+
+    public static final String E_INDICATION_FAILED = "e_failed";
+
+    private static final int CONTROL_COMMAND_TIMEOUT = 5;
 
     private Socket emitterConn = null;
     private int connectionStatus = EMITTER_DISCONNECTED;
@@ -98,7 +107,7 @@ public class ArduinoRemote extends Remote {
                     connectionStatus = EMITTER_CONNECTED;
 
                     onConnected();
-                    
+
                     BufferedReader in = new BufferedReader(new InputStreamReader(emitterConn.getInputStream()));
                     String response;
                     while ((response = in.readLine()) != null) {
@@ -167,18 +176,14 @@ public class ArduinoRemote extends Remote {
     }
 
     public void sendControlToEmitter(String command) {
-
         String commandStr = A_REQUEST_CTRL + "," + command.length() + "," + command;
-
         Log.d(TAG, "sending command in base64: " + commandStr);
-        new Thread(() -> {
-            try {
-                PrintWriter out = new PrintWriter(emitterConn.getOutputStream(), true);
-                out.println(commandStr);
-            } catch (IOException e) {
-                Log.e(TAG, "Error sending control data: " + e.getMessage());
-            }
-        }).start();
+        try {
+            PrintWriter out = new PrintWriter(emitterConn.getOutputStream(), true);
+            out.println(commandStr);
+        } catch (IOException e) {
+            Log.e(TAG, "Error sending control data: " + e.getMessage());
+        }
     }
 
     public void sendDecodedToEmitter(String binContent) {
@@ -200,20 +205,23 @@ public class ArduinoRemote extends Remote {
     }
 
     private void onResponse(String response) {
+        Log.d(TAG, "the emitter is response: " + response);
         if (response.startsWith(ArduinoRemote.E_RESPONSE_HELLO)) {
             Log.d(TAG, "received e_hello");
         } else if (response.startsWith(ArduinoRemote.E_RESPONSE_BIN)) {
             Log.d(TAG, "received e_bin");
         } else if (response.startsWith(ArduinoRemote.E_RESPONSE_CTRL)) {
             connectionStatus = EMITTER_WORKING;
+        } else if (response.startsWith(ArduinoRemote.E_INDICATION_SUCCESS) ||
+                   response.startsWith(ArduinoRemote.E_INDICATION_FAILED)) {
+            Log.d(TAG, "received control indication : " + response);
         } else {
             Log.e(TAG, "unexpected response : " + response);
         }
         callback.onResponse(response);
     }
 
-
-    public void irControl(int category, int subCategory, int keyCode) {
+    public int irControl(int category, int subCategory, int keyCode) {
 
         Log.d(TAG, "irControl, category = " + category + ", subCategory = " + subCategory + ", keyCode = " + keyCode);
 
@@ -223,8 +231,16 @@ public class ArduinoRemote extends Remote {
 
         ArduinoControlCommand command = new ArduinoControlCommand(inputKeyCode, acStatus);
         String controlCommand = command.toString();
-        sendControlToEmitter(controlCommand);
 
+        new Thread(() -> {
+            try {
+                sendControlToEmitter(controlCommand);
+            } catch (Exception e) {
+                callback.onResponse(E_INDICATION_FAILED);
+            }
+        }).start();
+
+        return 0;
     }
 
     private static class ArduinoControlCommand extends ControlCommand {
