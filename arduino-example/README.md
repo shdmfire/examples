@@ -47,3 +47,14 @@ The system:
 4. Transmits the IR signal using the IRremote library on pin 3
 
 The system supports various IR protocols and device types through its modular decoder architecture located in the [src/ir_decode](src/ir_decode) directory.
+
+
+## Related Links
+
+- IRext Official Site: https://irext.net
+- IRext Documentation: https://site.irext.net/doc
+- IRext GitHub: https://github.com/irext
+
+## License
+
+Please refer to the IRext repository for license information.

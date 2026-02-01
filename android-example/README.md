@@ -60,3 +60,14 @@ Android APP remote controller.
 Well by connecting to the Arduino controller with IP address in the same LAN, the Android APP can send the downloaded remote control binary to it, 
 and then pass the remote control command by pressing buttons accordingly. The Arduino remote controller would decode the IR time series instead and send the
 38KHz infra-red carrier waves to home appliances.
+
+
+## Related Links
+
+- IRext Official Site: https://irext.net
+- IRext Documentation: https://site.irext.net/doc
+- IRext GitHub: https://github.com/irext
+
+## License
+
+Please refer to the IRext repository for license information.
