@@ -4,7 +4,7 @@ This is a simple example of how to use IRext with an Arduino UNO R4.
 
 Please follow the diagram below to connect the IR transmitter module to your Arduino or use a breadboard, IR LED and MOSFET.
 
-<img src="arduino-example.png" style="max-width: 320px;">
+<img src="arduino-example.png" style="width: 400px;">
 
 ## Connect to Wi-Fi
 
