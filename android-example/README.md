@@ -4,7 +4,7 @@ This project shows how can you develop an Android APP remote controller quickly.
 
 The key components of the Android remote example includes:
 
-## <img src='app/src/main/res/mipmap-xxhdpi/button_home.png' style='padding-top: 12px; height: 32px; width: 20px;'> Use The Cloud-SDK to Index Remote
+## Use The Cloud-SDK to Index Remote
 The Cloud SDK calls the Rest API provided by the IRext index service to complete the APP login and
 help use indexing targeted remote controller from category to remote index.
 
@@ -28,7 +28,7 @@ And then add the meta-data in your AndroidManifest.xml to make the Cloud SDK log
 
 Follow the examples of calling `mApp.mWeAPIs` in corresponding UI flows in order to find the targeted remote index, download the remote control binary file.
 
-## <img src='app/src/main/res/mipmap-xxhdpi/button_power.png' style='padding-top: 12px; height: 32px; width: 20px;'> Use Mobile Phone as Remote Control
+## Use Mobile Phone as Remote Control
 After the remote index binary code is downloaded, you can see the remote control panel,
 by pressing control buttons, the binary code would be decoded into IR timing series. If you have an Android phone with IR transmitter, 
 you can send the 38KHz infra-red waves directly to control the home appliances.
@@ -51,7 +51,8 @@ public int irControl(int category, int subCategory, int keyCode) {
 
 **Here you need to manage your AC Status in Android application according to user interactions.**
 
-## <img src='app/src/main/res/mipmap-xxhdpi/button_link.png' style='padding-top: 12px; height: 32px; width: 20px;'> Working with Arduino Remote Control
+
+## Working with Arduino Remote Control
 There is another example project <a href='https://opensource.irext.net/irext/examples/-/tree/master/arduino-example'>arduino-example</a> which can be co-worked with this
 Android APP remote controller.
 
