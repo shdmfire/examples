@@ -64,10 +64,10 @@ and then pass the remote control command by pressing buttons accordingly. The Ar
 
 ## Related Links
 
-- IRext Official Site: https://irext.net
-- IRext Documentation: https://site.irext.net/doc
-- IRext GitHub: https://github.com/irext
+- [IRext Official Site](https://site.irext.net)
+- [IRext Documentation](https://site.irext.net/doc)
+- [IRext Open Source Project](https://opensource.irext.net)
 
 ## License
 
-Please refer to the IRext repository for license information.
+Please refer to the [IRext repository](https://opensource.irext.net) for license information.
