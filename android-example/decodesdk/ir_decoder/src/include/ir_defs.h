@@ -12,7 +12,9 @@ Revision log:
 #ifndef _IR_DEFS_H
 #define _IR_DEFS_H
 
-#define IR_DECODE_LIB_VER "1.5.0"
+#define IR_DECODE_LIB_VER "1.5.2"
+
+#define DEBUG  (1)
 
 #if defined (BOARD_PC)
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
@@ -27,10 +29,6 @@ extern "C"
 #if defined BOARD_ANDROID
 #include <android/log.h>
 #define LOG_TAG "ir_decode"
-#endif
-
-#if defined BOARD_CC26XX
-#include "OSAL.h"
 #endif
 
 #define TRUE    1
@@ -55,13 +53,8 @@ typedef int BOOL;
 
 void noprint(const char *fmt, ...);
 
-#if defined BOARD_CC26XX
-#define ir_malloc(A) ICall_malloc(A)
-#define ir_free(A) ICall_free(A)
-#else
 #define ir_malloc(A) malloc(A)
 #define ir_free(A) free(A)
-#endif
 
 #define ir_memcpy(A, B, C) memcpy(A, B, C)
 #define ir_memset(A, B, C) memset(A, B, C)
@@ -71,7 +64,7 @@ void noprint(const char *fmt, ...);
 #else
 #define ir_printf noprint
 #endif
-#define USER_DATA_SIZE 1636
+#define USER_DATA_SIZE 2048
 // #define USER_DATA_SIZE 4096
 
 #ifdef __cplusplus
