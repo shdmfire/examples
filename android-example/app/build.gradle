@@ -4,6 +4,19 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.serialization'
 }
 
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withInputStream { stream ->
+        localProperties.load(stream)
+    }
+}
+
+def hasReleaseSigning = localProperties['RELEASE_STORE_FILE'] &&
+        localProperties['RELEASE_STORE_PASSWORD'] &&
+        localProperties['RELEASE_KEY_ALIAS'] &&
+        localProperties['RELEASE_KEY_PASSWORD']
+
 android {
     namespace 'net.irext.ircontrol'
     compileSdk 36
@@ -25,8 +38,22 @@ android {
         compose true
     }
 
+    signingConfigs {
+        release {
+            if (hasReleaseSigning) {
+                storeFile file(localProperties['RELEASE_STORE_FILE'])
+                storePassword localProperties['RELEASE_STORE_PASSWORD']
+                keyAlias localProperties['RELEASE_KEY_ALIAS']
+                keyPassword localProperties['RELEASE_KEY_PASSWORD']
+            }
+        }
+    }
+
     buildTypes {
         release {
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }

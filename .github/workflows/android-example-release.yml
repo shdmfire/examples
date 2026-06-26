@@ -53,14 +53,44 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
 
+      - name: Setup Android Signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEY_ALIAS" ] || [ -z "$STORE_PASSWORD" ] || [ -z "$KEY_PASSWORD" ]; then
+            echo "Android signing secrets are incomplete; building unsigned release APK."
+            exit 0
+          fi
+
+          echo "$KEYSTORE_BASE64" | base64 --decode > app/release.jks
+          echo "RELEASE_STORE_FILE=release.jks" >> local.properties
+          echo "RELEASE_KEY_ALIAS=$KEY_ALIAS" >> local.properties
+          echo "RELEASE_STORE_PASSWORD=$STORE_PASSWORD" >> local.properties
+          echo "RELEASE_KEY_PASSWORD=$KEY_PASSWORD" >> local.properties
+
       - name: Build release APK
         run: ./gradlew --no-daemon assembleRelease
+
+      - name: Collect APK files
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/release-artifacts"
+
+          find . -type f -path "*/build/outputs/apk/*/release/*.apk" -print -exec cp {} "$GITHUB_WORKSPACE/release-artifacts/" \;
+          find . -type f -path "*/build/outputs/apk/release/*.apk" -print -exec cp {} "$GITHUB_WORKSPACE/release-artifacts/" \;
+
+          echo "Collected APK files:"
+          ls -lah "$GITHUB_WORKSPACE/release-artifacts"
+
+          test -n "$(find "$GITHUB_WORKSPACE/release-artifacts" -maxdepth 1 -name '*.apk' -print -quit)"
 
       - name: Upload release APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: android-example-release-apk
-          path: android-example/**/build/outputs/apk/release/*.apk
+          path: release-artifacts/*.apk
           if-no-files-found: error
 
       - name: Upload ProGuard/R8 mapping artifact
@@ -68,7 +98,7 @@ jobs:
         if: always()
         with:
           name: android-example-release-mapping
-          path: android-example/**/build/outputs/mapping/release/mapping.txt
+          path: android-example/**/build/outputs/mapping/**/release/mapping.txt
           if-no-files-found: ignore
 
   github-release:
