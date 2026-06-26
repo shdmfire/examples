@@ -10,12 +10,12 @@ on:
     tags:
       - "v*"
     paths:
-      - "examples/android-example/**"
+      - "android-example/**"
       - ".github/workflows/android-example-release.yml"
 
   pull_request:
     paths:
-      - "examples/android-example/**"
+      - "android-example/**"
       - ".github/workflows/android-example-release.yml"
 
 concurrency:
@@ -32,7 +32,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: examples/android-example
+        working-directory: ./android-example
 
     steps:
       - name: Checkout repository
@@ -60,7 +60,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: android-example-release-apk
-          path: examples/android-example/**/build/outputs/apk/release/*.apk
+          path: android-example/**/build/outputs/apk/release/*.apk
           if-no-files-found: error
 
       - name: Upload ProGuard/R8 mapping artifact
@@ -68,7 +68,7 @@ jobs:
         if: always()
         with:
           name: android-example-release-mapping
-          path: examples/android-example/**/build/outputs/mapping/release/mapping.txt
+          path: android-example/**/build/outputs/mapping/release/mapping.txt
           if-no-files-found: ignore
 
   github-release:
