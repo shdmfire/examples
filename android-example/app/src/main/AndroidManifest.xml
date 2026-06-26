@@ -2,8 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.TRANSMIT_IR"/>
     <uses-feature android:name="android.hardware.ConsumerIrManager"/>
@@ -16,36 +14,17 @@
             android:supportsRtl="true"
             android:requestLegacyExternalStorage="true"
             android:networkSecurityConfig="@xml/network_security_config"
-            android:theme="@android:style/Theme.Holo.Light.DarkActionBar">
+            android:theme="@style/AppTheme">
 
         <activity
                 android:name="net.irext.ircontrol.ui.activity.MainActivity"
                 android:label="@string/title_activity_main"
-                android:exported="true"
-                android:theme="@style/AppTheme">
+                android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-        </activity>
-
-        <activity
-                android:name=".ui.activity.CreateActivity"
-                android:parentActivityName="net.irext.ircontrol.ui.activity.MainActivity"
-                android:theme="@style/AppTheme">
-            <meta-data
-                    android:name="android.support.PARENT_ACTIVITY"
-                    android:value="net.irext.ircontrol.ui.activity.MainActivity"/>
-        </activity>
-
-        <activity
-                android:name=".ui.activity.ControlActivity"
-                android:parentActivityName="net.irext.ircontrol.ui.activity.MainActivity"
-                android:theme="@style/AppTheme">
-            <meta-data
-                    android:name="android.support.PARENT_ACTIVITY"
-                    android:value="net.irext.ircontrol.ui.activity.MainActivity"/>
         </activity>
 
         <provider
@@ -67,11 +46,11 @@
 
         <meta-data
                 android:name="irext_app_key"
-                android:value="c49c3bd5ff6b3efb67d8af2c" />
+                android:value="90c27f890a98540cbe270e61ff2afd43" />
 
         <meta-data
             android:name="irext_app_secret"
-            android:value="194f9cb578c458ace2284f16" />
+            android:value="82ca491b769c9b2677ed44ec0f69758b" />
 
     </application>
 
