@@ -121,9 +121,9 @@ jobs:
       - name: Create GitHub Release and upload APK
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ github.ref_name }}
+          REPO: ${{ github.repository }}
         run: |
-          TAG_NAME="${GITHUB_REF_NAME}"
-
           shopt -s nullglob
           APK_FILES=(release-artifacts/*.apk)
 
@@ -132,10 +132,17 @@ jobs:
             exit 1
           fi
 
-          if gh release view "$TAG_NAME" >/dev/null 2>&1; then
-            gh release upload "$TAG_NAME" "${APK_FILES[@]}" --clobber
+          echo "Publishing APK files:"
+          printf '%s\n' "${APK_FILES[@]}"
+
+          if gh release view "$TAG_NAME" --repo "$REPO" >/dev/null 2>&1; then
+            gh release upload "$TAG_NAME" "${APK_FILES[@]}" \
+              --repo "$REPO" \
+              --clobber
           else
             gh release create "$TAG_NAME" "${APK_FILES[@]}" \
+              --repo "$REPO" \
               --title "$TAG_NAME" \
-              --notes "Android example release build."
+              --notes "Android example release build." \
+              --verify-tag
           fi
