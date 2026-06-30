@@ -167,7 +167,7 @@ public class CityFragment extends BaseCreateFragment {
             @Override
             public void run() {
                 mApp.mWeAPIs
-                        .listOperators(cityCode, mListOperatorCallback);
+                        .listOperators(cityCode, 0, 20, mListOperatorCallback);
             }
         }.start();
     }
