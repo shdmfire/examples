@@ -1,9 +1,9 @@
 package net.irext.ircontrol.ui.screen
 
+import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,12 +15,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -55,13 +55,11 @@ import net.irext.ircontrol.utils.FileUtils
 import net.irext.webapi.model.RemoteIndex
 
 private const val TEST_TAG = "TestScreen"
+private const val TEST_INDEX_BATCH_SIZE = 40
 
 private sealed class TestState {
     data object Loading : TestState()
-    data class Ready(
-        val indexes: List<RemoteIndex>,
-        val currentPos: Int = 0,
-    ) : TestState()
+    data class Ready(val indexes: List<RemoteIndex>) : TestState()
     data class Error(val message: String) : TestState()
 }
 
@@ -75,19 +73,41 @@ fun TestScreen(
     val appContext = context.applicationContext
     val phoneRemote = remember { PhoneRemote.getInstance(appContext) }
     val scope = rememberCoroutineScope()
-    var state by remember { mutableStateOf<TestState>(TestState.Loading) }
+    var currentPos by remember(route) { mutableIntStateOf(0) }
+    var state by remember(route) { mutableStateOf<TestState>(TestState.Loading) }
+
+    suspend fun loadAllRemoteIndexes(): List<RemoteIndex> {
+        val allIndexes = mutableListOf<RemoteIndex>()
+        var from = 0
+
+        while (true) {
+            val batch = WebApiHelper.listRemoteIndexes(
+                api = app.mWeAPIs,
+                categoryId = route.categoryId,
+                brandId = route.brandId,
+                cityCode = route.cityCode,
+                operatorId = route.operatorId,
+                withParaData = 0,
+                from = from,
+                count = TEST_INDEX_BATCH_SIZE,
+            )
+
+            allIndexes += batch
+            Log.d(TEST_TAG, "load indexes batch: from=$from count=${batch.size} total=${allIndexes.size}")
+
+            if (batch.size < TEST_INDEX_BATCH_SIZE) break
+            from += batch.size
+        }
+
+        return allIndexes
+    }
 
     fun loadIndexes() {
         scope.launch {
             state = TestState.Loading
+            currentPos = 0
             try {
-                val indexes = WebApiHelper.listRemoteIndexes(
-                    app.mWeAPIs,
-                    route.categoryId,
-                    route.brandId,
-                    route.cityCode,
-                    route.operatorId,
-                )
+                val indexes = loadAllRemoteIndexes()
                 state = if (indexes.isEmpty()) {
                     TestState.Error("No remote indexes found")
                 } else {
@@ -100,9 +120,11 @@ fun TestScreen(
         }
     }
 
+    @SuppressLint("LocalContextGetResourceValueCall")
     fun sendPower() {
         val ready = state as? TestState.Ready ?: return
-        val index = ready.indexes[ready.currentPos]
+        val index = ready.indexes.getOrNull(currentPos) ?: return
+
         scope.launch {
             try {
                 withContext(Dispatchers.IO) {
@@ -134,20 +156,6 @@ fun TestScreen(
         }
     }
 
-    fun previous() {
-        val ready = state as? TestState.Ready ?: return
-        if (ready.currentPos > 0) {
-            state = ready.copy(currentPos = ready.currentPos - 1)
-        }
-    }
-
-    fun next() {
-        val ready = state as? TestState.Ready ?: return
-        if (ready.currentPos < ready.indexes.lastIndex) {
-            state = ready.copy(currentPos = ready.currentPos + 1)
-        }
-    }
-
     LaunchedEffect(route) { loadIndexes() }
 
     DisposableEffect(Unit) {
@@ -156,11 +164,15 @@ fun TestScreen(
 
     TestScreenContent(
         state = state,
+        currentPos = currentPos,
         onBack = onBack,
         onRetry = { loadIndexes() },
         onPowerClick = { sendPower() },
-        onPreviousClick = { previous() },
-        onNextClick = { next() },
+        onPreviousClick = { if (currentPos > 0) currentPos-- },
+        onNextClick = {
+            val ready = state as? TestState.Ready
+            if (ready != null && currentPos < ready.indexes.lastIndex) currentPos++
+        },
     )
 }
 
@@ -168,6 +180,7 @@ fun TestScreen(
 @Composable
 private fun TestScreenContent(
     state: TestState,
+    currentPos: Int,
     onBack: () -> Unit,
     onRetry: () -> Unit,
     onPowerClick: () -> Unit,
@@ -180,63 +193,37 @@ private fun TestScreenContent(
                 title = { Text("IR Test") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(),
             )
         }
     ) { padding ->
-        when (val s = state) {
-            is TestState.Loading -> {
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .padding(padding),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            }
-
-            is TestState.Error -> {
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .padding(padding),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Error: ${s.message}")
-                        Button(onClick = onRetry) {
-                            Text("Retry")
-                        }
-                    }
-                }
-            }
-
+        when (state) {
+            TestState.Loading -> FullScreenLoading(modifier = Modifier.padding(padding))
+            is TestState.Error -> FullScreenError(
+                message = state.message,
+                onRetry = onRetry,
+                modifier = Modifier.padding(padding),
+            )
             is TestState.Ready -> {
-                val index = s.indexes[s.currentPos]
+                val indexes = state.indexes
+                val index = indexes.getOrNull(currentPos)
 
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding)
-                        .padding(16.dp),
+                    modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text(
-                        text = index.remoteMap,
+                        text = index?.remoteMap ?: "No remote index",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
                     )
 
                     Text(
-                        text = "${s.currentPos + 1} / ${s.indexes.size}",
+                        text = "${currentPos + 1} / ${indexes.size}",
                         fontSize = 14.sp,
                         modifier = Modifier.padding(top = 4.dp),
                     )
@@ -245,14 +232,15 @@ private fun TestScreenContent(
 
                     Button(
                         onClick = onPowerClick,
+                        enabled = index != null,
                         modifier = Modifier.size(120.dp),
                         shape = CircleShape,
                         colors = ButtonDefaults.buttonColors(),
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.PowerSettingsNew,
+                            Icons.Filled.PowerSettingsNew,
                             contentDescription = "Power",
-                            modifier = Modifier.size(48.dp)
+                            modifier = Modifier.size(48.dp),
                         )
                     }
 
@@ -263,27 +251,21 @@ private fun TestScreenContent(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Button(
-                            onClick = onPreviousClick,
-                            enabled = s.currentPos > 0,
-                        ) {
+                        Button(onClick = onPreviousClick, enabled = currentPos > 0) {
                             Icon(
-                                imageVector = Icons.Filled.KeyboardArrowLeft,
+                                Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                                 contentDescription = "Previous",
-                                modifier = Modifier.size(28.dp)
+                                modifier = Modifier.size(28.dp),
                             )
                         }
 
                         Spacer(Modifier.width(16.dp))
 
-                        Button(
-                            onClick = onNextClick,
-                            enabled = s.currentPos < s.indexes.lastIndex,
-                        ) {
+                        Button(onClick = onNextClick, enabled = currentPos < indexes.lastIndex) {
                             Icon(
-                                imageVector = Icons.Filled.KeyboardArrowRight,
+                                Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                 contentDescription = "Next",
-                                modifier = Modifier.size(28.dp)
+                                modifier = Modifier.size(28.dp),
                             )
                         }
                     }

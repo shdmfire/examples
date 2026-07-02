@@ -19,10 +19,10 @@ import kotlin.coroutines.resumeWithException
  */
 object WebApiHelper {
 
-    suspend fun listCategories(api: WebAPIs): List<Category> {
+    suspend fun listCategories(api: WebAPIs, from: Int = 0, count: Int = 20): List<Category> {
         return withContext(Dispatchers.IO) {
             suspendCancellableCoroutine { cont ->
-                api.listCategories(0, 20, object : WebAPICallbacks.ListCategoriesCallback {
+                api.listCategories(from, count, object : WebAPICallbacks.ListCategoriesCallback {
                     override fun onListCategoriesSuccess(categories: List<Category>?) {
                         cont.resume(categories ?: emptyList())
                     }
@@ -37,10 +37,15 @@ object WebApiHelper {
         }
     }
 
-    suspend fun listBrands(api: WebAPIs, categoryId: Int): List<Brand> {
+    suspend fun listBrands(
+        api: WebAPIs,
+        categoryId: Int,
+        from: Int = 0,
+        count: Int = 20,
+    ): List<Brand> {
         return withContext(Dispatchers.IO) {
             suspendCancellableCoroutine { cont ->
-                api.listBrands(categoryId, 0, 20, object : WebAPICallbacks.ListBrandsCallback {
+                api.listBrands(categoryId, from, count, object : WebAPICallbacks.ListBrandsCallback {
                     override fun onListBrandsSuccess(brands: List<Brand>?) {
                         cont.resume(brands ?: emptyList())
                     }
@@ -91,10 +96,15 @@ object WebApiHelper {
         }
     }
 
-    suspend fun listOperators(api: WebAPIs, cityCode: String): List<StbOperator> {
+    suspend fun listOperators(
+        api: WebAPIs,
+        cityCode: String,
+        from: Int = 0,
+        count: Int = 20,
+    ): List<StbOperator> {
         return withContext(Dispatchers.IO) {
             suspendCancellableCoroutine { cont ->
-                api.listOperators(cityCode, object : WebAPICallbacks.ListOperatersCallback {
+                api.listOperators(cityCode, from, count, object : WebAPICallbacks.ListOperatersCallback {
                     override fun onListOperatorsSuccess(operators: List<StbOperator>?) {
                         cont.resume(operators ?: emptyList())
                     }
@@ -115,11 +125,14 @@ object WebApiHelper {
         brandId: Int,
         cityCode: String,
         operatorId: String,
+        withParaData: Int = 0,
+        from: Int = 0,
+        count: Int = 20,
     ): List<RemoteIndex> {
         return withContext(Dispatchers.IO) {
             suspendCancellableCoroutine { cont ->
                 api.listRemoteIndexes(
-                    categoryId, brandId, cityCode, operatorId, 0,
+                    categoryId, brandId, cityCode, operatorId, withParaData, from, count,
                     object : WebAPICallbacks.ListIndexesCallback {
                         override fun onListIndexesSuccess(indexes: List<RemoteIndex>?) {
                             cont.resume(indexes ?: emptyList())

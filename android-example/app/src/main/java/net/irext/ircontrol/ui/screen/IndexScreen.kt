@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Science
@@ -17,11 +16,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,8 +27,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.sp
+import androidx.paging.LoadState
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -42,12 +41,11 @@ import net.irext.ircontrol.ui.navigation.RouteIndex
 import net.irext.ircontrol.utils.FileUtils
 import net.irext.webapi.model.RemoteIndex
 
-private sealed class IndexScreenState {
-    data object Loading : IndexScreenState()
-    data class ListReady(val indexes: List<RemoteIndex>) : IndexScreenState()
-    data class Downloading(val index: RemoteIndex) : IndexScreenState()
-    data object Saving : IndexScreenState()
-    data class Error(val message: String) : IndexScreenState()
+private sealed class IndexActionState {
+    data object Idle : IndexActionState()
+    data class Downloading(val index: RemoteIndex) : IndexActionState()
+    data object Saving : IndexActionState()
+    data class Error(val message: String) : IndexActionState()
 }
 
 private const val TAG = "IndexScreen"
@@ -62,34 +60,35 @@ fun IndexScreen(
 ) {
     val app = LocalContext.current.applicationContext as IRApplication
     val appContext = LocalContext.current.applicationContext
-    var state by remember { mutableStateOf<IndexScreenState>(IndexScreenState.Loading) }
+    var actionState by remember { mutableStateOf<IndexActionState>(IndexActionState.Idle) }
     val scope = rememberCoroutineScope()
-
-    fun loadIndexes() {
-        Log.d(TAG, "loadIndexes: categoryId=${route.categoryId}, brandId=${route.brandId}, cityCode='${route.cityCode}', operatorId='${route.operatorId}'")
-        scope.launch {
-            state = IndexScreenState.Loading
-            try {
-                val indexes = WebApiHelper.listRemoteIndexes(
-                    app.mWeAPIs,
-                    route.categoryId, route.brandId,
-                    route.cityCode, route.operatorId
+    val indexFlow = remember(app.mWeAPIs, route) {
+        Pager(
+            config = PagingConfig(
+                pageSize = 20,
+                initialLoadSize = 20,
+                prefetchDistance = 5,
+                enablePlaceholders = false,
+            ),
+            pagingSourceFactory = {
+                RemoteIndexPagingSource(
+                    api = app.mWeAPIs,
+                    categoryId = route.categoryId,
+                    brandId = route.brandId,
+                    cityCode = route.cityCode,
+                    operatorId = route.operatorId,
                 )
-                Log.d(TAG, "loadIndexes success: count=${indexes.size}")
-                state = IndexScreenState.ListReady(indexes)
-            } catch (e: Exception) {
-                Log.e(TAG, "loadIndexes error: ${e.message}", e)
-                state = IndexScreenState.Error(e.message ?: "Failed to load indexes")
-            }
-        }
+            },
+        ).flow
     }
+    val indexes = indexFlow.collectAsLazyPagingItems()
 
     fun onIndexClick(index: RemoteIndex) {
         scope.launch {
-            state = IndexScreenState.Downloading(index)
+            actionState = IndexActionState.Downloading(index)
             try {
                 val stream = WebApiHelper.downloadBin(app.mWeAPIs, index.remoteMap, index.id)
-                state = IndexScreenState.Saving
+                actionState = IndexActionState.Saving
                 withContext(Dispatchers.IO) {
                     val binFile = FileUtils.getBinFile(appContext, index.remoteMap)
                     FileUtils.write(binFile, stream)
@@ -108,49 +107,79 @@ fun IndexScreen(
                 rc.remoteMap = index.remoteMap
                 rc.subCategory = index.subCate
                 RemoteControl.createRemoteControl(rc)
+                actionState = IndexActionState.Idle
                 onSaved()
             } catch (e: Exception) {
                 Log.e(TAG, "download error: ${e.message}", e)
-                state = IndexScreenState.Error(e.message ?: "Download failed")
+                actionState = IndexActionState.Error(e.message ?: "Download failed")
             }
         }
     }
 
-    LaunchedEffect(Unit) { loadIndexes() }
-
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text(route.brandName.ifEmpty { route.cityName.ifEmpty { "Index" } })
-                },
+                title = { Text(route.brandName.ifEmpty { route.cityName.ifEmpty { "Index" } }) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
                     IconButton(onClick = onTestClick) {
-                        Icon(
-                            imageVector = Icons.Filled.Science,
-                            contentDescription = "IR Test"
-                        )
+                        Icon(Icons.Filled.Science, contentDescription = "IR Test")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(),
             )
         }
     ) { padding ->
-        when (val s = state) {
-            is IndexScreenState.Loading -> {
-                Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+        LazyColumn(modifier = Modifier.padding(padding)) {
+            items(count = indexes.itemCount) { indexPos ->
+                indexes[indexPos]?.let { index ->
+                    val nameText = if (route.brandName.isNotEmpty()) {
+                        "${route.brandName} ${index.remoteMap}"
+                    } else {
+                        "${route.operatorName} ${index.remoteMap}"
+                    }
+                    ItemIndexText(
+                        nameText = nameText,
+                        mapText = index.remoteMap,
+                        modifier = Modifier.clickable { onIndexClick(index) }
+                    )
                 }
             }
-            is IndexScreenState.Downloading -> {
+
+            when (val appendState = indexes.loadState.append) {
+                is LoadState.Loading -> item { LoadingMoreItem() }
+                is LoadState.Error -> item {
+                    LoadErrorItem(
+                        message = appendState.error.message ?: "加载更多遥控器失败",
+                        onRetry = { indexes.retry() },
+                    )
+                }
+                else -> Unit
+            }
+        }
+
+        when (val refreshState = indexes.loadState.refresh) {
+            is LoadState.Loading -> FullScreenLoading(modifier = Modifier.padding(padding))
+            is LoadState.Error -> FullScreenError(
+                message = refreshState.error.message ?: "遥控器列表加载失败",
+                onRetry = { indexes.retry() },
+                modifier = Modifier.padding(padding),
+            )
+            else -> if (indexes.itemCount == 0) {
+                FullScreenError(
+                    message = "No remote indexes found\ncat=${route.categoryId} brand=${route.brandId}",
+                    onRetry = { indexes.refresh() },
+                    modifier = Modifier.padding(padding),
+                )
+            }
+        }
+
+        when (val s = actionState) {
+            is IndexActionState.Downloading -> {
                 Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         CircularProgressIndicator()
@@ -158,7 +187,7 @@ fun IndexScreen(
                     }
                 }
             }
-            is IndexScreenState.Saving -> {
+            is IndexActionState.Saving -> {
                 Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         CircularProgressIndicator()
@@ -166,44 +195,12 @@ fun IndexScreen(
                     }
                 }
             }
-            is IndexScreenState.Error -> {
-                Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Error: ${s.message}", textAlign = TextAlign.Center)
-                        TextButton(onClick = { loadIndexes() }) { Text("Retry") }
-                    }
-                }
-            }
-            is IndexScreenState.ListReady -> {
-                if (s.indexes.isEmpty()) {
-                    Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("No remote indexes found", fontSize = 18.sp)
-                            Text(
-                                "cat=${route.categoryId} brand=${route.brandId}",
-                                fontSize = 12.sp,
-                                textAlign = TextAlign.Center,
-                            )
-                            TextButton(onClick = { loadIndexes() }) { Text("Retry") }
-                        }
-                    }
-                } else {
-                    LazyColumn(modifier = Modifier.padding(padding)) {
-                        items(s.indexes) { index ->
-                            val nameText = if (route.brandName.isNotEmpty()) {
-                                "${route.brandName} ${index.remoteMap}"
-                            } else {
-                                "${route.operatorName} ${index.remoteMap}"
-                            }
-                            ItemIndexText(
-                                nameText = nameText,
-                                mapText = index.remoteMap,
-                                modifier = Modifier.clickable { onIndexClick(index) }
-                            )
-                        }
-                    }
-                }
-            }
+            is IndexActionState.Error -> FullScreenError(
+                message = s.message,
+                onRetry = { actionState = IndexActionState.Idle },
+                modifier = Modifier.padding(padding),
+            )
+            IndexActionState.Idle -> Unit
         }
     }
 }

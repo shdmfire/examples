@@ -1,14 +1,10 @@
 package net.irext.ircontrol.ui.screen
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -16,18 +12,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import kotlinx.coroutines.launch
+import androidx.paging.LoadState
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.compose.collectAsLazyPagingItems
 import net.irext.ircontrol.IRApplication
 import net.irext.ircontrol.ui.composable.ItemSingleText
 import net.irext.webapi.model.Brand
@@ -41,19 +33,18 @@ fun BrandScreen(
     onBack: () -> Unit,
 ) {
     val app = LocalContext.current.applicationContext as IRApplication
-    var brands by remember { mutableStateOf<List<Brand>>(emptyList()) }
-    var isRefreshing by remember { mutableStateOf(true) }
-    val scope = rememberCoroutineScope()
-
-    fun refresh() {
-        scope.launch {
-            isRefreshing = true
-            brands = WebApiHelper.listBrands(app.mWeAPIs, categoryId)
-            isRefreshing = false
-        }
+    val brandFlow = remember(app.mWeAPIs, categoryId) {
+        Pager(
+            config = PagingConfig(
+                pageSize = 20,
+                initialLoadSize = 20,
+                prefetchDistance = 5,
+                enablePlaceholders = false,
+            ),
+            pagingSourceFactory = { BrandPagingSource(app.mWeAPIs, categoryId) },
+        ).flow
     }
-
-    LaunchedEffect(Unit) { refresh() }
+    val brands = brandFlow.collectAsLazyPagingItems()
 
     Scaffold(
         topBar = {
@@ -71,24 +62,36 @@ fun BrandScreen(
             )
         }
     ) { padding ->
-        when {
-            isRefreshing && brands.isEmpty() -> {
-                Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+        LazyColumn(modifier = Modifier.padding(padding)) {
+            items(count = brands.itemCount) { index ->
+                brands[index]?.let { brand ->
+                    ItemSingleText(
+                        text = brand.name,
+                        modifier = Modifier.clickable { onBrandClick(brand) }
+                    )
                 }
             }
-            else -> {
-                PullToRefreshBox(isRefreshing = isRefreshing, onRefresh = { refresh() }) {
-                    LazyColumn(modifier = Modifier.padding(padding)) {
-                        items(brands) { brand ->
-                            ItemSingleText(
-                                text = brand.name,
-                                modifier = Modifier.clickable { onBrandClick(brand) }
-                            )
-                        }
-                    }
+
+            when (val appendState = brands.loadState.append) {
+                is LoadState.Loading -> item { LoadingMoreItem() }
+                is LoadState.Error -> item {
+                    LoadErrorItem(
+                        message = appendState.error.message ?: "加载更多品牌失败",
+                        onRetry = { brands.retry() },
+                    )
                 }
+                else -> Unit
             }
+        }
+
+        when (val refreshState = brands.loadState.refresh) {
+            is LoadState.Loading -> FullScreenLoading(modifier = Modifier.padding(padding))
+            is LoadState.Error -> FullScreenError(
+                message = refreshState.error.message ?: "品牌加载失败",
+                onRetry = { brands.retry() },
+                modifier = Modifier.padding(padding),
+            )
+            else -> Unit
         }
     }
 }
