@@ -11,6 +11,16 @@ import androidx.core.content.ContextCompat
 import net.irext.ircontrol.compose.ui.navigation.AppNavDisplay
 import net.irext.ircontrol.compose.ui.theme.IRControlTheme
 
+
+/**
+ * Filename:       MainActivity.kt
+ * Created:        Date: 2026-07-14
+ *
+ * Description:    Provides the MainActivity source for the IRControl Android Compose sample.
+ *
+ * Revision log:
+ * 2026-07-14: created by shdmfire and strawmanbobi
+ */
 class MainActivity : ComponentActivity() {
 
     companion object {

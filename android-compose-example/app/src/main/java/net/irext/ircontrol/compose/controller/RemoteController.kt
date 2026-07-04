@@ -3,6 +3,16 @@ package net.irext.ircontrol.compose.controller
 import net.irext.ircontrol.compose.bean.RemoteControl
 import net.irext.ircontrol.compose.controller.base.ControlCommand
 
+
+/**
+ * Filename:       RemoteController.kt
+ * Created:        Date: 2026-07-14
+ *
+ * Description:    Provides the RemoteController source for the IRControl Android Compose sample.
+ *
+ * Revision log:
+ * 2026-07-14: created by shdmfire and strawmanbobi
+ */
 sealed interface ControlResult {
     data object Success : ControlResult
     data object Failed : ControlResult

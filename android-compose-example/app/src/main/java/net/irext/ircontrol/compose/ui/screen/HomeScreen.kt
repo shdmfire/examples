@@ -29,6 +29,16 @@ import net.irext.decode.sdk.utils.Constants
 import net.irext.ircontrol.compose.R
 import net.irext.ircontrol.compose.ui.composable.ItemSingleText
 
+
+/**
+ * Filename:       HomeScreen.kt
+ * Created:        Date: 2026-07-14
+ *
+ * Description:    Provides the HomeScreen source for the IRControl Android Compose sample.
+ *
+ * Revision log:
+ * 2026-07-14: created by shdmfire and strawmanbobi
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -51,7 +61,7 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("红外遥控") },
+                title = { Text(stringResource(R.string.home_title)) },
                 colors = TopAppBarDefaults.topAppBarColors(),
             )
         },
@@ -59,7 +69,7 @@ fun HomeScreen(
             FloatingActionButton(onClick = onNavigateToCategory) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Add"
+                    contentDescription = stringResource(R.string.content_description_add)
                 )
             }
         }
@@ -85,7 +95,7 @@ fun HomeScreen(
                 is LoadState.Loading -> item { LoadingMoreItem() }
                 is LoadState.Error -> item {
                     LoadErrorItem(
-                        message = appendState.error.message ?: "加载更多遥控器失败",
+                        message = appendState.error.message ?: stringResource(R.string.load_more_remotes_failed),
                         onRetry = { remotes.retry() },
                     )
                 }
@@ -96,7 +106,7 @@ fun HomeScreen(
         when (val refreshState = remotes.loadState.refresh) {
             is LoadState.Loading -> FullScreenLoading(modifier = Modifier.padding(padding))
             is LoadState.Error -> FullScreenError(
-                message = refreshState.error.message ?: "遥控器加载失败",
+                message = refreshState.error.message ?: stringResource(R.string.remote_load_failed),
                 onRetry = { remotes.retry() },
                 modifier = Modifier.padding(padding),
             )

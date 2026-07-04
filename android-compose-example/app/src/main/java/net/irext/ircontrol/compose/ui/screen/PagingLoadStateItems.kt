@@ -13,9 +13,21 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import net.irext.ircontrol.compose.R
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
+
+/**
+ * Filename:       PagingLoadStateItems.kt
+ * Created:        Date: 2026-07-14
+ *
+ * Description:    Provides the PagingLoadStateItems source for the IRControl Android Compose sample.
+ *
+ * Revision log:
+ * 2026-07-14: created by shdmfire and strawmanbobi
+ */
 @Composable
 fun LoadingMoreItem() {
     Box(
@@ -37,7 +49,7 @@ fun LoadErrorItem(
     ) {
         Text(text = message, textAlign = TextAlign.Center)
         Spacer(modifier = Modifier.height(8.dp))
-        Button(onClick = onRetry) { Text("重试") }
+        Button(onClick = onRetry) { Text(stringResource(R.string.retry)) }
     }
 }
 
@@ -64,7 +76,7 @@ fun FullScreenError(
         Spacer(modifier = Modifier.weight(1f))
         Text(text = message, textAlign = TextAlign.Center)
         Spacer(modifier = Modifier.height(12.dp))
-        Button(onClick = onRetry) { Text("重试") }
+        Button(onClick = onRetry) { Text(stringResource(R.string.retry)) }
         Spacer(modifier = Modifier.weight(1f))
     }
 }

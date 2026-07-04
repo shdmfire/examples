@@ -26,12 +26,24 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.launch
+import net.irext.ircontrol.compose.R
 import net.irext.ircontrol.compose.IRApplication
 import net.irext.ircontrol.compose.ui.composable.ItemSingleText
 import net.irext.webapi.model.City
 
+
+/**
+ * Filename:       ProvinceScreen.kt
+ * Created:        Date: 2026-07-14
+ *
+ * Description:    Provides the ProvinceScreen source for the IRControl Android Compose sample.
+ *
+ * Revision log:
+ * 2026-07-14: created by shdmfire and strawmanbobi
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProvinceScreen(
@@ -56,12 +68,12 @@ fun ProvinceScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Select Province") },
+                title = { Text(stringResource(R.string.province_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(R.string.content_description_back)
                         )
                     }
                 },

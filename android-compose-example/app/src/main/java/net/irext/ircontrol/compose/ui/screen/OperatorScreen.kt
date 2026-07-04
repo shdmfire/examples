@@ -15,15 +15,27 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.paging.LoadState
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.compose.collectAsLazyPagingItems
+import net.irext.ircontrol.compose.R
 import net.irext.ircontrol.compose.IRApplication
 import net.irext.ircontrol.compose.ui.composable.ItemSingleText
 import net.irext.webapi.model.StbOperator
 
+
+/**
+ * Filename:       OperatorScreen.kt
+ * Created:        Date: 2026-07-14
+ *
+ * Description:    Provides the OperatorScreen source for the IRControl Android Compose sample.
+ *
+ * Revision log:
+ * 2026-07-14: created by shdmfire and strawmanbobi
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OperatorScreen(
@@ -54,7 +66,7 @@ fun OperatorScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(R.string.content_description_back)
                         )
                     }
                 },
@@ -76,7 +88,7 @@ fun OperatorScreen(
                 is LoadState.Loading -> item { LoadingMoreItem() }
                 is LoadState.Error -> item {
                     LoadErrorItem(
-                        message = appendState.error.message ?: "加载更多运营商失败",
+                        message = appendState.error.message ?: stringResource(R.string.load_more_operators_failed),
                         onRetry = { operators.retry() },
                     )
                 }
@@ -87,7 +99,7 @@ fun OperatorScreen(
         when (val refreshState = operators.loadState.refresh) {
             is LoadState.Loading -> FullScreenLoading(modifier = Modifier.padding(padding))
             is LoadState.Error -> FullScreenError(
-                message = refreshState.error.message ?: "运营商加载失败",
+                message = refreshState.error.message ?: stringResource(R.string.operator_load_failed),
                 onRetry = { operators.retry() },
                 modifier = Modifier.padding(padding),
             )

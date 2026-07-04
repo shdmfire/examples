@@ -85,3 +85,7 @@ and then pass the remote control command by pressing buttons accordingly. The Ar
 ## License
 
 Please refer to the [IRext repository](https://opensource.irext.net) for license information.
+
+## Contact Me
+
+If there are any issues with the code, please contact me at [shdm520@gmail.com](mailto:shdm520@gmail.com).

@@ -48,6 +48,16 @@ import net.irext.ircontrol.compose.R
 import net.irext.ircontrol.compose.controller.base.ControlCommand
 import net.irext.ircontrol.compose.ui.theme.IRControlTheme
 
+
+/**
+ * Filename:       ControlScreen.kt
+ * Created:        Date: 2026-07-14
+ *
+ * Description:    Provides the ControlScreen source for the IRControl Android Compose sample.
+ *
+ * Revision log:
+ * 2026-07-14: created by shdmfire and strawmanbobi
+ */
 @Composable
 fun ControlScreen(
     remoteId: Long,
@@ -356,7 +366,7 @@ private fun ControlContentPreview() {
     IRControlTheme {
         ControlContent(
             state = ControlUiState(
-                title = "客厅电视",
+                title = stringResource(R.string.home_title),
                 emitterIp = "192.168.1.10",
                 isEmitterConnected = true,
             ),

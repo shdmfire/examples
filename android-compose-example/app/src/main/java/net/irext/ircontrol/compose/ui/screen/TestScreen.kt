@@ -38,6 +38,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -54,6 +55,16 @@ import net.irext.ircontrol.compose.ui.navigation.RouteTest
 import net.irext.ircontrol.compose.utils.FileUtils
 import net.irext.webapi.model.RemoteIndex
 
+
+/**
+ * Filename:       TestScreen.kt
+ * Created:        Date: 2026-07-14
+ *
+ * Description:    Provides the TestScreen source for the IRControl Android Compose sample.
+ *
+ * Revision log:
+ * 2026-07-14: created by shdmfire and strawmanbobi
+ */
 private const val TEST_TAG = "TestScreen"
 private const val TEST_INDEX_BATCH_SIZE = 40
 
@@ -109,13 +120,13 @@ fun TestScreen(
             try {
                 val indexes = loadAllRemoteIndexes()
                 state = if (indexes.isEmpty()) {
-                    TestState.Error("No remote indexes found")
+                    TestState.Error(context.getString(R.string.no_remote_indexes_found))
                 } else {
                     TestState.Ready(indexes)
                 }
             } catch (e: Exception) {
                 Log.e(TEST_TAG, "load indexes failed", e)
-                state = TestState.Error(e.message ?: "Load indexes failed")
+                state = TestState.Error(e.message ?: context.getString(R.string.load_indexes_failed))
             }
         }
     }
@@ -139,7 +150,7 @@ fun TestScreen(
                     )
                     Log.d(TEST_TAG, "irOpen result=$openResult, file=${binFile.absolutePath}")
                     if (openResult != 0) {
-                        throw IllegalStateException("Open IR binary failed: $openResult")
+                        throw IllegalStateException(context.getString(R.string.open_ir_binary_failed, openResult))
                     }
 
                     phoneRemote.irControl(index.categoryId, index.subCate, Remote.KEY_POWER)
@@ -190,10 +201,10 @@ private fun TestScreenContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("IR Test") },
+                title = { Text(stringResource(R.string.ir_test_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(),
@@ -216,7 +227,7 @@ private fun TestScreenContent(
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text(
-                        text = index?.remoteMap ?: "No remote index",
+                        text = index?.remoteMap ?: stringResource(R.string.no_remote_index),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
@@ -239,7 +250,7 @@ private fun TestScreenContent(
                     ) {
                         Icon(
                             Icons.Filled.PowerSettingsNew,
-                            contentDescription = "Power",
+                            contentDescription = stringResource(R.string.content_description_power),
                             modifier = Modifier.size(48.dp),
                         )
                     }
@@ -254,7 +265,7 @@ private fun TestScreenContent(
                         Button(onClick = onPreviousClick, enabled = currentPos > 0) {
                             Icon(
                                 Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                                contentDescription = "Previous",
+                                contentDescription = stringResource(R.string.content_description_previous),
                                 modifier = Modifier.size(28.dp),
                             )
                         }
@@ -264,7 +275,7 @@ private fun TestScreenContent(
                         Button(onClick = onNextClick, enabled = currentPos < indexes.lastIndex) {
                             Icon(
                                 Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                contentDescription = "Next",
+                                contentDescription = stringResource(R.string.content_description_next),
                                 modifier = Modifier.size(28.dp),
                             )
                         }
