@@ -1,61 +1,25 @@
-plugins {
-    id 'com.android.application'
-    id 'org.jetbrains.kotlin.plugin.compose'
-    id 'org.jetbrains.kotlin.plugin.serialization'
-}
-
-def localProperties = new Properties()
-def localPropertiesFile = rootProject.file('local.properties')
-if (localPropertiesFile.exists()) {
-    localPropertiesFile.withInputStream { stream ->
-        localProperties.load(stream)
-    }
-}
-
-def hasReleaseSigning = localProperties['RELEASE_STORE_FILE'] &&
-        localProperties['RELEASE_STORE_PASSWORD'] &&
-        localProperties['RELEASE_KEY_ALIAS'] &&
-        localProperties['RELEASE_KEY_PASSWORD']
+apply plugin: 'com.android.application'
 
 android {
-    namespace 'net.irext.ircontrol'
-    compileSdk 36
-
     defaultConfig {
-        applicationId 'net.irext.ircontrol'
-        minSdk 26
-        targetSdk 36
-        versionCode 8
-        versionName '1.5.2'
-    }
+        applicationId "net.irext.ircontrol"
+        compileSdk 36
+        targetSdkVersion 36
+        minSdkVersion 26
+        versionCode 9
+        versionName '1.5.3'
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
     }
-
-    buildFeatures {
-        compose true
-    }
-
-    signingConfigs {
-        release {
-            if (hasReleaseSigning) {
-                storeFile file(localProperties['RELEASE_STORE_FILE'])
-                storePassword localProperties['RELEASE_STORE_PASSWORD']
-                keyAlias localProperties['RELEASE_KEY_ALIAS']
-                keyPassword localProperties['RELEASE_KEY_PASSWORD']
-            }
-        }
-    }
-
     buildTypes {
         release {
-            if (hasReleaseSigning) {
-                signingConfig signingConfigs.release
-            }
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 
@@ -63,12 +27,12 @@ android {
 
     productFlavors {
         app {
-            dimension 'app'
             ndk {
-                abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
+                abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
             }
         }
     }
+    namespace 'net.irext.ircontrol'
 }
 
 dependencies {
@@ -78,34 +42,11 @@ dependencies {
 
     implementation 'net.irext.webapi:irext-androidapi:1.5.3'
 
-    implementation 'androidx.core:core:1.18.0'
-    implementation 'com.google.code.gson:gson:2.14.0'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.core:core:1.13.1'
+    implementation 'com.google.android.material:material:1.13.0'
+    implementation 'com.google.code.gson:gson:2.13.2'
 
-    def composeBom = platform('androidx.compose:compose-bom:2026.05.00')
-    implementation composeBom
-    androidTestImplementation composeBom
+    implementation 'com.android.support:multidex:1.0.3'
 
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0'
-    implementation 'androidx.paging:paging-compose:3.5.0'
-
-    implementation 'androidx.compose.material3:material3'
-    implementation 'androidx.compose.material:material-icons-extended'
-    implementation 'androidx.compose.foundation:foundation'
-    implementation 'androidx.compose.ui:ui'
-    implementation 'androidx.compose.ui:ui-tooling-preview'
-    debugImplementation 'androidx.compose.ui:ui-tooling'
-
-    implementation 'androidx.navigation3:navigation3-runtime:1.1.1'
-    implementation 'androidx.navigation3:navigation3-ui:1.0.0'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-navigation3:2.10.0-rc01'
-
-    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0'
-
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0'
-    implementation 'androidx.lifecycle:lifecycle-runtime-compose:2.10.0'
-
-    androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
-    debugImplementation 'androidx.compose.ui:ui-test-manifest'
-
-    implementation 'androidx.activity:activity-compose:1.13.0'
 }

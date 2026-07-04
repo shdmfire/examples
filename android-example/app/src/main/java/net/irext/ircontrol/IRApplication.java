@@ -1,5 +1,6 @@
 package net.irext.ircontrol;
 
+import android.os.Build;
 import android.util.Log;
 
 import com.activeandroid.ActiveAndroid;
@@ -73,6 +74,10 @@ public class IRApplication extends com.activeandroid.app.Application {
     }
 
     public static String getApplicationName() {
-        return IRApplication.class.getPackageName();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            return IRApplication.class.getPackageName();
+        } else {
+            return IRApplication.class.getPackage().getName();
+        }
     }
 }

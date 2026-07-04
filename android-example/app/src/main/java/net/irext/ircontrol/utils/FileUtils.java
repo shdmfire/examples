@@ -1,6 +1,5 @@
 package net.irext.ircontrol.utils;
 
-import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 import net.irext.ircontrol.IRApplication;
@@ -28,17 +27,6 @@ public class FileUtils {
 
     public static final String FILE_NAME_PREFIX = "irext_";
     public static final String FILE_NAME_EXT = ".ir";
-
-    /**
-     * Get bin file in app-specific external directory (no storage permission needed).
-     */
-    public static File getBinFile(Context context, String remoteMap) {
-        File binDir = new File(context.getExternalFilesDir(null), "bin");
-        if (!binDir.exists()) {
-            binDir.mkdirs();
-        }
-        return new File(binDir, FILE_NAME_PREFIX + remoteMap + FILE_NAME_EXT);
-    }
 
     public static boolean write(File file, InputStream inputStream) {
         if (null == file) {
