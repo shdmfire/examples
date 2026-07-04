@@ -26,6 +26,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.paging.LoadState
 import androidx.paging.Pager
@@ -34,6 +35,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import net.irext.ircontrol.compose.R
 import net.irext.ircontrol.compose.IRApplication
 import net.irext.ircontrol.compose.bean.RemoteControl
 import net.irext.ircontrol.compose.ui.composable.ItemIndexText
@@ -41,6 +43,16 @@ import net.irext.ircontrol.compose.ui.navigation.RouteIndex
 import net.irext.ircontrol.compose.utils.FileUtils
 import net.irext.webapi.model.RemoteIndex
 
+
+/**
+ * Filename:       IndexScreen.kt
+ * Created:        Date: 2026-07-14
+ *
+ * Description:    Provides the IndexScreen source for the IRControl Android Compose sample.
+ *
+ * Revision log:
+ * 2026-07-14: created by shdmfire and strawmanbobi
+ */
 private sealed class IndexActionState {
     data object Idle : IndexActionState()
     data class Downloading(val index: RemoteIndex) : IndexActionState()
@@ -119,15 +131,15 @@ fun IndexScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(route.brandName.ifEmpty { route.cityName.ifEmpty { "Index" } }) },
+                title = { Text(route.brandName.ifEmpty { route.cityName.ifEmpty { stringResource(R.string.index_title) } }) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                     }
                 },
                 actions = {
                     IconButton(onClick = onTestClick) {
-                        Icon(Icons.Filled.Science, contentDescription = "IR Test")
+                        Icon(Icons.Filled.Science, contentDescription = stringResource(R.string.content_description_ir_test))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(),
@@ -154,7 +166,7 @@ fun IndexScreen(
                 is LoadState.Loading -> item { LoadingMoreItem() }
                 is LoadState.Error -> item {
                     LoadErrorItem(
-                        message = appendState.error.message ?: "加载更多遥控器失败",
+                        message = appendState.error.message ?: stringResource(R.string.load_more_remotes_failed),
                         onRetry = { indexes.retry() },
                     )
                 }
@@ -165,13 +177,17 @@ fun IndexScreen(
         when (val refreshState = indexes.loadState.refresh) {
             is LoadState.Loading -> FullScreenLoading(modifier = Modifier.padding(padding))
             is LoadState.Error -> FullScreenError(
-                message = refreshState.error.message ?: "遥控器列表加载失败",
+                message = refreshState.error.message ?: stringResource(R.string.remote_index_load_failed),
                 onRetry = { indexes.retry() },
                 modifier = Modifier.padding(padding),
             )
             else -> if (indexes.itemCount == 0) {
                 FullScreenError(
-                    message = "No remote indexes found\ncat=${route.categoryId} brand=${route.brandId}",
+                    message = stringResource(
+                        R.string.no_remote_indexes_found_with_filters,
+                        route.categoryId,
+                        route.brandId,
+                    ),
                     onRetry = { indexes.refresh() },
                     modifier = Modifier.padding(padding),
                 )
@@ -183,7 +199,7 @@ fun IndexScreen(
                 Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         CircularProgressIndicator()
-                        Text("Downloading ${s.index.remoteMap}...")
+                        Text(stringResource(R.string.downloading_remote_index, s.index.remoteMap))
                     }
                 }
             }
@@ -191,7 +207,7 @@ fun IndexScreen(
                 Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         CircularProgressIndicator()
-                        Text("Saving...")
+                        Text(stringResource(R.string.saving))
                     }
                 }
             }

@@ -7,12 +7,24 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import net.irext.ircontrol.compose.R
 import net.irext.ircontrol.compose.ui.theme.IRControlTheme
 
+
+/**
+ * Filename:       ItemIndexText.kt
+ * Created:        Date: 2026-07-14
+ *
+ * Description:    Provides the ItemIndexText source for the IRControl Android Compose sample.
+ *
+ * Revision log:
+ * 2026-07-14: created by shdmfire and strawmanbobi
+ */
 /**
  * Composable replacement for item_index.xml.
  *
@@ -57,8 +69,8 @@ fun ItemIndexText(
 private fun ItemIndexTextPreview() {
     IRControlTheme {
         ItemIndexText(
-            nameText = "Index Name",
-            mapText = "Index Map",
+            nameText = stringResource(R.string.sample_index_name),
+            mapText = stringResource(R.string.sample_index_map),
         )
     }
 }

@@ -48,4 +48,40 @@
     <string name="decode_and_send_success">Remote control code sent</string>
     <string name="decode_and_send_failed">Remote control failed</string>
 
+    <!-- Navigation and list screens -->
+    <string name="home_title">IR Remote Control</string>
+    <string name="content_description_add">Add</string>
+    <string name="content_description_back">Back</string>
+    <string name="category_title">Select Device Type</string>
+    <string name="brand_title">Select Brand</string>
+    <string name="operator_title">Select Operator</string>
+    <string name="province_title">Select Province</string>
+    <string name="city_title">Select City</string>
+    <string name="index_title">Index</string>
+    <string name="ir_test_title">IR Test</string>
+    <string name="content_description_ir_test">IR Test</string>
+    <string name="content_description_power">Power</string>
+    <string name="content_description_previous">Previous</string>
+    <string name="content_description_next">Next</string>
+    <string name="retry">Retry</string>
+    <string name="load_more_remotes_failed">Failed to load more remote controls</string>
+    <string name="remote_load_failed">Failed to load remote controls</string>
+    <string name="load_more_categories_failed">Failed to load more categories</string>
+    <string name="category_load_failed">Failed to load categories</string>
+    <string name="load_more_brands_failed">Failed to load more brands</string>
+    <string name="brand_load_failed">Failed to load brands</string>
+    <string name="load_more_operators_failed">Failed to load more operators</string>
+    <string name="operator_load_failed">Failed to load operators</string>
+    <string name="remote_index_load_failed">Failed to load remote indexes</string>
+    <string name="no_remote_indexes_found">No remote indexes found</string>
+    <string name="load_indexes_failed">Failed to load indexes</string>
+    <string name="open_ir_binary_failed">Failed to open IR binary: %1$s</string>
+    <string name="no_remote_indexes_found_with_filters">No remote indexes found\ncat=%1$s brand=%2$s</string>
+    <string name="downloading_remote_index">Downloading %1$s...</string>
+    <string name="saving">Saving...</string>
+    <string name="no_remote_index">No remote index</string>
+    <string name="sample_item">Sample Item</string>
+    <string name="sample_index_name">Index Name</string>
+    <string name="sample_index_map">Index Map</string>
+
 </resources>

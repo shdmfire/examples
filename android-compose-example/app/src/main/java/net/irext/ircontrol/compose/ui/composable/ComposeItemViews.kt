@@ -5,6 +5,16 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import net.irext.ircontrol.compose.ui.theme.IRControlTheme
 
+
+/**
+ * Filename:       ComposeItemViews.kt
+ * Created:        Date: 2026-07-14
+ *
+ * Description:    Provides the ComposeItemViews source for the IRControl Android Compose sample.
+ *
+ * Revision log:
+ * 2026-07-14: created by shdmfire and strawmanbobi
+ */
 /**
  * Bridge helper for Java adapters to use Compose-based item views.
  * Provides factory and bind methods callable from Java via @JvmStatic.

@@ -3,6 +3,16 @@ package net.irext.ircontrol.compose.ui.navigation
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 
+
+/**
+ * Filename:       Routes.kt
+ * Created:        Date: 2026-07-14
+ *
+ * Description:    Provides the Routes source for the IRControl Android Compose sample.
+ *
+ * Revision log:
+ * 2026-07-14: created by shdmfire and strawmanbobi
+ */
 @Serializable
 data object RouteHome : NavKey
 

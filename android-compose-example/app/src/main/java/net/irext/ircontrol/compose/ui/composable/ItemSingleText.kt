@@ -8,12 +8,24 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import net.irext.ircontrol.compose.R
 import net.irext.ircontrol.compose.ui.theme.IRControlTheme
 
+
+/**
+ * Filename:       ItemSingleText.kt
+ * Created:        Date: 2026-07-14
+ *
+ * Description:    Provides the ItemSingleText source for the IRControl Android Compose sample.
+ *
+ * Revision log:
+ * 2026-07-14: created by shdmfire and strawmanbobi
+ */
 /**
  * Composable replacement for item_brand.xml, item_category.xml, item_city.xml,
  * item_operator.xml, and item_remote.xml.
@@ -48,6 +60,6 @@ fun ItemSingleText(
 @Composable
 private fun ItemSingleTextPreview() {
     IRControlTheme {
-        ItemSingleText(text = "Sample Item")
+        ItemSingleText(text = stringResource(R.string.sample_item))
     }
 }

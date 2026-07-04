@@ -15,6 +15,16 @@ import net.irext.ircontrol.compose.ui.screen.OperatorScreen
 import net.irext.ircontrol.compose.ui.screen.ProvinceScreen
 import net.irext.ircontrol.compose.ui.screen.TestScreen
 
+
+/**
+ * Filename:       Navigation.kt
+ * Created:        Date: 2026-07-14
+ *
+ * Description:    Provides the Navigation source for the IRControl Android Compose sample.
+ *
+ * Revision log:
+ * 2026-07-14: created by shdmfire and strawmanbobi
+ */
 fun buildEntryProvider(
     backStack: MutableList<Any>,
 ): (Any) -> NavEntry<Any> = { key ->

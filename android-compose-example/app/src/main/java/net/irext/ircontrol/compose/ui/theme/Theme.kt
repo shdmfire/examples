@@ -4,6 +4,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
+
+/**
+ * Filename:       Theme.kt
+ * Created:        Date: 2026-07-14
+ *
+ * Description:    Provides the Theme source for the IRControl Android Compose sample.
+ *
+ * Revision log:
+ * 2026-07-14: created by shdmfire and strawmanbobi
+ */
 private val LightColorScheme = lightColorScheme(
     primary = Primary,
     tertiary = Accent,
