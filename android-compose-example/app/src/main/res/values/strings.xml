@@ -1,0 +1,51 @@
+<resources>
+    <string name="app_name">IRControl</string>
+    <string name="title_activity_main">IRControl</string>
+    <string name="action_settings">Settings</string>
+
+    <!-- Public UI -->
+    <string name="ptr_pull_to_refresh">Pull to refresh</string>
+    <string name="ptr_release_to_refresh">Release to refresh</string>
+    <string name="ptr_refreshing">Refreshing&#8230;</string>
+    <string name="ptr_last_updated">Updated: %1$s</string>
+
+    <!-- Main UI -->
+    <string name="create_new">Tap + to create new remote control</string>
+    <string name="storage_permission_warning">Please grant storage read and write permission first</string>
+
+    <!-- Create New -->
+    <string name="default_category">TV</string>
+    <string name="button_save">Save</string>
+    <string name="button_cancel">Cancel</string>
+
+    <!-- Control panel -->
+    <string name="button_power">POWER</string>
+    <string name="button_back">BACK</string>
+    <string name="button_home">HOME</string>
+    <string name="button_menu">MENU</string>
+    <string name="button_up">UP</string>
+    <string name="button_down">DOWN</string>
+    <string name="button_left">LEFT</string>
+    <string name="button_right">RIGHT</string>
+    <string name="button_ok">OK</string>
+    <string name="button_plus">+</string>
+    <string name="button_minus">-</string>
+
+    <!-- Emitter panel -->
+    <string name="emitter_ip">Emitter IP</string>
+    <string name="default_ip">192.168.1.43</string>
+    <string name="connect">Connect</string>
+    <string name="decode_on_board">Decode On Board</string>
+
+    <!-- Error messages -->
+    <string name="ir_not_supported">IR emitter is not supported in this device, please try with external emitters</string>
+    <string name="input_emitter_ip_address">Please input IP address of emitter</string>
+    <string name="connect_failed">Connect failed</string>
+    <string name="connect_disconnected">The connection has lost</string>
+    <string name="status_not_connected">Disconnected</string>
+    <string name="status_connected">Connected</string>
+    <string name="file_could_not_open">The IR binary file could not be opened</string>
+    <string name="decode_and_send_success">Remote control code sent</string>
+    <string name="decode_and_send_failed">Remote control failed</string>
+
+</resources>

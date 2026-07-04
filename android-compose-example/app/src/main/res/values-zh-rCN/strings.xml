@@ -1,0 +1,51 @@
+<resources>
+    <string name="app_name">红外遥控</string>
+    <string name="title_activity_main">红外遥控</string>
+    <string name="action_settings">设置</string>
+
+    <!-- Public UI -->
+    <string name="ptr_pull_to_refresh">下拉刷新</string>
+    <string name="ptr_release_to_refresh">放开以刷新\r\n(本例程只读取前20个数据)</string>
+    <string name="ptr_refreshing">刷新&#8230;</string>
+    <string name="ptr_last_updated">已刷新: %1$s</string>
+
+    <!-- Main UI -->
+    <string name="create_new">点击 + 安装遥控</string>
+    <string name="storage_permission_warning">请先授权应用对存储进行读写</string>
+
+    <!-- Create New -->
+    <string name="default_category">电视机</string>
+    <string name="button_save">保存</string>
+    <string name="button_cancel">取消</string>
+
+    <!-- Control panel -->
+    <string name="button_power">电源</string>
+    <string name="button_back">返回</string>
+    <string name="button_home">主页</string>
+    <string name="button_menu">菜单</string>
+    <string name="button_up">上</string>
+    <string name="button_down">下</string>
+    <string name="button_left">左</string>
+    <string name="button_right">右</string>
+    <string name="button_ok">确定</string>
+    <string name="button_plus">+</string>
+    <string name="button_minus">-</string>
+
+    <!-- Emitter panel -->
+    <string name="emitter_ip">发射端 IP</string>
+    <string name="default_ip">192.168.1.43</string>
+    <string name="connect">连接</string>
+    <string name="decode_on_board">在单片机上解码</string>
+
+    <!-- Error messages -->
+    <string name="ir_not_supported">该设备不支持红外发射, 请连接外部模块进行发射</string>
+    <string name="input_emitter_ip_address">请输入接收器的 IP 地址</string>
+    <string name="connect_failed">连接失败</string>
+    <string name="connect_disconnected">连接已断开</string>
+    <string name="status_not_connected">未连接</string>
+    <string name="status_connected">已连接</string>
+    <string name="file_could_not_open">编码文件无法打开</string>
+    <string name="decode_and_send_success">遥控码发送成功</string>
+    <string name="decode_and_send_failed">遥控失败</string>
+
+</resources>
