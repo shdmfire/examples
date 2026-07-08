@@ -18,26 +18,23 @@ import net.irext.ircontrol.compose.R
 import net.irext.ircontrol.compose.bean.RemoteControl
 import net.irext.ircontrol.compose.controller.ArduinoRemote
 import net.irext.ircontrol.compose.controller.ControlResult
+import net.irext.ircontrol.compose.controller.EmitterEvent
 import net.irext.ircontrol.compose.controller.PhoneRemote
 import net.irext.ircontrol.compose.controller.RemoteController
-import net.irext.ircontrol.compose.controller.base.ControlCommand
-import net.irext.ircontrol.compose.utils.FileUtils
+import net.irext.ircontrol.compose.controller.ControlCommand
+import net.irext.ircontrol.compose.data.RemoteControlRepository
+import net.irext.ircontrol.compose.utils.readBytesOrNull
+import net.irext.ircontrol.compose.utils.remoteBinFile
 
-
-/**
- * Filename:       ControlViewModel.kt
- * Created:        Date: 2026-07-14
- *
- * Description:    Provides the ControlViewModel source for the IRControl Android Compose sample.
- *
- * Revision log:
- * 2026-07-14: created by shdmfire and strawmanbobi
- */
 class ControlViewModel(
     application: Application,
 ) : AndroidViewModel(application) {
 
     private val appContext = application.applicationContext
+    private val repository = RemoteControlRepository()
+    private val phoneRemote = PhoneRemote(appContext)
+    private val arduinoRemote = ArduinoRemote()
+    private val remoteController = RemoteController(phoneRemote, arduinoRemote)
 
     private val _uiState = MutableStateFlow(
         ControlUiState(emitterIp = application.getString(R.string.default_ip)),
@@ -47,19 +44,27 @@ class ControlViewModel(
     private val _events = MutableSharedFlow<ControlEvent>()
     val events: SharedFlow<ControlEvent> = _events.asSharedFlow()
 
-    private var phoneRemote: PhoneRemote? = null
-    private var arduinoRemote: ArduinoRemote? = null
-    private var remoteController: RemoteController? = null
     private var currentRemoteControl: RemoteControl? = null
     private var currentRemoteId: Long = -1L
 
+    init {
+        viewModelScope.launch {
+            arduinoRemote.events.collect { event ->
+                when (event) {
+                    EmitterEvent.Connected -> onEmitterConnected()
+                    EmitterEvent.Disconnected -> onEmitterDisconnected()
+                    is EmitterEvent.Response -> onEmitterResponse(event.raw)
+                }
+            }
+        }
+    }
+
     fun loadRemote(remoteId: Long) {
         currentRemoteId = remoteId
-        ensureControllers()
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.update { it.copy(isLoading = true) }
 
-            val remote = RemoteControl.getRemoteControl(remoteId)
+            val remote = repository.get(remoteId)
             currentRemoteControl = remote
 
             if (remote == null) {
@@ -67,16 +72,16 @@ class ControlViewModel(
                 return@launch
             }
 
-            val categoryId = remote.categoryId
-            val subCategoryId = remote.subCategory
-            val title = buildRemoteTitle(remote)
-            val binFileName = FileUtils.getBinFile(appContext, remote.remoteMap).absolutePath
-            val ret = phoneRemote?.irOpen(binFileName, categoryId, subCategoryId)
+            val ret = phoneRemote.openBinary(
+                appContext.remoteBinFile(remote.remoteMap.orEmpty()).absolutePath,
+                remote.categoryId,
+                remote.subCategory,
+            )
             Log.d(TAG, "binary opened : $ret")
 
             _uiState.update {
                 it.copy(
-                    title = title,
+                    title = buildRemoteTitle(remote),
                     isLoading = false,
                 )
             }
@@ -86,9 +91,7 @@ class ControlViewModel(
     fun onCommand(command: ControlCommand) {
         viewModelScope.launch(Dispatchers.IO) {
             val remote = currentRemoteControl ?: return@launch
-            val controller = ensureControllers()
-            val result = controller.send(remote, command)
-            processControlResult(result)
+            processControlResult(remoteController.send(remote, command))
         }
     }
 
@@ -98,22 +101,13 @@ class ControlViewModel(
 
     fun onConnectClick() {
         val state = _uiState.value
-        if (state.isEmitterConnected) {
-            disconnectEmitter()
-        } else {
-            connectEmitter(state.emitterIp)
-        }
+        if (state.isEmitterConnected) disconnectEmitter() else connectEmitter(state.emitterIp)
     }
 
     fun close() {
-        arduinoRemote?.disconnect()
-        phoneRemote?.irClose()
-        _uiState.update {
-            it.copy(
-                isEmitterConnected = false,
-                isLoading = false,
-            )
-        }
+        viewModelScope.launch(Dispatchers.IO) { arduinoRemote.disconnect() }
+        phoneRemote.closeBinary()
+        _uiState.update { it.copy(isEmitterConnected = false, isLoading = false) }
     }
 
     override fun onCleared() {
@@ -121,67 +115,26 @@ class ControlViewModel(
         super.onCleared()
     }
 
-    private fun ensureControllers(): RemoteController {
-        val phone = phoneRemote ?: PhoneRemote.getInstance(appContext).also { phoneRemote = it }
-        val arduino = arduinoRemote ?: ArduinoRemote(appContext, createEmitterCallback()).also { arduinoRemote = it }
-        return remoteController ?: RemoteController(phone, arduino).also { remoteController = it }
-    }
-
-    private fun createEmitterCallback(): ArduinoRemote.IRSocketEmitterCallback {
-        return object : ArduinoRemote.IRSocketEmitterCallback {
-            override fun onConnected() {
-                onEmitterConnected()
-            }
-
-            override fun onDisconnected() {
-                onEmitterDisconnected()
-            }
-
-            override fun onResponse(response: String) {
-                Log.d(TAG, "onResponse: $response")
-                onEmitterResponse(response)
-            }
-        }
-    }
-
     private fun connectEmitter(ip: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.update { it.copy(isLoading = true) }
-            ensureControllers()
-            arduinoRemote?.connectToEmitter(ip, ArduinoRemote.EMITTER_PORT.toString())
+            arduinoRemote.connect(ip)
         }
     }
 
     private fun disconnectEmitter() {
         viewModelScope.launch(Dispatchers.IO) {
-            arduinoRemote?.disconnect()
-            _uiState.update {
-                it.copy(
-                    isEmitterConnected = false,
-                    isLoading = false,
-                )
-            }
+            arduinoRemote.disconnect()
+            _uiState.update { it.copy(isEmitterConnected = false, isLoading = false) }
         }
     }
 
     private fun onEmitterConnected() {
-        Log.d(TAG, "onEmitterConnected, update UI state")
-        _uiState.update {
-            it.copy(
-                isEmitterConnected = true,
-                isLoading = false,
-            )
-        }
+        _uiState.update { it.copy(isEmitterConnected = true, isLoading = false) }
     }
 
     private fun onEmitterDisconnected() {
-        Log.d(TAG, "onEmitterDisconnected, update UI state")
-        _uiState.update {
-            it.copy(
-                isEmitterConnected = false,
-                isLoading = false,
-            )
-        }
+        _uiState.update { it.copy(isEmitterConnected = false, isLoading = false) }
         viewModelScope.launch {
             _events.emit(ControlEvent.Toast(appContext.getString(R.string.connect_disconnected)))
         }
@@ -189,58 +142,37 @@ class ControlViewModel(
 
     private fun onEmitterResponse(response: String) {
         when {
-            response.startsWith(ArduinoRemote.E_RESPONSE_HELLO) -> processEHello(response)
-            response.startsWith(ArduinoRemote.E_RESPONSE_BIN) -> processEBin(response)
-            response.startsWith(ArduinoRemote.E_RESPONSE_CTRL) -> processECtrl(response)
+            response.startsWith(ArduinoRemote.E_RESPONSE_HELLO) -> processEHello()
+            response.startsWith(ArduinoRemote.E_RESPONSE_BIN) -> processEBin()
+            response.startsWith(ArduinoRemote.E_RESPONSE_CTRL) -> Unit
             response.startsWith(ArduinoRemote.E_INDICATION_SUCCESS) ||
                 response.startsWith(ArduinoRemote.E_INDICATION_FAILED) -> processControlResult(response)
             else -> Log.e(TAG, "unexpected response : $response")
         }
     }
 
-    private fun processEHello(response: String) {
-        arduinoRemote?.sendHelloToEmitter()
+    private fun processEHello() {
+        viewModelScope.launch(Dispatchers.IO) { arduinoRemote.sendHello() }
     }
 
-    private fun processEBin(response: String) {
+    private fun processEBin() {
         viewModelScope.launch(Dispatchers.IO) {
-            Log.d(TAG, "processEBin: current remote ID = $currentRemoteId")
-            val remote = currentRemoteControl ?: RemoteControl.getRemoteControl(currentRemoteId)
-            if (remote == null) {
+            val remote = currentRemoteControl ?: repository.get(currentRemoteId) ?: return@launch
+            currentRemoteControl = remote
+            val binContent = appContext.remoteBinFile(remote.remoteMap.orEmpty()).readBytesOrNull()
+            if (binContent == null) {
+                _events.emit(ControlEvent.Toast(appContext.getString(R.string.file_could_not_open)))
                 return@launch
             }
-            currentRemoteControl = remote
-            Log.d(
-                TAG,
-                "processEBin, will send binary for remote control, id = $currentRemoteId, " +
-                    "remoteControl.id = ${remote.getID()}, remoteControl.category = ${remote.categoryId}",
-            )
-            val binFileName = FileUtils.getBinFile(appContext, remote.remoteMap).absolutePath
-            val binContent = FileUtils.getByteArrayFromFile(binFileName)
-            if (binContent != null) {
-                arduinoRemote?.sendBinToEmitter(
-                    binContent,
-                    remote.categoryId,
-                    remote.subCategory,
-                )
-            } else {
-                Log.e(TAG, "emitter sender could not open the binary file")
-                _events.emit(ControlEvent.Toast(appContext.getString(R.string.file_could_not_open)))
-            }
+            arduinoRemote.sendBin(binContent, remote.categoryId, remote.subCategory)
         }
     }
-
-    private fun processECtrl(response: String) = Unit
 
     private fun processControlResult(result: ControlResult) {
         viewModelScope.launch {
             when (result) {
-                ControlResult.Success -> _events.emit(
-                    ControlEvent.Toast(appContext.getString(R.string.decode_and_send_success)),
-                )
-                ControlResult.Failed -> _events.emit(
-                    ControlEvent.Toast(appContext.getString(R.string.decode_and_send_failed)),
-                )
+                ControlResult.Success -> _events.emit(ControlEvent.Toast(appContext.getString(R.string.decode_and_send_success)))
+                ControlResult.Failed -> _events.emit(ControlEvent.Toast(appContext.getString(R.string.decode_and_send_failed)))
                 ControlResult.PendingEmitterResult -> Unit
             }
         }
@@ -248,11 +180,12 @@ class ControlViewModel(
 
     private fun processControlResult(response: String) {
         viewModelScope.launch {
-            if (response.startsWith(ArduinoRemote.E_INDICATION_SUCCESS)) {
-                _events.emit(ControlEvent.Toast(appContext.getString(R.string.decode_and_send_success)))
+            val message = if (response.startsWith(ArduinoRemote.E_INDICATION_SUCCESS)) {
+                R.string.decode_and_send_success
             } else {
-                _events.emit(ControlEvent.Toast(appContext.getString(R.string.decode_and_send_failed)))
+                R.string.decode_and_send_failed
             }
+            _events.emit(ControlEvent.Toast(appContext.getString(message)))
         }
     }
 

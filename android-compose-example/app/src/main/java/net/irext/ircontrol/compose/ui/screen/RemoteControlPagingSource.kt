@@ -5,6 +5,7 @@ import androidx.paging.PagingState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.irext.ircontrol.compose.bean.RemoteControl
+import net.irext.ircontrol.compose.data.RemoteControlRepository
 
 
 /**
@@ -16,12 +17,14 @@ import net.irext.ircontrol.compose.bean.RemoteControl
  * Revision log:
  * 2026-07-14: created by shdmfire and strawmanbobi
  */
-class RemoteControlPagingSource : PagingSource<Int, RemoteControl>() {
+class RemoteControlPagingSource(
+    private val repository: RemoteControlRepository = RemoteControlRepository(),
+) : PagingSource<Int, RemoteControl>() {
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, RemoteControl> = try {
         val from = params.key ?: 0
         val count = params.loadSize
         val data = withContext(Dispatchers.IO) {
-            RemoteControl.listRemoteControls(from, count)
+            repository.list(from, count)
         }
 
         LoadResult.Page(

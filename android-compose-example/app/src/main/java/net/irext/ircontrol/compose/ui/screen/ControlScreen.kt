@@ -1,43 +1,73 @@
 package net.irext.ircontrol.compose.ui.screen
 
 import android.widget.Toast
-import androidx.compose.foundation.Image
+import androidx.compose.animation.core.EaseInOutSine
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.LinkOff
+import androidx.compose.material.icons.filled.Memory
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.PowerSettingsNew
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.Wifi
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -45,19 +75,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import net.irext.ircontrol.compose.R
-import net.irext.ircontrol.compose.controller.base.ControlCommand
+import net.irext.ircontrol.compose.controller.ControlCommand
 import net.irext.ircontrol.compose.ui.theme.IRControlTheme
 
-
-/**
- * Filename:       ControlScreen.kt
- * Created:        Date: 2026-07-14
- *
- * Description:    Provides the ControlScreen source for the IRControl Android Compose sample.
- *
- * Revision log:
- * 2026-07-14: created by shdmfire and strawmanbobi
- */
 @Composable
 fun ControlScreen(
     remoteId: Long,
@@ -65,26 +85,30 @@ fun ControlScreen(
     viewModel: ControlViewModel = viewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
+    val context by rememberUpdatedState(LocalContext.current)
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
-                is ControlEvent.Toast -> Toast.makeText(
-                    context,
-                    event.message,
-                    Toast.LENGTH_SHORT,
-                ).show()
+                is ControlEvent.Toast -> {
+                    Toast.makeText(
+                        context,
+                        event.message,
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                }
             }
         }
     }
 
-    LaunchedEffect(remoteId) {
+    LaunchedEffect(remoteId, viewModel) {
         viewModel.loadRemote(remoteId)
     }
 
-    DisposableEffect(Unit) {
-        onDispose { viewModel.close() }
+    DisposableEffect(viewModel) {
+        onDispose {
+            viewModel.close()
+        }
     }
 
     ControlContent(
@@ -96,6 +120,7 @@ fun ControlScreen(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ControlContent(
     state: ControlUiState,
@@ -104,16 +129,99 @@ private fun ControlContent(
     onEmitterIpChange: (String) -> Unit,
     onConnectClick: () -> Unit,
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .systemBarsPadding()
-            .padding(horizontal = 16.dp),
-    ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            ControlTitle(title = state.title, onBack = onBack)
-            RemoteControlPanel(onCommand = onCommand)
-            Spacer(modifier = Modifier.weight(1f))
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            ControlTitle(
+                title = state.title,
+                onBack = onBack,
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 24.dp, vertical = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.weight(1f)
+            ) {
+                Spacer(modifier = Modifier.height(4.dp))
+
+                // 电源键
+                IconButton(
+                    onClick = { onCommand(ControlCommand.Power) },
+                    modifier = Modifier
+                        .size(72.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f),
+                            shape = CircleShape
+                        )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.PowerSettingsNew,
+                        contentDescription = stringResource(R.string.button_power),
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(36.dp)
+                    )
+                }
+
+                // 导航键行: 返回、主页、菜单
+                Row(
+                    modifier = Modifier.fillMaxWidth(0.9f),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    FilledTonalIconButton(
+                        onClick = { onCommand(ControlCommand.Back) },
+                        modifier = Modifier.size(56.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.button_back)
+                        )
+                    }
+
+                    FilledTonalIconButton(
+                        onClick = { onCommand(ControlCommand.Home) },
+                        modifier = Modifier.size(56.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Home,
+                            contentDescription = stringResource(R.string.button_home)
+                        )
+                    }
+
+                    FilledTonalIconButton(
+                        onClick = { onCommand(ControlCommand.Menu) },
+                        modifier = Modifier.size(56.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Menu,
+                            contentDescription = stringResource(R.string.button_menu)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.weight(0.1f))
+
+                // 重构的圆形 D-Pad 方向键
+                DPad(onCommand = onCommand)
+
+                Spacer(modifier = Modifier.weight(0.1f))
+
+                // 音量/调节键胶囊容器
+                VolumeRocker(onCommand = onCommand)
+
+                Spacer(modifier = Modifier.weight(0.2f))
+            }
+
+            // 底部发射器连接控制台
             EmitterConnectionPanel(
                 ip = state.emitterIp,
                 connected = state.isEmitterConnected,
@@ -132,15 +240,15 @@ private fun ControlTitle(
     onBack: () -> Unit,
 ) {
     CenterAlignedTopAppBar(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(60.dp),
+        modifier = Modifier.fillMaxWidth(),
         title = {
             Text(
                 text = title,
                 textAlign = TextAlign.Center,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
+                )
             )
         },
         navigationIcon = {
@@ -153,143 +261,152 @@ private fun ControlTitle(
         },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = Color.Transparent,
-            scrolledContainerColor = Color.Unspecified,
-            navigationIconContentColor = Color.Unspecified,
-            titleContentColor = Color.Unspecified,
-            actionIconContentColor = Color.Unspecified
         ),
     )
 }
 
 @Composable
-private fun RemoteControlPanel(
+private fun DPad(
+    onCommand: (ControlCommand) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .size(200.dp)
+            .background(
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                shape = CircleShape
+            )
+            .padding(8.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        // 中央 OK 确认键
+        FilledTonalButton(
+            onClick = { onCommand(ControlCommand.Ok) },
+            modifier = Modifier.size(72.dp),
+            shape = CircleShape,
+            colors = ButtonDefaults.filledTonalButtonColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+        ) {
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = stringResource(R.string.button_ok),
+                modifier = Modifier.size(28.dp)
+            )
+        }
+
+        // 上方向键
+        IconButton(
+            onClick = { onCommand(ControlCommand.Up) },
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .size(48.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.KeyboardArrowUp,
+                contentDescription = stringResource(R.string.button_up),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(32.dp)
+            )
+        }
+
+        // 下方向键
+        IconButton(
+            onClick = { onCommand(ControlCommand.Down) },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .size(48.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.KeyboardArrowDown,
+                contentDescription = stringResource(R.string.button_down),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(32.dp)
+            )
+        }
+
+        // 左方向键
+        IconButton(
+            onClick = { onCommand(ControlCommand.Left) },
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .size(48.dp)
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                contentDescription = stringResource(R.string.button_left),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(32.dp)
+            )
+        }
+
+        // 右方向键
+        IconButton(
+            onClick = { onCommand(ControlCommand.Right) },
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .size(48.dp)
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = stringResource(R.string.button_right),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(32.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun VolumeRocker(
     onCommand: (ControlCommand) -> Unit,
 ) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        RemoteButtonRow {
-            RemoteButton(
-                painter = painterResource(R.mipmap.button_power),
-                contentDescription = stringResource(R.string.button_power),
-                onClick = { onCommand(ControlCommand.POWER) },
-            )
-        }
-        DividerLine()
-        RemoteButtonRow {
-            RemoteButton(
-                painter = painterResource(R.mipmap.button_back),
-                contentDescription = stringResource(R.string.button_back),
-                onClick = { onCommand(ControlCommand.BACK) },
-            )
-            RemoteButton(
-                painter = painterResource(R.mipmap.button_home),
-                contentDescription = stringResource(R.string.button_home),
-                onClick = { onCommand(ControlCommand.HOME) },
-            )
-            RemoteButton(
-                painter = painterResource(R.mipmap.button_menu),
-                contentDescription = stringResource(R.string.button_menu),
-                onClick = { onCommand(ControlCommand.MENU) },
-            )
-        }
-        RemoteButtonRow {
-            RemoteButtonSpacer()
-            RemoteButton(
-                painter = painterResource(R.mipmap.button_up),
-                contentDescription = stringResource(R.string.button_up),
-                onClick = { onCommand(ControlCommand.UP) },
-            )
-            RemoteButtonSpacer()
-        }
-        RemoteButtonRow {
-            RemoteButton(
-                painter = painterResource(R.mipmap.button_left),
-                contentDescription = stringResource(R.string.button_left),
-                onClick = { onCommand(ControlCommand.LEFT) },
-            )
-            RemoteButton(
-                painter = painterResource(R.mipmap.button_ok),
-                contentDescription = stringResource(R.string.button_ok),
-                onClick = { onCommand(ControlCommand.OK) },
-            )
-            RemoteButton(
-                painter = painterResource(R.mipmap.button_right),
-                contentDescription = stringResource(R.string.button_right),
-                onClick = { onCommand(ControlCommand.RIGHT) },
-            )
-        }
-        RemoteButtonRow {
-            RemoteButtonSpacer()
-            RemoteButton(
-                painter = painterResource(R.mipmap.button_down),
-                contentDescription = stringResource(R.string.button_down),
-                onClick = { onCommand(ControlCommand.DOWN) },
-            )
-            RemoteButtonSpacer()
-        }
-        DividerLine()
-        RemoteButtonRow {
-            RemoteButton(
-                painter = painterResource(R.mipmap.button_minus),
-                contentDescription = stringResource(R.string.button_minus),
-                onClick = { onCommand(ControlCommand.MINUS) },
-            )
-            RemoteButtonSpacer()
-            RemoteButton(
-                painter = painterResource(R.mipmap.button_plus),
-                contentDescription = stringResource(R.string.button_plus),
-                onClick = { onCommand(ControlCommand.PLUS) },
-            )
-        }
-    }
-}
-
-@Composable
-private fun RemoteButtonRow(content: @Composable RowScope.() -> Unit) {
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.Center,
+            .background(
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                shape = RoundedCornerShape(20.dp)
+            )
+            .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
-        content = content,
-    )
-}
-
-@Composable
-private fun RowScope.RemoteButton(
-    painter: Painter,
-    contentDescription: String,
-    onClick: () -> Unit,
-) {
-    Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-        RemoteButtonImage(painter, contentDescription, onClick)
-    }
-}
-
-@Composable
-private fun RowScope.RemoteButtonSpacer() {
-    Spacer(modifier = Modifier.weight(1f).height(64.dp))
-}
-
-@Composable
-private fun RemoteButtonImage(
-    painter: Painter,
-    contentDescription: String,
-    onClick: () -> Unit,
-) {
-    IconButton(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(64.dp),
-        onClick = onClick,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Image(
-            painter = painter,
-            contentDescription = contentDescription,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(32.dp),
+        FilledTonalIconButton(
+            onClick = { onCommand(ControlCommand.Minus) },
+            modifier = Modifier.size(48.dp),
+            colors = IconButtonDefaults.filledTonalIconButtonColors(
+                containerColor = Color.Transparent
+            )
+        ) {
+            Icon(
+                imageVector = Icons.Default.Remove,
+                contentDescription = stringResource(R.string.button_minus),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        Text(
+            text = "VOL / CH",
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
         )
+
+        FilledTonalIconButton(
+            onClick = { onCommand(ControlCommand.Plus) },
+            modifier = Modifier.size(48.dp),
+            colors = IconButtonDefaults.filledTonalIconButtonColors(
+                containerColor = Color.Transparent
+            )
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = stringResource(R.string.button_plus),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
 
@@ -301,62 +418,109 @@ private fun EmitterConnectionPanel(
     onIpChange: (String) -> Unit,
     onConnectClick: () -> Unit,
 ) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(2.dp)
-                .padding(horizontal = 4.dp)
-                .background(if (connected) Color(0xFF3FAFFF) else Color(0xFFFF3F3F)),
+    ElevatedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
         )
-        Row(
+    ) {
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 20.dp, end = 20.dp, bottom = 2.dp),
-            verticalAlignment = Alignment.CenterVertically,
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(
-                text = stringResource(R.string.emitter_ip),
-                fontSize = 18.sp,
-                modifier = Modifier.padding(horizontal = 8.dp),
-            )
-            OutlinedTextField(
-                value = ip,
-                onValueChange = onIpChange,
-                modifier = Modifier.weight(1f),
-                singleLine = true,
-                textStyle = androidx.compose.ui.text.TextStyle(fontSize = 18.sp),
-            )
-            IconButton(
-                modifier = Modifier.size(60.dp),
-                onClick = onConnectClick,
-                enabled = !isLoading,
+            // LED 呼吸灯与状态文本行
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                if (isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                } else {
-                    Image(
-                        painter = painterResource(
-                            if (connected) R.mipmap.button_unlink else R.mipmap.button_link,
-                        ),
-                        contentDescription = stringResource(R.string.connect),
-                        modifier = Modifier.size(36.dp),
+                LedIndicator(connected = connected)
+
+                Text(
+                    text = if (connected) "Connected" else "Disconnected",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (connected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                )
+            }
+
+            // IP 输入框与连接按钮行
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OutlinedTextField(
+                    value = ip,
+                    onValueChange = onIpChange,
+                    label = { Text(stringResource(R.string.emitter_ip)) },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Memory,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        )
+                    }
+                )
+
+                FilledIconButton(
+                    onClick = onConnectClick,
+                    enabled = !isLoading,
+                    modifier = Modifier.size(56.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = IconButtonDefaults.filledIconButtonColors(
+                        containerColor = if (connected) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = if (connected) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimaryContainer
                     )
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Icon(
+                            imageVector = if (connected) Icons.Default.LinkOff else Icons.Default.Link,
+                            contentDescription = stringResource(R.string.connect),
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
                 }
             }
         }
-        DividerLine()
     }
 }
 
 @Composable
-private fun DividerLine() {
+private fun LedIndicator(connected: Boolean) {
+    val transition = rememberInfiniteTransition(label = "LedGlow")
+    val alpha by transition.animateFloat(
+        initialValue = 0.4f,
+        targetValue = 1.0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = EaseInOutSine),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "GlowAlpha"
+    )
+
     Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(1.dp)
-            .padding(horizontal = 4.dp)
-            .background(Color(0xFF7F7F7F)),
+            .size(10.dp)
+            .alpha(if (connected) 1.0f else alpha)
+            .background(
+                color = if (connected) Color(0xFF4CAF50) else Color(0xFFF44336),
+                shape = CircleShape
+            )
     )
 }
 
@@ -366,7 +530,7 @@ private fun ControlContentPreview() {
     IRControlTheme {
         ControlContent(
             state = ControlUiState(
-                title = stringResource(R.string.home_title),
+                title = "IR Remote Control",
                 emitterIp = "192.168.1.10",
                 isEmitterConnected = true,
             ),

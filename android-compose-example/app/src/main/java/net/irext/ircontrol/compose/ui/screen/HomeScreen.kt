@@ -85,7 +85,7 @@ fun HomeScreen(
                     ItemSingleText(
                         text = displayName,
                         modifier = Modifier.clickable {
-                            onRemoteClick(remote.getID())
+                            onRemoteClick(remote.id)
                         }
                     )
                 }
