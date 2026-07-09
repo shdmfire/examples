@@ -1,5 +1,6 @@
 package net.irext.ircontrol.compose.ui.screen
 
+import net.irext.ircontrol.compose.controller.RemoteCategory
 
 /**
  * Filename:       ControlUiState.kt
@@ -16,4 +17,5 @@ data class ControlUiState(
     val emitterIp: String = "",
     val isEmitterConnected: Boolean = false,
     val isLoading: Boolean = false,
+    val category: RemoteCategory = RemoteCategory.NONE,
 )

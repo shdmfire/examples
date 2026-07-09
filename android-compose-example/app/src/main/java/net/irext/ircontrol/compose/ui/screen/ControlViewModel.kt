@@ -22,6 +22,7 @@ import net.irext.ircontrol.compose.controller.EmitterEvent
 import net.irext.ircontrol.compose.controller.PhoneRemote
 import net.irext.ircontrol.compose.controller.RemoteController
 import net.irext.ircontrol.compose.controller.ControlCommand
+import net.irext.ircontrol.compose.controller.RemoteCategory
 import net.irext.ircontrol.compose.data.RemoteControlRepository
 import net.irext.ircontrol.compose.utils.readBytesOrNull
 import net.irext.ircontrol.compose.utils.remoteBinFile
@@ -83,6 +84,7 @@ class ControlViewModel(
                 it.copy(
                     title = buildRemoteTitle(remote),
                     isLoading = false,
+                    category = RemoteCategory.fromInt(remote.categoryId),
                 )
             }
         }
@@ -112,7 +114,6 @@ class ControlViewModel(
 
     override fun onCleared() {
         close()
-        super.onCleared()
     }
 
     private fun connectEmitter(ip: String) {
