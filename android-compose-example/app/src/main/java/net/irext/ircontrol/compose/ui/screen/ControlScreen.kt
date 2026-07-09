@@ -93,7 +93,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import net.irext.decode.sdk.utils.Constants
 import net.irext.ircontrol.compose.R
+import net.irext.ircontrol.compose.controller.AcControlState
 import net.irext.ircontrol.compose.controller.ControlCommand
 import net.irext.ircontrol.compose.controller.RemoteCategory
 import net.irext.ircontrol.compose.ui.theme.IRControlTheme
@@ -182,7 +184,10 @@ private fun ControlContent(
             // Dynamic control panel based on category
             when (state.category) {
                 RemoteCategory.AC -> {
-                    AcControlPanel(onCommand = onCommand)
+                    AcControlPanel(
+                        acState = state.acState,
+                        onCommand = onCommand,
+                    )
                 }
                 RemoteCategory.DYSON -> {
                     DysonControlPanel(onCommand = onCommand)
@@ -469,9 +474,31 @@ private fun MediaControlPanel(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun AcControlPanel(
+    acState: AcControlState,
     onCommand: (ControlCommand) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val powerText = if (acState.power == Constants.ACPower.POWER_ON.value) "ON" else "OFF"
+    val modeText = when (acState.mode) {
+        Constants.ACMode.MODE_COOL.value -> "COOL"
+        Constants.ACMode.MODE_HEAT.value -> "HEAT"
+        Constants.ACMode.MODE_AUTO.value -> "AUTO"
+        Constants.ACMode.MODE_FAN.value -> "FAN"
+        else -> "DRY"
+    }
+    val leftText = "$powerText · $modeText"
+
+    val speedText = when (acState.windSpeed) {
+        Constants.ACWindSpeed.SPEED_AUTO.value -> "AUTO"
+        Constants.ACWindSpeed.SPEED_LOW.value -> "LOW"
+        Constants.ACWindSpeed.SPEED_MEDIUM.value -> "MID"
+        else -> "HIGH"
+    }
+    val swingText = if (acState.swing == Constants.ACSwing.SWING_ON.value) "SWING" else "FIXED"
+    val rightText = "$speedText · $swingText"
+
+    val tempText = "${acState.temperature + 16}℃"
+
     Column(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -490,6 +517,7 @@ private fun AcControlPanel(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .alpha(if (acState.power == Constants.ACPower.POWER_ON.value) 1.0f else 0.6f)
                     .padding(16.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
@@ -499,13 +527,13 @@ private fun AcControlPanel(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = stringResource(R.string.label_mode_cool),
+                        text = leftText,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     Text(
-                        text = stringResource(R.string.label_fan_auto),
+                        text = rightText,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -513,7 +541,7 @@ private fun AcControlPanel(
                 }
 
                 Text(
-                    text = stringResource(R.string.label_temperature_24),
+                    text = tempText,
                     style = MaterialTheme.typography.displayMedium,
                     fontWeight = FontWeight.ExtraBold,
                     color = MaterialTheme.colorScheme.primary,

@@ -20,6 +20,7 @@ import net.irext.ircontrol.compose.controller.ArduinoRemote
 import net.irext.ircontrol.compose.controller.ControlResult
 import net.irext.ircontrol.compose.controller.EmitterEvent
 import net.irext.ircontrol.compose.controller.PhoneRemote
+import net.irext.ircontrol.compose.controller.AcControlState
 import net.irext.ircontrol.compose.controller.RemoteController
 import net.irext.ircontrol.compose.controller.ControlCommand
 import net.irext.ircontrol.compose.controller.RemoteCategory
@@ -103,7 +104,53 @@ class ControlViewModel(
     fun onCommand(command: ControlCommand) {
         viewModelScope.launch(Dispatchers.IO) {
             val remote = currentRemoteControl ?: return@launch
-            processControlResult(remoteController.send(remote, command))
+            val acState = if (remote.categoryId == Constants.CategoryID.AIR_CONDITIONER.value) {
+                val next = reduceAcState(command, _uiState.value.acState)
+                _uiState.update { it.copy(acState = next) }
+                next
+            } else null
+            processControlResult(remoteController.send(remote, command, acState))
+        }
+    }
+
+    private fun reduceAcState(command: ControlCommand, state: AcControlState): AcControlState {
+        return when (command) {
+            ControlCommand.Power -> {
+                val nextPower = if (state.power == Constants.ACPower.POWER_ON.value) {
+                    Constants.ACPower.POWER_OFF.value
+                } else {
+                    Constants.ACPower.POWER_ON.value
+                }
+                state.copy(power = nextPower, changeWindDir = 0)
+            }
+            ControlCommand.Plus, ControlCommand.AcTempPlus -> {
+                val nextTemp = (state.temperature + 1).coerceAtMost(Constants.ACTemperature.TEMP_30.value)
+                state.copy(temperature = nextTemp, changeWindDir = 0)
+            }
+            ControlCommand.Minus, ControlCommand.AcTempMinus -> {
+                val nextTemp = (state.temperature - 1).coerceAtLeast(Constants.ACTemperature.TEMP_16.value)
+                state.copy(temperature = nextTemp, changeWindDir = 0)
+            }
+            ControlCommand.Right, ControlCommand.AcModeSwitch -> {
+                val nextMode = (state.mode + 1) % 5
+                state.copy(mode = nextMode, changeWindDir = 0)
+            }
+            ControlCommand.Up, ControlCommand.AcWindSpeed -> {
+                val nextSpeed = (state.windSpeed + 1) % 4
+                state.copy(windSpeed = nextSpeed, changeWindDir = 0)
+            }
+            ControlCommand.Down, ControlCommand.AcWindSwing -> {
+                val nextSwing = if (state.swing == Constants.ACSwing.SWING_ON.value) {
+                    Constants.ACSwing.SWING_OFF.value
+                } else {
+                    Constants.ACSwing.SWING_ON.value
+                }
+                state.copy(swing = nextSwing, changeWindDir = 0)
+            }
+            ControlCommand.Ok, ControlCommand.AcWindFix -> {
+                state.copy(changeWindDir = 1)
+            }
+            else -> state
         }
     }
 

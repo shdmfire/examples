@@ -1,5 +1,6 @@
 package net.irext.ircontrol.compose.ui.screen
 
+import net.irext.ircontrol.compose.controller.AcControlState
 import net.irext.ircontrol.compose.controller.RemoteCategory
 
 /**
@@ -18,4 +19,5 @@ data class ControlUiState(
     val isEmitterConnected: Boolean = false,
     val isLoading: Boolean = false,
     val category: RemoteCategory = RemoteCategory.NONE,
+    val acState: AcControlState = AcControlState(),
 )

@@ -19,18 +19,21 @@ class RemoteController(
     suspend fun send(
         remoteControl: RemoteControl,
         command: ControlCommand,
+        acState: AcControlState? = null,
     ): ControlResult {
         return if (arduinoRemote.status.value == EmitterStatus.Working) {
             arduinoRemote.control(
                 remoteControl.categoryId,
                 remoteControl.subCategory,
                 command,
+                acState,
             )
         } else {
             phoneRemote.control(
                 remoteControl.categoryId,
                 remoteControl.subCategory,
                 command,
+                acState,
             )
         }
     }

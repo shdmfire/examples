@@ -26,9 +26,9 @@ class PhoneRemote(
         return irDecode.openFile(category, subCategory, remoteBinFilePath)
     }
 
-    fun control(category: Int, subCategory: Int, command: ControlCommand): ControlResult {
-        val acStatus = ACStatus()
-        val inputKeyCode = command.toDecodeKeyCode(category, acStatus)
+    fun control(category: Int, subCategory: Int, command: ControlCommand, acState: AcControlState? = null): ControlResult {
+        val acStatus = acState?.toACStatus() ?: ACStatus()
+        val inputKeyCode = command.toDecodeKeyCode(category)
         val decoded = irDecode.decodeBinary(inputKeyCode, acStatus) ?: return ControlResult.Failed
 
         Log.d(TAG, "IR control decoded: ${decoded.joinToString(",")}")

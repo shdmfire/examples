@@ -76,10 +76,10 @@ class ArduinoRemote {
         sendLine("$A_REQUEST_BIN,$categoryId,$subCategory,${binBase64.length},$binBase64")
     }
 
-    suspend fun control(category: Int, subCategory: Int, command: ControlCommand): ControlResult {
+    suspend fun control(category: Int, subCategory: Int, command: ControlCommand, acState: AcControlState? = null): ControlResult {
         Log.d(TAG, "control, category = $category, subCategory = $subCategory, command = $command")
-        val acStatus = ACStatus()
-        val keyCode = command.toDecodeKeyCode(category, acStatus)
+        val acStatus = acState?.toACStatus() ?: ACStatus()
+        val keyCode = command.toDecodeKeyCode(category)
         val commandText = ArduinoControlCommand(keyCode, acStatus).encode()
         sendLine("$A_REQUEST_CTRL,${commandText.length},$commandText")
         return ControlResult.PendingEmitterResult
