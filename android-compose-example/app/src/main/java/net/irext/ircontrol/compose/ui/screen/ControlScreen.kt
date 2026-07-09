@@ -11,6 +11,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,18 +21,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.VolumeMute
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Check
@@ -49,7 +53,6 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material.icons.automirrored.filled.VolumeMute
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
@@ -83,7 +86,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -144,6 +149,8 @@ private fun ControlContent(
     onEmitterIpChange: (String) -> Unit,
     onConnectClick: () -> Unit,
 ) {
+    val scrollState = rememberScrollState()
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -157,41 +164,40 @@ private fun ControlContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 24.dp, vertical = 8.dp),
+                .padding(horizontal = 24.dp, vertical = 8.dp)
+                .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Dynamic control panel based on category
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                when (state.category) {
-                    RemoteCategory.AC -> {
-                        AcControlPanel(onCommand = onCommand)
-                    }
-                    RemoteCategory.DYSON -> {
-                        DysonControlPanel(onCommand = onCommand)
-                    }
-                    RemoteCategory.TV,
-                    RemoteCategory.STB,
-                    RemoteCategory.NETBOX,
-                    RemoteCategory.IPTV,
-                    RemoteCategory.DVD,
-                    RemoteCategory.PROJECTOR,
-                    RemoteCategory.STEREO,
-                    RemoteCategory.BSTB -> {
-                        MediaControlPanel(category = state.category, onCommand = onCommand)
-                    }
-                    RemoteCategory.FAN,
-                    RemoteCategory.LIGHT,
-                    RemoteCategory.CLEANING_ROBOT,
-                    RemoteCategory.AIRCLEANER -> {
-                        GridControlPanel(category = state.category, onCommand = onCommand)
-                    }
-                    else -> {
+            when (state.category) {
+                RemoteCategory.AC -> {
+                    AcControlPanel(onCommand = onCommand)
+                }
+                RemoteCategory.DYSON -> {
+                    DysonControlPanel(onCommand = onCommand)
+                }
+                RemoteCategory.TV,
+                RemoteCategory.STB,
+                RemoteCategory.NETBOX,
+                RemoteCategory.IPTV,
+                RemoteCategory.DVD,
+                RemoteCategory.PROJECTOR,
+                RemoteCategory.STEREO,
+                RemoteCategory.BSTB -> {
+                    MediaControlPanel(category = state.category, onCommand = onCommand)
+                }
+                RemoteCategory.FAN,
+                RemoteCategory.LIGHT,
+                RemoteCategory.CLEANING_ROBOT,
+                RemoteCategory.AIRCLEANER -> {
+                    GridControlPanel(category = state.category, onCommand = onCommand)
+                }
+                else -> {
+                    Box(
+                        modifier = Modifier.height(200.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Text(
                             text = "Loading remote...",
                             style = MaterialTheme.typography.bodyLarge,
@@ -201,7 +207,7 @@ private fun ControlContent(
                 }
             }
 
-            // Emitter connection panel
+            // Emitter connection panel at the bottom
             EmitterConnectionPanel(
                 ip = state.emitterIp,
                 connected = state.isEmitterConnected,
@@ -213,29 +219,98 @@ private fun ControlContent(
     }
 }
 
+// ---------------- Reusable Capsule Button Group ----------------
+@Composable
+private fun CapsuleButtonGroup(
+    leftIcon: ImageVector,
+    leftClick: () -> Unit,
+    centerText: String,
+    rightIcon: ImageVector,
+    rightClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    buttonSize: Dp = 32.dp,
+    iconSize: Dp = 18.dp,
+    textStyle: TextStyle = MaterialTheme.typography.labelSmall,
+    isExpanded: Boolean = false
+) {
+    Row(
+        modifier = modifier
+            .background(
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                shape = RoundedCornerShape(if (isExpanded) 24.dp else 16.dp)
+            )
+            .padding(
+                horizontal = if (isExpanded) 8.dp else 6.dp,
+                vertical = if (isExpanded) 4.dp else 2.dp
+            ),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = if (isExpanded) Arrangement.SpaceBetween else Arrangement.spacedBy(4.dp)
+    ) {
+        FilledTonalIconButton(
+            onClick = leftClick,
+            modifier = Modifier.size(buttonSize),
+            colors = IconButtonDefaults.filledTonalIconButtonColors(containerColor = Color.Transparent)
+        ) {
+            Icon(
+                imageVector = leftIcon,
+                contentDescription = null,
+                modifier = Modifier.size(iconSize)
+            )
+        }
+        
+        if (isExpanded) {
+            Spacer(modifier = Modifier.weight(1f))
+        }
+        
+        Text(
+            text = centerText,
+            style = textStyle,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+        )
+        
+        if (isExpanded) {
+            Spacer(modifier = Modifier.weight(1f))
+        }
+        
+        FilledTonalIconButton(
+            onClick = rightClick,
+            modifier = Modifier.size(buttonSize),
+            colors = IconButtonDefaults.filledTonalIconButtonColors(containerColor = Color.Transparent)
+        ) {
+            Icon(
+                imageVector = rightIcon,
+                contentDescription = null,
+                modifier = Modifier.size(iconSize)
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun MediaControlPanel(
     category: RemoteCategory,
     onCommand: (ControlCommand) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Spacer(modifier = Modifier.height(4.dp))
+    val showHome = category in listOf(RemoteCategory.TV, RemoteCategory.NETBOX, RemoteCategory.DVD)
 
-        // Power & Mute
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        // Power (Top-Left)
         Row(
-            modifier = Modifier.fillMaxWidth(0.9f),
-            horizontalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(
                 onClick = { onCommand(ControlCommand.Power) },
                 modifier = Modifier
-                    .size(64.dp)
+                    .size(56.dp)
                     .background(
                         color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f),
                         shape = CircleShape
@@ -245,146 +320,157 @@ private fun MediaControlPanel(
                     imageVector = Icons.Default.PowerSettingsNew,
                     contentDescription = "Power",
                     tint = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(28.dp)
                 )
             }
+        }
 
-            if (category in listOf(RemoteCategory.TV, RemoteCategory.STB, RemoteCategory.IPTV, RemoteCategory.STEREO, RemoteCategory.BSTB)) {
+        // D-Pad Directional Keypad
+        DPad(
+            onCommand = onCommand,
+            size = 200.dp,
+            okSize = 72.dp,
+            okIconSize = 28.dp,
+            arrowSize = 48.dp,
+            arrowIconSize = 32.dp
+        )
+
+        // Volume & Mute Row
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val hasMute = category in listOf(RemoteCategory.TV, RemoteCategory.STB, RemoteCategory.IPTV, RemoteCategory.STEREO, RemoteCategory.BSTB)
+
+            CapsuleButtonGroup(
+                leftIcon = Icons.Default.Remove,
+                leftClick = { onCommand(ControlCommand.Minus) },
+                centerText = "VOL",
+                rightIcon = Icons.Default.Add,
+                rightClick = { onCommand(ControlCommand.Plus) },
+                modifier = if (hasMute) Modifier.weight(1f) else Modifier.fillMaxWidth(),
+                buttonSize = 40.dp,
+                iconSize = 24.dp,
+                textStyle = MaterialTheme.typography.labelMedium,
+                isExpanded = true
+            )
+
+            if (hasMute) {
                 FilledTonalIconButton(
                     onClick = { onCommand(ControlCommand.Mute) },
-                    modifier = Modifier.size(56.dp)
+                    modifier = Modifier.size(48.dp)
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.VolumeMute,
-                        contentDescription = "Mute"
+                        contentDescription = "Mute",
+                        modifier = Modifier.size(24.dp)
                     )
                 }
             }
         }
 
-        Spacer(modifier = Modifier.weight(0.1f))
-
-        // D-Pad
-        DPad(onCommand = onCommand)
-
-        Spacer(modifier = Modifier.weight(0.1f))
-
-        // Navigation helpers (Back, Home, Menu)
-        Row(
-            modifier = Modifier.fillMaxWidth(0.9f),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            FilledTonalIconButton(
-                onClick = { onCommand(ControlCommand.Back) },
-                modifier = Modifier.size(56.dp)
+        // Channel Page Row
+        if (category in listOf(RemoteCategory.STB, RemoteCategory.IPTV, RemoteCategory.BSTB)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back"
+                CapsuleButtonGroup(
+                    leftIcon = Icons.Default.KeyboardArrowDown,
+                    leftClick = { onCommand(ControlCommand.PageDown) },
+                    centerText = "CH/PG",
+                    rightIcon = Icons.Default.KeyboardArrowUp,
+                    rightClick = { onCommand(ControlCommand.PageUp) },
+                    modifier = Modifier.fillMaxWidth(),
+                    buttonSize = 40.dp,
+                    iconSize = 24.dp,
+                    textStyle = MaterialTheme.typography.labelMedium,
+                    isExpanded = true
                 )
             }
+        }
 
-            if (category in listOf(RemoteCategory.TV, RemoteCategory.NETBOX, RemoteCategory.DVD)) {
-                FilledTonalIconButton(
-                    onClick = { onCommand(ControlCommand.Home) },
-                    modifier = Modifier.size(56.dp)
+        // Navigation Capsule & Menu Button Row
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val hasMenu = showHome && category != RemoteCategory.DVD
+
+            CapsuleButtonGroup(
+                leftIcon = Icons.AutoMirrored.Filled.ArrowBack,
+                leftClick = { onCommand(ControlCommand.Back) },
+                centerText = "NAV",
+                rightIcon = if (showHome) Icons.Default.Home else Icons.Default.Menu,
+                rightClick = {
+                    if (showHome) onCommand(ControlCommand.Home) else onCommand(ControlCommand.Menu)
+                },
+                modifier = if (hasMenu) Modifier.weight(1f) else Modifier.fillMaxWidth(),
+                buttonSize = 40.dp,
+                iconSize = 24.dp,
+                textStyle = MaterialTheme.typography.labelMedium,
+                isExpanded = true
+            )
+
+            if (hasMenu) {
+                FilledTonalButton(
+                    onClick = { onCommand(ControlCommand.Menu) },
+                    modifier = Modifier.height(48.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Home,
-                        contentDescription = "Home"
+                        imageVector = Icons.Default.Menu,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
                     )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Menu", style = MaterialTheme.typography.labelMedium)
                 }
             }
+        }
 
-            FilledTonalIconButton(
-                onClick = { onCommand(ControlCommand.Menu) },
-                modifier = Modifier.size(56.dp)
+        // Playback Row
+        if (category == RemoteCategory.DVD) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Default.Menu,
-                    contentDescription = "Menu"
+                CapsuleButtonGroup(
+                    leftIcon = Icons.Default.PlayArrow,
+                    leftClick = { onCommand(ControlCommand.Play) },
+                    centerText = "PLAY",
+                    rightIcon = Icons.Default.Stop,
+                    rightClick = { onCommand(ControlCommand.Pause) },
+                    modifier = Modifier.fillMaxWidth(),
+                    buttonSize = 40.dp,
+                    iconSize = 24.dp,
+                    textStyle = MaterialTheme.typography.labelMedium,
+                    isExpanded = true
                 )
             }
         }
-
-        Spacer(modifier = Modifier.weight(0.1f))
-
-        // Volume Rocker and Page/Playback controls
-        Row(
-            modifier = Modifier.fillMaxWidth(0.9f),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            VolumeRocker(onCommand = onCommand)
-
-            // Category specific extra keys
-            if (category in listOf(RemoteCategory.STB, RemoteCategory.IPTV, RemoteCategory.BSTB)) {
-                Row(
-                    modifier = Modifier
-                        .background(
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-                            shape = RoundedCornerShape(20.dp)
-                        )
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    FilledTonalIconButton(
-                        onClick = { onCommand(ControlCommand.PageDown) },
-                        modifier = Modifier.size(40.dp),
-                        colors = IconButtonDefaults.filledTonalIconButtonColors(containerColor = Color.Transparent)
-                    ) {
-                        Icon(imageVector = Icons.Default.KeyboardArrowDown, contentDescription = "Page Down")
-                    }
-                    Text(
-                        text = "PAGE",
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                    )
-                    FilledTonalIconButton(
-                        onClick = { onCommand(ControlCommand.PageUp) },
-                        modifier = Modifier.size(40.dp),
-                        colors = IconButtonDefaults.filledTonalIconButtonColors(containerColor = Color.Transparent)
-                    ) {
-                        Icon(imageVector = Icons.Default.KeyboardArrowUp, contentDescription = "Page Up")
-                    }
-                }
-            } else if (category == RemoteCategory.DVD) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    FilledTonalIconButton(onClick = { onCommand(ControlCommand.Play) }, modifier = Modifier.size(44.dp)) {
-                        Icon(imageVector = Icons.Default.PlayArrow, contentDescription = "Play")
-                    }
-                    FilledTonalIconButton(onClick = { onCommand(ControlCommand.Pause) }, modifier = Modifier.size(44.dp)) {
-                        Icon(imageVector = Icons.Default.Stop, contentDescription = "Pause")
-                    }
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.weight(0.2f))
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun AcControlPanel(
     onCommand: (ControlCommand) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(20.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Spacer(modifier = Modifier.height(10.dp))
-
         // Virtual Screen Display
         ElevatedCard(
             modifier = Modifier
-                .fillMaxWidth(0.9f)
+                .fillMaxWidth()
                 .height(120.dp),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.elevatedCardColors(
@@ -426,130 +512,93 @@ private fun AcControlPanel(
             }
         }
 
-        Spacer(modifier = Modifier.weight(0.1f))
+        // Temperature Capsule
+        CapsuleButtonGroup(
+            leftIcon = Icons.Default.Remove,
+            leftClick = { onCommand(ControlCommand.AcTempMinus) },
+            centerText = "TEMP",
+            rightIcon = Icons.Default.Add,
+            rightClick = { onCommand(ControlCommand.AcTempPlus) },
+            modifier = Modifier.fillMaxWidth(),
+            buttonSize = 40.dp,
+            iconSize = 24.dp,
+            textStyle = MaterialTheme.typography.labelMedium,
+            isExpanded = true
+        )
 
-        // Temperature Up / Down Capsule
-        Row(
-            modifier = Modifier
-                .background(
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-                    shape = RoundedCornerShape(28.dp)
-                )
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(24.dp)
+        // AC Control Keys wrapping gracefully
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            FilledTonalIconButton(
-                onClick = { onCommand(ControlCommand.AcTempMinus) },
-                modifier = Modifier.size(56.dp)
-            ) {
-                Icon(imageVector = Icons.Default.Remove, contentDescription = "Temp Down")
-            }
-            Text(
-                text = "TEMP",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+            val keys = listOf(
+                GridKeyItem(Icons.Default.PowerSettingsNew, "Power", ControlCommand.Power),
+                GridKeyItem(Icons.Default.Refresh, "Mode", ControlCommand.AcModeSwitch),
+                GridKeyItem(Icons.Default.Speed, "Speed", ControlCommand.AcWindSpeed),
+                GridKeyItem(Icons.Default.Sync, "Swing", ControlCommand.AcWindSwing),
+                GridKeyItem(Icons.Default.Check, "Wind Fix", ControlCommand.AcWindFix)
             )
-            FilledTonalIconButton(
-                onClick = { onCommand(ControlCommand.AcTempPlus) },
-                modifier = Modifier.size(56.dp)
-            ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Temp Up")
-            }
-        }
 
-        Spacer(modifier = Modifier.weight(0.1f))
-
-        // AC Controls
-        Row(
-            modifier = Modifier.fillMaxWidth(0.9f),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                FilledTonalIconButton(
-                    onClick = { onCommand(ControlCommand.Power) },
-                    modifier = Modifier.size(56.dp),
-                    colors = IconButtonDefaults.filledTonalIconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)
+            keys.forEach { key ->
+                ElevatedCard(
+                    onClick = { onCommand(key.command) },
+                    modifier = Modifier
+                        .width(80.dp)
+                        .height(62.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.elevatedCardColors(
+                        containerColor = if (key.command == ControlCommand.Power) {
+                            MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)
+                        } else {
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        }
                     )
                 ) {
-                    Icon(imageVector = Icons.Default.PowerSettingsNew, contentDescription = "Power", tint = MaterialTheme.colorScheme.error)
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            imageVector = key.icon,
+                            contentDescription = key.label,
+                            tint = if (key.command == ControlCommand.Power) {
+                                MaterialTheme.colorScheme.error
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = key.label,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1
+                        )
+                    }
                 }
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "Power", style = MaterialTheme.typography.labelSmall)
-            }
-
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                FilledTonalIconButton(
-                    onClick = { onCommand(ControlCommand.AcModeSwitch) },
-                    modifier = Modifier.size(56.dp)
-                ) {
-                    Icon(imageVector = Icons.Default.Refresh, contentDescription = "Mode")
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "Mode", style = MaterialTheme.typography.labelSmall)
-            }
-
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                FilledTonalIconButton(
-                    onClick = { onCommand(ControlCommand.AcWindSpeed) },
-                    modifier = Modifier.size(56.dp)
-                ) {
-                    Icon(imageVector = Icons.Default.Speed, contentDescription = "Wind Speed")
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "Speed", style = MaterialTheme.typography.labelSmall)
             }
         }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(0.9f),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                FilledTonalIconButton(
-                    onClick = { onCommand(ControlCommand.AcWindSwing) },
-                    modifier = Modifier.size(56.dp)
-                ) {
-                    Icon(imageVector = Icons.Default.Sync, contentDescription = "Swing")
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "Swing", style = MaterialTheme.typography.labelSmall)
-            }
-
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                FilledTonalIconButton(
-                    onClick = { onCommand(ControlCommand.AcWindFix) },
-                    modifier = Modifier.size(56.dp)
-                ) {
-                    Icon(imageVector = Icons.Default.Check, contentDescription = "Wind Fix")
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "Wind Fix", style = MaterialTheme.typography.labelSmall)
-            }
-        }
-
-        Spacer(modifier = Modifier.weight(0.2f))
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DysonControlPanel(
     onCommand: (ControlCommand) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Spacer(modifier = Modifier.height(10.dp))
-
         // Dyson Screen View
         ElevatedCard(
             modifier = Modifier
-                .fillMaxWidth(0.9f)
+                .fillMaxWidth()
                 .height(100.dp),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.elevatedCardColors(
@@ -578,99 +627,95 @@ private fun DysonControlPanel(
             }
         }
 
-        // Speed & Temp adjustment keys
-        Row(
-            modifier = Modifier.fillMaxWidth(0.9f),
-            horizontalArrangement = Arrangement.SpaceEvenly
+        // Speed & Temp adjustment Capsules
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Speed Rocker
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Row(
+            CapsuleButtonGroup(
+                leftIcon = Icons.Default.Remove,
+                leftClick = { onCommand(ControlCommand.DysonWindSpeedMinus) },
+                centerText = "SPD",
+                rightIcon = Icons.Default.Add,
+                rightClick = { onCommand(ControlCommand.DysonWindSpeedPlus) },
+                modifier = Modifier.fillMaxWidth(),
+                buttonSize = 40.dp,
+                iconSize = 24.dp,
+                textStyle = MaterialTheme.typography.labelMedium,
+                isExpanded = true
+            )
+
+            CapsuleButtonGroup(
+                leftIcon = Icons.Default.Remove,
+                leftClick = { onCommand(ControlCommand.DysonTempMinus) },
+                centerText = "TMP",
+                rightIcon = Icons.Default.Add,
+                rightClick = { onCommand(ControlCommand.DysonTempPlus) },
+                modifier = Modifier.fillMaxWidth(),
+                buttonSize = 40.dp,
+                iconSize = 24.dp,
+                textStyle = MaterialTheme.typography.labelMedium,
+                isExpanded = true
+            )
+        }
+
+        // Functions in flow grid style
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            val keys = listOf(
+                GridKeyItem(Icons.Default.PowerSettingsNew, "Power", ControlCommand.Power),
+                GridKeyItem(Icons.Default.Refresh, "Auto", ControlCommand.DysonAuto),
+                GridKeyItem(Icons.Default.Sync, "Swing", ControlCommand.DysonSwing),
+                GridKeyItem(Icons.Default.Star, "Cool", ControlCommand.DysonCool),
+                GridKeyItem(Icons.Default.Settings, "Sleep", ControlCommand.DysonSleep),
+                GridKeyItem(Icons.Default.Info, "Diffuse", ControlCommand.DysonDiffusion)
+            )
+
+            keys.forEach { key ->
+                ElevatedCard(
+                    onClick = { onCommand(key.command) },
                     modifier = Modifier
-                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f), RoundedCornerShape(20.dp))
-                        .padding(horizontal = 4.dp, vertical = 2.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .width(80.dp)
+                        .height(62.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.elevatedCardColors(
+                        containerColor = if (key.command == ControlCommand.Power) {
+                            MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)
+                        } else {
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        }
+                    )
                 ) {
-                    FilledTonalIconButton(onClick = { onCommand(ControlCommand.DysonWindSpeedMinus) }, modifier = Modifier.size(36.dp)) {
-                        Icon(imageVector = Icons.Default.Remove, contentDescription = "Wind -")
-                    }
-                    Text(text = "SPD", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 4.dp))
-                    FilledTonalIconButton(onClick = { onCommand(ControlCommand.DysonWindSpeedPlus) }, modifier = Modifier.size(36.dp)) {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = "Wind +")
-                    }
-                }
-            }
-
-            // Temp Rocker
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Row(
-                    modifier = Modifier
-                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f), RoundedCornerShape(20.dp))
-                        .padding(horizontal = 4.dp, vertical = 2.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    FilledTonalIconButton(onClick = { onCommand(ControlCommand.DysonTempMinus) }, modifier = Modifier.size(36.dp)) {
-                        Icon(imageVector = Icons.Default.Remove, contentDescription = "Temp -")
-                    }
-                    Text(text = "TMP", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 4.dp))
-                    FilledTonalIconButton(onClick = { onCommand(ControlCommand.DysonTempPlus) }, modifier = Modifier.size(36.dp)) {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = "Temp +")
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            imageVector = key.icon,
+                            contentDescription = key.label,
+                            tint = if (key.command == ControlCommand.Power) {
+                                MaterialTheme.colorScheme.error
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = key.label,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1
+                        )
                     }
                 }
             }
         }
-
-        // Row of main functions
-        Row(
-            modifier = Modifier.fillMaxWidth(0.9f),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                FilledTonalIconButton(onClick = { onCommand(ControlCommand.Power) }, modifier = Modifier.size(48.dp), colors = IconButtonDefaults.filledTonalIconButtonColors(containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f))) {
-                    Icon(imageVector = Icons.Default.PowerSettingsNew, contentDescription = "Power", tint = MaterialTheme.colorScheme.error)
-                }
-                Text(text = "Power", style = MaterialTheme.typography.labelSmall)
-            }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                FilledTonalIconButton(onClick = { onCommand(ControlCommand.DysonAuto) }, modifier = Modifier.size(48.dp)) {
-                    Icon(imageVector = Icons.Default.Refresh, contentDescription = "Auto")
-                }
-                Text(text = "Auto", style = MaterialTheme.typography.labelSmall)
-            }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                FilledTonalIconButton(onClick = { onCommand(ControlCommand.DysonSwing) }, modifier = Modifier.size(48.dp)) {
-                    Icon(imageVector = Icons.Default.Sync, contentDescription = "Swing")
-                }
-                Text(text = "Swing", style = MaterialTheme.typography.labelSmall)
-            }
-        }
-
-        // More functions
-        Row(
-            modifier = Modifier.fillMaxWidth(0.9f),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                FilledTonalIconButton(onClick = { onCommand(ControlCommand.DysonCool) }, modifier = Modifier.size(48.dp)) {
-                    Icon(imageVector = Icons.Default.Star, contentDescription = "Cool")
-                }
-                Text(text = "Cool", style = MaterialTheme.typography.labelSmall)
-            }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                FilledTonalIconButton(onClick = { onCommand(ControlCommand.DysonSleep) }, modifier = Modifier.size(48.dp)) {
-                    Icon(imageVector = Icons.Default.Settings, contentDescription = "Sleep")
-                }
-                Text(text = "Sleep", style = MaterialTheme.typography.labelSmall)
-            }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                FilledTonalIconButton(onClick = { onCommand(ControlCommand.DysonDiffusion) }, modifier = Modifier.size(48.dp)) {
-                    Icon(imageVector = Icons.Default.Info, contentDescription = "Diffuse")
-                }
-                Text(text = "Diffuse", style = MaterialTheme.typography.labelSmall)
-            }
-        }
-
-        Spacer(modifier = Modifier.weight(0.2f))
     }
 }
 
@@ -680,6 +725,7 @@ private data class GridKeyItem(
     val command: ControlCommand,
 )
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun GridControlPanel(
     category: RemoteCategory,
@@ -736,22 +782,25 @@ private fun GridControlPanel(
         else -> emptyList()
     }
 
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(3),
-        modifier = modifier.fillMaxSize().padding(8.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    FlowRow(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(keys) { key ->
+        keys.forEach { key ->
             ElevatedCard(
                 onClick = { onCommand(key.command) },
-                modifier = Modifier.height(72.dp),
+                modifier = Modifier
+                    .width(80.dp)
+                    .height(62.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.elevatedCardColors(
                     containerColor = if (key.command == ControlCommand.Power) {
-                        MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)
+                        MaterialTheme.colorScheme.errorContainer
                     } else {
-                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        MaterialTheme.colorScheme.surfaceVariant
                     }
                 )
             ) {
@@ -768,9 +817,9 @@ private fun GridControlPanel(
                         } else {
                             MaterialTheme.colorScheme.onSurfaceVariant
                         },
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(20.dp)
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = key.label,
                         style = MaterialTheme.typography.labelSmall,
@@ -818,11 +867,16 @@ private fun ControlTitle(
 @Composable
 private fun DPad(
     onCommand: (ControlCommand) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    size: Dp = 160.dp,
+    okSize: Dp = 56.dp,
+    okIconSize: Dp = 20.dp,
+    arrowSize: Dp = 36.dp,
+    arrowIconSize: Dp = 24.dp
 ) {
     Box(
         modifier = modifier
-            .size(200.dp)
+            .size(size)
             .background(
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                 shape = CircleShape
@@ -832,7 +886,7 @@ private fun DPad(
     ) {
         FilledTonalButton(
             onClick = { onCommand(ControlCommand.Ok) },
-            modifier = Modifier.size(72.dp),
+            modifier = Modifier.size(okSize),
             shape = CircleShape,
             colors = ButtonDefaults.filledTonalButtonColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -842,7 +896,7 @@ private fun DPad(
             Icon(
                 imageVector = Icons.Default.Check,
                 contentDescription = stringResource(R.string.button_ok),
-                modifier = Modifier.size(28.dp)
+                modifier = Modifier.size(okIconSize)
             )
         }
 
@@ -850,13 +904,13 @@ private fun DPad(
             onClick = { onCommand(ControlCommand.Up) },
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .size(48.dp)
+                .size(arrowSize)
         ) {
             Icon(
                 imageVector = Icons.Default.KeyboardArrowUp,
                 contentDescription = stringResource(R.string.button_up),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(arrowIconSize)
             )
         }
 
@@ -864,13 +918,13 @@ private fun DPad(
             onClick = { onCommand(ControlCommand.Down) },
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .size(48.dp)
+                .size(arrowSize)
         ) {
             Icon(
                 imageVector = Icons.Default.KeyboardArrowDown,
                 contentDescription = stringResource(R.string.button_down),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(arrowIconSize)
             )
         }
 
@@ -878,13 +932,13 @@ private fun DPad(
             onClick = { onCommand(ControlCommand.Left) },
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .size(48.dp)
+                .size(arrowSize)
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                 contentDescription = stringResource(R.string.button_left),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(arrowIconSize)
             )
         }
 
@@ -892,64 +946,13 @@ private fun DPad(
             onClick = { onCommand(ControlCommand.Right) },
             modifier = Modifier
                 .align(Alignment.CenterEnd)
-                .size(48.dp)
+                .size(arrowSize)
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = stringResource(R.string.button_right),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(32.dp)
-            )
-        }
-    }
-}
-
-@Composable
-private fun VolumeRocker(
-    onCommand: (ControlCommand) -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .background(
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-                shape = RoundedCornerShape(20.dp)
-            )
-            .padding(horizontal = 8.dp, vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        FilledTonalIconButton(
-            onClick = { onCommand(ControlCommand.Minus) },
-            modifier = Modifier.size(48.dp),
-            colors = IconButtonDefaults.filledTonalIconButtonColors(
-                containerColor = Color.Transparent
-            )
-        ) {
-            Icon(
-                imageVector = Icons.Default.Remove,
-                contentDescription = stringResource(R.string.button_minus),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
-        Text(
-            text = "VOL",
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-        )
-
-        FilledTonalIconButton(
-            onClick = { onCommand(ControlCommand.Plus) },
-            modifier = Modifier.size(48.dp),
-            colors = IconButtonDefaults.filledTonalIconButtonColors(
-                containerColor = Color.Transparent
-            )
-        ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = stringResource(R.string.button_plus),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                modifier = Modifier.size(arrowIconSize)
             )
         }
     }
@@ -966,17 +969,17 @@ private fun EmitterConnectionPanel(
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        shape = RoundedCornerShape(24.dp),
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
         )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -986,7 +989,7 @@ private fun EmitterConnectionPanel(
 
                 Text(
                     text = if (connected) "Connected" else "Disconnected",
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = if (connected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
                 )
@@ -995,7 +998,7 @@ private fun EmitterConnectionPanel(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 OutlinedTextField(
                     value = ip,
@@ -1017,7 +1020,7 @@ private fun EmitterConnectionPanel(
                 FilledIconButton(
                     onClick = onConnectClick,
                     enabled = !isLoading,
-                    modifier = Modifier.size(56.dp),
+                    modifier = Modifier.size(48.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = IconButtonDefaults.filledIconButtonColors(
                         containerColor = if (connected) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer,
@@ -1026,7 +1029,7 @@ private fun EmitterConnectionPanel(
                 ) {
                     if (isLoading) {
                         CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp),
+                            modifier = Modifier.size(20.dp),
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                             strokeWidth = 2.dp
                         )
@@ -1034,7 +1037,7 @@ private fun EmitterConnectionPanel(
                         Icon(
                             imageVector = if (connected) Icons.Default.LinkOff else Icons.Default.Link,
                             contentDescription = stringResource(R.string.connect),
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }
