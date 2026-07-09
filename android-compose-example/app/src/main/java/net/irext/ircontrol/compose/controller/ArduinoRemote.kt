@@ -17,6 +17,16 @@ import java.io.PrintWriter
 import java.net.Socket
 import java.util.Base64
 
+/**
+ * Filename:       ArduinoRemote.kt
+ * Created:        Date: 2026-07-09
+ *
+ * Description:    Implements socket-based control for an external Arduino IR emitter.
+ *
+ * Revision log:
+ * 2026-07-09: created by shdmfire and strawmanbobi
+ */
+
 class ArduinoRemote {
 
     private val _status = MutableStateFlow(EmitterStatus.Disconnected)

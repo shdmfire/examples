@@ -48,12 +48,12 @@ import net.irext.webapi.model.RemoteIndex
 
 /**
  * Filename:       IndexScreen.kt
- * Created:        Date: 2026-07-14
+ * Created:        Date: 2026-07-04
  *
- * Description:    Provides the IndexScreen source for the IRControl Android Compose sample.
+ * Description:    Displays remote indexes and saves the selected remote definition.
  *
  * Revision log:
- * 2026-07-14: created by shdmfire and strawmanbobi
+ * 2026-07-04: created by shdmfire
  */
 private sealed class IndexActionState {
     data object Idle : IndexActionState()

@@ -5,6 +5,16 @@ import android.util.Log
 import net.irext.decode.sdk.IRDecode
 import net.irext.decode.sdk.bean.ACStatus
 
+/**
+ * Filename:       PhoneRemote.kt
+ * Created:        Date: 2026-07-09
+ *
+ * Description:    Sends decoded IR commands through the phone IR emitter.
+ *
+ * Revision log:
+ * 2026-07-09: created by shdmfire and strawmanbobi
+ */
+
 class PhoneRemote(
     context: Context,
     private val irTransmitter: IrTransmitter = IrTransmitter(context),

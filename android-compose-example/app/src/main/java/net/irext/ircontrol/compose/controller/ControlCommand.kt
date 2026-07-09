@@ -1,5 +1,15 @@
 package net.irext.ircontrol.compose.controller
 
+/**
+ * Filename:       ControlCommand.kt
+ * Created:        Date: 2026-07-09
+ *
+ * Description:    Defines remote control command constants used by controllers and UI.
+ *
+ * Revision log:
+ * 2026-07-09: created by shdmfire and strawmanbobi
+ */
+
 enum class RemoteCategory(val rawValue: Int) {
     NONE(0),
     AC(1),

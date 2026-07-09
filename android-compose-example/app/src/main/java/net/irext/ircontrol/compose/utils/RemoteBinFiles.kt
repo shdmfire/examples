@@ -4,6 +4,16 @@ import android.content.Context
 import java.io.File
 import java.io.InputStream
 
+/**
+ * Filename:       RemoteBinFiles.kt
+ * Created:        Date: 2026-07-09
+ *
+ * Description:    Builds file paths and opens downloaded IR binary files.
+ *
+ * Revision log:
+ * 2026-07-09: created by shdmfire and strawmanbobi
+ */
+
 private const val BinDir = "bin"
 private const val FileNamePrefix = "irext_"
 private const val FileNameExt = ".ir"

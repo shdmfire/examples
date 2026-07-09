@@ -4,6 +4,16 @@ import com.activeandroid.Model
 import com.activeandroid.annotation.Column
 import com.activeandroid.annotation.Table
 
+/**
+ * Filename:       RemoteControl.kt
+ * Created:        Date: 2026-07-09
+ *
+ * Description:    Defines the persisted remote control database model.
+ *
+ * Revision log:
+ * 2026-07-09: created by shdmfire and strawmanbobi
+ */
+
 @Table(name = "RemoteControl")
 class RemoteControl : Model {
 
@@ -42,6 +52,9 @@ class RemoteControl : Model {
 
     @Column(name = "SubCategory")
     var subCategory: Int = 0
+
+    @Column(name = "OrderIndex")
+    var orderIndex: Long = 0L
 
     constructor() : super()
 

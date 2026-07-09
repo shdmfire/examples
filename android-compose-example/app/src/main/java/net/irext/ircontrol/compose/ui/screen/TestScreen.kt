@@ -59,12 +59,12 @@ import net.irext.webapi.model.RemoteIndex
 
 /**
  * Filename:       TestScreen.kt
- * Created:        Date: 2026-07-14
+ * Created:        Date: 2026-07-04
  *
- * Description:    Provides the TestScreen source for the IRControl Android Compose sample.
+ * Description:    Supports an IR test workflow for iterating through remote indexes.
  *
  * Revision log:
- * 2026-07-14: created by shdmfire and strawmanbobi
+ * 2026-07-04: created by shdmfire
  */
 private const val TEST_TAG = "TestScreen"
 private const val TEST_INDEX_BATCH_SIZE = 40

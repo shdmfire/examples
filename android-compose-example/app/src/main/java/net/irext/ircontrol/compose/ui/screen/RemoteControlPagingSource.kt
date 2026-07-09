@@ -10,12 +10,12 @@ import net.irext.ircontrol.compose.data.RemoteControlRepository
 
 /**
  * Filename:       RemoteControlPagingSource.kt
- * Created:        Date: 2026-07-14
+ * Created:        Date: 2026-07-04
  *
- * Description:    Provides the RemoteControlPagingSource source for the IRControl Android Compose sample.
+ * Description:    Loads saved remote controls from the local repository with paging.
  *
  * Revision log:
- * 2026-07-14: created by shdmfire and strawmanbobi
+ * 2026-07-04: created by shdmfire
  */
 class RemoteControlPagingSource(
     private val repository: RemoteControlRepository = RemoteControlRepository(),

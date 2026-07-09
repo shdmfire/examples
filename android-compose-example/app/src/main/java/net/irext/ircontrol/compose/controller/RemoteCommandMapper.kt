@@ -3,6 +3,16 @@ package net.irext.ircontrol.compose.controller
 import net.irext.decode.sdk.bean.ACStatus
 import net.irext.decode.sdk.utils.Constants
 
+/**
+ * Filename:       RemoteCommandMapper.kt
+ * Created:        Date: 2026-07-09
+ *
+ * Description:    Maps UI commands to SDK remote control command values.
+ *
+ * Revision log:
+ * 2026-07-09: created by shdmfire and strawmanbobi
+ */
+
 fun ControlCommand.toDecodeKeyCode(category: Int, acStatus: ACStatus): Int {
     if (Constants.CategoryID.AIR_CONDITIONER.value == category) {
         acStatus.acPower = Constants.ACPower.POWER_OFF.value

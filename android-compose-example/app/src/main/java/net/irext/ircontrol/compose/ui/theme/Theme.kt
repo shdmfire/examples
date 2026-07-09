@@ -9,12 +9,12 @@ import androidx.compose.runtime.Composable
 
 /**
  * Filename:       Theme.kt
- * Created:        Date: 2026-07-14
+ * Created:        Date: 2026-07-04
  *
- * Description:    Provides the Theme source for the IRControl Android Compose sample.
+ * Description:    Configures the Material theme color schemes for the app.
  *
  * Revision log:
- * 2026-07-14: created by shdmfire and strawmanbobi
+ * 2026-07-04: created by shdmfire
  */
 private val LightColorScheme = lightColorScheme(
     primary = LightPrimary,

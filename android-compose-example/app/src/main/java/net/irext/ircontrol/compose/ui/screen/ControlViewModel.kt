@@ -27,6 +27,16 @@ import net.irext.ircontrol.compose.data.RemoteControlRepository
 import net.irext.ircontrol.compose.utils.readBytesOrNull
 import net.irext.ircontrol.compose.utils.remoteBinFile
 
+/**
+ * Filename:       ControlViewModel.kt
+ * Created:        Date: 2026-07-09
+ *
+ * Description:    Loads remote data, manages emitter connection, and dispatches control commands.
+ *
+ * Revision log:
+ * 2026-07-09: created by shdmfire
+ */
+
 class ControlViewModel(
     application: Application,
 ) : AndroidViewModel(application) {

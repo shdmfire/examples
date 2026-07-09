@@ -9,6 +9,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import net.irext.webapi.WebAPICallbacks.SignInCallback
 
+/**
+ * Filename:       IRApplication.kt
+ * Created:        Date: 2026-07-09
+ *
+ * Description:    Initializes application-wide services and signs in to the IR web API.
+ *
+ * Revision log:
+ * 2026-07-09: created by shdmfire and strawmanbobi
+ */
+
 class IRApplication : com.activeandroid.app.Application() {
 
     val mWeAPIs: WebAPIs = WebAPIs.getInstance(ADDRESS, APP_NAME)

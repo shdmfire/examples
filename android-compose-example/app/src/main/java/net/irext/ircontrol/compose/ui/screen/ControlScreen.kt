@@ -98,6 +98,16 @@ import net.irext.ircontrol.compose.controller.ControlCommand
 import net.irext.ircontrol.compose.controller.RemoteCategory
 import net.irext.ircontrol.compose.ui.theme.IRControlTheme
 
+/**
+ * Filename:       ControlScreen.kt
+ * Created:        Date: 2026-07-09
+ *
+ * Description:    Renders remote control panels and emitter connection controls.
+ *
+ * Revision log:
+ * 2026-07-09: created by shdmfire
+ */
+
 @Composable
 fun ControlScreen(
     remoteId: Long,
@@ -199,9 +209,9 @@ private fun ControlContent(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Loading remote...",
+                            text = stringResource(R.string.loading_remote),
                             style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -236,7 +246,7 @@ private fun CapsuleButtonGroup(
     Row(
         modifier = modifier
             .background(
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                color = MaterialTheme.colorScheme.surfaceVariant,
                 shape = RoundedCornerShape(if (isExpanded) 24.dp else 16.dp)
             )
             .padding(
@@ -266,7 +276,7 @@ private fun CapsuleButtonGroup(
             text = centerText,
             style = textStyle,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         
         if (isExpanded) {
@@ -312,13 +322,13 @@ private fun MediaControlPanel(
                 modifier = Modifier
                     .size(56.dp)
                     .background(
-                        color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f),
+                        color = MaterialTheme.colorScheme.errorContainer,
                         shape = CircleShape
                     )
             ) {
                 Icon(
                     imageVector = Icons.Default.PowerSettingsNew,
-                    contentDescription = "Power",
+                    contentDescription = stringResource(R.string.label_power),
                     tint = MaterialTheme.colorScheme.error,
                     modifier = Modifier.size(28.dp)
                 )
@@ -346,7 +356,7 @@ private fun MediaControlPanel(
             CapsuleButtonGroup(
                 leftIcon = Icons.Default.Remove,
                 leftClick = { onCommand(ControlCommand.Minus) },
-                centerText = "VOL",
+                centerText = stringResource(R.string.label_vol),
                 rightIcon = Icons.Default.Add,
                 rightClick = { onCommand(ControlCommand.Plus) },
                 modifier = if (hasMute) Modifier.weight(1f) else Modifier.fillMaxWidth(),
@@ -363,7 +373,7 @@ private fun MediaControlPanel(
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.VolumeMute,
-                        contentDescription = "Mute",
+                        contentDescription = stringResource(R.string.label_mute),
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -380,7 +390,7 @@ private fun MediaControlPanel(
                 CapsuleButtonGroup(
                     leftIcon = Icons.Default.KeyboardArrowDown,
                     leftClick = { onCommand(ControlCommand.PageDown) },
-                    centerText = "CH/PG",
+                    centerText = stringResource(R.string.label_ch_pg),
                     rightIcon = Icons.Default.KeyboardArrowUp,
                     rightClick = { onCommand(ControlCommand.PageUp) },
                     modifier = Modifier.fillMaxWidth(),
@@ -403,7 +413,7 @@ private fun MediaControlPanel(
             CapsuleButtonGroup(
                 leftIcon = Icons.AutoMirrored.Filled.ArrowBack,
                 leftClick = { onCommand(ControlCommand.Back) },
-                centerText = "NAV",
+                centerText = stringResource(R.string.label_nav),
                 rightIcon = if (showHome) Icons.Default.Home else Icons.Default.Menu,
                 rightClick = {
                     if (showHome) onCommand(ControlCommand.Home) else onCommand(ControlCommand.Menu)
@@ -427,7 +437,7 @@ private fun MediaControlPanel(
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Menu", style = MaterialTheme.typography.labelMedium)
+                    Text(stringResource(R.string.label_menu), style = MaterialTheme.typography.labelMedium)
                 }
             }
         }
@@ -442,7 +452,7 @@ private fun MediaControlPanel(
                 CapsuleButtonGroup(
                     leftIcon = Icons.Default.PlayArrow,
                     leftClick = { onCommand(ControlCommand.Play) },
-                    centerText = "PLAY",
+                    centerText = stringResource(R.string.label_play),
                     rightIcon = Icons.Default.Stop,
                     rightClick = { onCommand(ControlCommand.Pause) },
                     modifier = Modifier.fillMaxWidth(),
@@ -474,7 +484,7 @@ private fun AcControlPanel(
                 .height(120.dp),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.elevatedCardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
+                containerColor = MaterialTheme.colorScheme.primaryContainer
             )
         ) {
             Column(
@@ -489,13 +499,13 @@ private fun AcControlPanel(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "MODE: COOL",
+                        text = stringResource(R.string.label_mode_cool),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     Text(
-                        text = "FAN: AUTO",
+                        text = stringResource(R.string.label_fan_auto),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -503,7 +513,7 @@ private fun AcControlPanel(
                 }
 
                 Text(
-                    text = "24°C",
+                    text = stringResource(R.string.label_temperature_24),
                     style = MaterialTheme.typography.displayMedium,
                     fontWeight = FontWeight.ExtraBold,
                     color = MaterialTheme.colorScheme.primary,
@@ -516,7 +526,7 @@ private fun AcControlPanel(
         CapsuleButtonGroup(
             leftIcon = Icons.Default.Remove,
             leftClick = { onCommand(ControlCommand.AcTempMinus) },
-            centerText = "TEMP",
+            centerText = stringResource(R.string.label_temp),
             rightIcon = Icons.Default.Add,
             rightClick = { onCommand(ControlCommand.AcTempPlus) },
             modifier = Modifier.fillMaxWidth(),
@@ -533,11 +543,11 @@ private fun AcControlPanel(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             val keys = listOf(
-                GridKeyItem(Icons.Default.PowerSettingsNew, "Power", ControlCommand.Power),
-                GridKeyItem(Icons.Default.Refresh, "Mode", ControlCommand.AcModeSwitch),
-                GridKeyItem(Icons.Default.Speed, "Speed", ControlCommand.AcWindSpeed),
-                GridKeyItem(Icons.Default.Sync, "Swing", ControlCommand.AcWindSwing),
-                GridKeyItem(Icons.Default.Check, "Wind Fix", ControlCommand.AcWindFix)
+                GridKeyItem(Icons.Default.PowerSettingsNew, stringResource(R.string.label_power), ControlCommand.Power),
+                GridKeyItem(Icons.Default.Refresh, stringResource(R.string.label_mode), ControlCommand.AcModeSwitch),
+                GridKeyItem(Icons.Default.Speed, stringResource(R.string.label_speed), ControlCommand.AcWindSpeed),
+                GridKeyItem(Icons.Default.Sync, stringResource(R.string.label_swing), ControlCommand.AcWindSwing),
+                GridKeyItem(Icons.Default.Check, stringResource(R.string.label_wind_fix), ControlCommand.AcWindFix)
             )
 
             keys.forEach { key ->
@@ -549,9 +559,9 @@ private fun AcControlPanel(
                     shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.elevatedCardColors(
                         containerColor = if (key.command == ControlCommand.Power) {
-                            MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)
+                            MaterialTheme.colorScheme.errorContainer
                         } else {
-                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                            MaterialTheme.colorScheme.surfaceVariant
                         }
                     )
                 ) {
@@ -602,7 +612,7 @@ private fun DysonControlPanel(
                 .height(100.dp),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.elevatedCardColors(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.2f)
+                containerColor = MaterialTheme.colorScheme.secondaryContainer
             )
         ) {
             Column(
@@ -613,16 +623,16 @@ private fun DysonControlPanel(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "DYSON COOL/HEAT",
+                    text = stringResource(R.string.label_dyson_cool_heat),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "SPEED & TEMP DUAL CTRL",
+                    text = stringResource(R.string.label_speed_temp_dual_ctrl),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
             }
         }
@@ -636,7 +646,7 @@ private fun DysonControlPanel(
             CapsuleButtonGroup(
                 leftIcon = Icons.Default.Remove,
                 leftClick = { onCommand(ControlCommand.DysonWindSpeedMinus) },
-                centerText = "SPD",
+                centerText = stringResource(R.string.label_spd),
                 rightIcon = Icons.Default.Add,
                 rightClick = { onCommand(ControlCommand.DysonWindSpeedPlus) },
                 modifier = Modifier.fillMaxWidth(),
@@ -649,7 +659,7 @@ private fun DysonControlPanel(
             CapsuleButtonGroup(
                 leftIcon = Icons.Default.Remove,
                 leftClick = { onCommand(ControlCommand.DysonTempMinus) },
-                centerText = "TMP",
+                centerText = stringResource(R.string.label_tmp),
                 rightIcon = Icons.Default.Add,
                 rightClick = { onCommand(ControlCommand.DysonTempPlus) },
                 modifier = Modifier.fillMaxWidth(),
@@ -667,12 +677,12 @@ private fun DysonControlPanel(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             val keys = listOf(
-                GridKeyItem(Icons.Default.PowerSettingsNew, "Power", ControlCommand.Power),
-                GridKeyItem(Icons.Default.Refresh, "Auto", ControlCommand.DysonAuto),
-                GridKeyItem(Icons.Default.Sync, "Swing", ControlCommand.DysonSwing),
-                GridKeyItem(Icons.Default.Star, "Cool", ControlCommand.DysonCool),
-                GridKeyItem(Icons.Default.Settings, "Sleep", ControlCommand.DysonSleep),
-                GridKeyItem(Icons.Default.Info, "Diffuse", ControlCommand.DysonDiffusion)
+                GridKeyItem(Icons.Default.PowerSettingsNew, stringResource(R.string.label_power), ControlCommand.Power),
+                GridKeyItem(Icons.Default.Refresh, stringResource(R.string.label_auto), ControlCommand.DysonAuto),
+                GridKeyItem(Icons.Default.Sync, stringResource(R.string.label_swing), ControlCommand.DysonSwing),
+                GridKeyItem(Icons.Default.Star, stringResource(R.string.label_cool), ControlCommand.DysonCool),
+                GridKeyItem(Icons.Default.Settings, stringResource(R.string.label_sleep), ControlCommand.DysonSleep),
+                GridKeyItem(Icons.Default.Info, stringResource(R.string.label_diffuse), ControlCommand.DysonDiffusion)
             )
 
             keys.forEach { key ->
@@ -684,9 +694,9 @@ private fun DysonControlPanel(
                     shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.elevatedCardColors(
                         containerColor = if (key.command == ControlCommand.Power) {
-                            MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)
+                            MaterialTheme.colorScheme.errorContainer
                         } else {
-                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                            MaterialTheme.colorScheme.surfaceVariant
                         }
                     )
                 ) {
@@ -734,50 +744,50 @@ private fun GridControlPanel(
 ) {
     val keys = when (category) {
         RemoteCategory.FAN -> listOf(
-            GridKeyItem(Icons.Default.PowerSettingsNew, "Power", ControlCommand.Power),
-            GridKeyItem(Icons.Default.Speed, "Wind Speed", ControlCommand.WindSpeed),
-            GridKeyItem(Icons.Default.Refresh, "Wind Type", ControlCommand.WindType),
-            GridKeyItem(Icons.Default.Sync, "Swing", ControlCommand.Swing),
-            GridKeyItem(Icons.Default.Add, "Wind +", ControlCommand.WindPlus),
-            GridKeyItem(Icons.Default.Remove, "Wind -", ControlCommand.WindMinus)
+            GridKeyItem(Icons.Default.PowerSettingsNew, stringResource(R.string.label_power), ControlCommand.Power),
+            GridKeyItem(Icons.Default.Speed, stringResource(R.string.label_wind_speed), ControlCommand.WindSpeed),
+            GridKeyItem(Icons.Default.Refresh, stringResource(R.string.label_wind_type), ControlCommand.WindType),
+            GridKeyItem(Icons.Default.Sync, stringResource(R.string.label_swing), ControlCommand.Swing),
+            GridKeyItem(Icons.Default.Add, stringResource(R.string.label_wind_plus), ControlCommand.WindPlus),
+            GridKeyItem(Icons.Default.Remove, stringResource(R.string.label_wind_minus), ControlCommand.WindMinus)
         )
         RemoteCategory.LIGHT -> listOf(
-            GridKeyItem(Icons.Default.PowerSettingsNew, "Power", ControlCommand.Power),
-            GridKeyItem(Icons.Default.Add, "Bright +", ControlCommand.BulbBrightPlus),
-            GridKeyItem(Icons.Default.Remove, "Bright -", ControlCommand.BulbBrightMinus),
-            GridKeyItem(Icons.Default.Home, "Bright On", ControlCommand.BulbBrightPowerOn),
-            GridKeyItem(Icons.Default.Menu, "Bright Off", ControlCommand.BulbBrightPowerOff),
-            GridKeyItem(Icons.Default.Star, "Rainbow", ControlCommand.BulbBrightRainbow),
-            GridKeyItem(Icons.Default.Check, "Color 0", ControlCommand.BulbColor0),
-            GridKeyItem(Icons.Default.Check, "Color 1", ControlCommand.BulbColor1),
-            GridKeyItem(Icons.Default.Check, "Color 2", ControlCommand.BulbColor2),
-            GridKeyItem(Icons.Default.Check, "Color 3", ControlCommand.BulbColor3),
-            GridKeyItem(Icons.Default.Check, "Color 4", ControlCommand.BulbColor4)
+            GridKeyItem(Icons.Default.PowerSettingsNew, stringResource(R.string.label_power), ControlCommand.Power),
+            GridKeyItem(Icons.Default.Add, stringResource(R.string.label_bright_plus), ControlCommand.BulbBrightPlus),
+            GridKeyItem(Icons.Default.Remove, stringResource(R.string.label_bright_minus), ControlCommand.BulbBrightMinus),
+            GridKeyItem(Icons.Default.Home, stringResource(R.string.label_bright_on), ControlCommand.BulbBrightPowerOn),
+            GridKeyItem(Icons.Default.Menu, stringResource(R.string.label_bright_off), ControlCommand.BulbBrightPowerOff),
+            GridKeyItem(Icons.Default.Star, stringResource(R.string.label_rainbow), ControlCommand.BulbBrightRainbow),
+            GridKeyItem(Icons.Default.Check, stringResource(R.string.label_color_0), ControlCommand.BulbColor0),
+            GridKeyItem(Icons.Default.Check, stringResource(R.string.label_color_1), ControlCommand.BulbColor1),
+            GridKeyItem(Icons.Default.Check, stringResource(R.string.label_color_2), ControlCommand.BulbColor2),
+            GridKeyItem(Icons.Default.Check, stringResource(R.string.label_color_3), ControlCommand.BulbColor3),
+            GridKeyItem(Icons.Default.Check, stringResource(R.string.label_color_4), ControlCommand.BulbColor4)
         )
         RemoteCategory.CLEANING_ROBOT -> listOf(
-            GridKeyItem(Icons.Default.PowerSettingsNew, "Power", ControlCommand.Power),
-            GridKeyItem(Icons.Default.PlayArrow, "Start", ControlCommand.RobotStart),
-            GridKeyItem(Icons.Default.Stop, "Stop", ControlCommand.RobotStop),
-            GridKeyItem(Icons.Default.ArrowUpward, "Forward", ControlCommand.RobotForward),
-            GridKeyItem(Icons.Default.ArrowDownward, "Backward", ControlCommand.RobotBackward),
-            GridKeyItem(Icons.AutoMirrored.Filled.ArrowBack, "Left", ControlCommand.RobotLeft),
-            GridKeyItem(Icons.AutoMirrored.Filled.ArrowForward, "Right", ControlCommand.RobotRight),
-            GridKeyItem(Icons.Default.Sync, "Auto", ControlCommand.RobotAuto),
-            GridKeyItem(Icons.Default.Check, "Spot", ControlCommand.RobotSpot),
-            GridKeyItem(Icons.Default.Speed, "Speed", ControlCommand.RobotSpeed),
-            GridKeyItem(Icons.Default.Settings, "Timer", ControlCommand.RobotTimer),
-            GridKeyItem(Icons.Default.Home, "Charge", ControlCommand.RobotCharge),
-            GridKeyItem(Icons.Default.Info, "Preserve", ControlCommand.RobotPreserve)
+            GridKeyItem(Icons.Default.PowerSettingsNew, stringResource(R.string.label_power), ControlCommand.Power),
+            GridKeyItem(Icons.Default.PlayArrow, stringResource(R.string.label_start), ControlCommand.RobotStart),
+            GridKeyItem(Icons.Default.Stop, stringResource(R.string.label_stop), ControlCommand.RobotStop),
+            GridKeyItem(Icons.Default.ArrowUpward, stringResource(R.string.label_forward), ControlCommand.RobotForward),
+            GridKeyItem(Icons.Default.ArrowDownward, stringResource(R.string.label_backward), ControlCommand.RobotBackward),
+            GridKeyItem(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.label_left), ControlCommand.RobotLeft),
+            GridKeyItem(Icons.AutoMirrored.Filled.ArrowForward, stringResource(R.string.label_right), ControlCommand.RobotRight),
+            GridKeyItem(Icons.Default.Sync, stringResource(R.string.label_auto), ControlCommand.RobotAuto),
+            GridKeyItem(Icons.Default.Check, stringResource(R.string.label_spot), ControlCommand.RobotSpot),
+            GridKeyItem(Icons.Default.Speed, stringResource(R.string.label_speed), ControlCommand.RobotSpeed),
+            GridKeyItem(Icons.Default.Settings, stringResource(R.string.label_timer), ControlCommand.RobotTimer),
+            GridKeyItem(Icons.Default.Home, stringResource(R.string.label_charge), ControlCommand.RobotCharge),
+            GridKeyItem(Icons.Default.Info, stringResource(R.string.label_preserve), ControlCommand.RobotPreserve)
         )
         RemoteCategory.AIRCLEANER -> listOf(
-            GridKeyItem(Icons.Default.PowerSettingsNew, "Power", ControlCommand.Power),
-            GridKeyItem(Icons.Default.Star, "Ion", ControlCommand.AirCleanerIon),
-            GridKeyItem(Icons.Default.Sync, "Auto", ControlCommand.AirCleanerAuto),
-            GridKeyItem(Icons.Default.Speed, "Wind Speed", ControlCommand.AirCleanerWindSpeed),
-            GridKeyItem(Icons.Default.Refresh, "Mode Switch", ControlCommand.AirCleanerModeSwitch),
-            GridKeyItem(Icons.Default.Settings, "Timer", ControlCommand.AirCleanerTimer),
-            GridKeyItem(Icons.Default.Home, "Light", ControlCommand.AirCleanerLight),
-            GridKeyItem(Icons.Default.Info, "Force", ControlCommand.AirCleanerForce)
+            GridKeyItem(Icons.Default.PowerSettingsNew, stringResource(R.string.label_power), ControlCommand.Power),
+            GridKeyItem(Icons.Default.Star, stringResource(R.string.label_ion), ControlCommand.AirCleanerIon),
+            GridKeyItem(Icons.Default.Sync, stringResource(R.string.label_auto), ControlCommand.AirCleanerAuto),
+            GridKeyItem(Icons.Default.Speed, stringResource(R.string.label_wind_speed), ControlCommand.AirCleanerWindSpeed),
+            GridKeyItem(Icons.Default.Refresh, stringResource(R.string.label_mode_switch), ControlCommand.AirCleanerModeSwitch),
+            GridKeyItem(Icons.Default.Settings, stringResource(R.string.label_timer), ControlCommand.AirCleanerTimer),
+            GridKeyItem(Icons.Default.Home, stringResource(R.string.label_light), ControlCommand.AirCleanerLight),
+            GridKeyItem(Icons.Default.Info, stringResource(R.string.label_force), ControlCommand.AirCleanerForce)
         )
         else -> emptyList()
     }
@@ -878,7 +888,7 @@ private fun DPad(
         modifier = modifier
             .size(size)
             .background(
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                color = MaterialTheme.colorScheme.surfaceVariant,
                 shape = CircleShape
             )
             .padding(8.dp),
@@ -1012,7 +1022,7 @@ private fun EmitterConnectionPanel(
                         Icon(
                             imageVector = Icons.Default.Memory,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 )
